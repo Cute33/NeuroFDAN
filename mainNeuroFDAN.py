@@ -5,7 +5,7 @@ import torch
 import argparse
 from datetime import datetime
 from torch.optim.lr_scheduler import OneCycleLR, ExponentialLR
-sys.path.extend(["/home/fss/NeuroFDAN"])
+sys.path.extend([os.path.dirname(os.path.abspath(__file__))])
 from NeuroFDAN import NeuroFDAN
 from ModelTrain import *
 
@@ -16,7 +16,7 @@ def get_args(description='CPCC on Emotion Recognition'):
     
     # 添加文件路径参数
     parser.add_argument('--label', type=str, required=True, help="Emotion recognition label, optional: 'arousal' and 'valence'.")
-    parser.add_argument('--root_dir', type=str, default='/home/fss', help='The root driectory of the framework.')
+    parser.add_argument('--root_dir', type=str, default=os.environ.get('NEURO_ROOT', '/home/fss'), help='Framework root (default: NEURO_ROOT or /home/fss).')
     parser.add_argument('--lr', type=float, default=0.0001, help='Initial learning rate.')
     parser.add_argument('--epochs', type=int, default=100, help='Upper epoch limit.')
     parser.add_argument('--batch_size', type=int, default=40, help='Batch size.')
@@ -63,7 +63,7 @@ def main():
 
             # scheduler = OneCycleLR(optimizer, max_lr=0.1, total_steps=(31*40*10*args.epochs)//args.batch_size, pct_start=0.3)
             # scheduler = OneCycleLR(optimizer, max_lr=0.01, steps_per_epoch=31*40*10//args.batch_size, epochs=args.epochs, pct_start=0.3, anneal_strategy='cos')
-            #scheduler = ExponentialLR(optimizer, gnibuamma=0.98)  # 每次调用使学习率乘以 0.95
+            #scheduler = ExponentialLR(optimizer, gamma=0.98)  # 每次调用使学习率乘以 0.95
 
             # 尝试不使用scheduler
 

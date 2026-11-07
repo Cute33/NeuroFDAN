@@ -22,7 +22,7 @@ from tqdm import tqdm
 from abc import ABC, abstractmethod
 from itertools import cycle
 
-sys.path.extend(["/home/zkx/NeuroFDAN"])
+sys.path.extend([os.path.dirname(os.path.abspath(__file__))])
 from NeuroFDAN import *
 from Datasets import *
 from loss import CausalMultiLoss, calculate_accuracy, update_confusion_matrix
