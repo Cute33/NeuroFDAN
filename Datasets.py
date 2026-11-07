@@ -23,7 +23,9 @@ def HCI_eliminate_individual_differences(data):
     return data
 
 class HCIDataset_Python(Dataset):
-    def __init__(self, root_dir = '/home/fss', data_files = None, label = 'arousal'):
+    def __init__(self, root_dir = None, data_files = None, label = 'arousal'):
+        if root_dir is None:
+            root_dir = os.environ.get('NEURO_ROOT', '/home/fss')
         # Get the data files list
         self.root_dir = os.path.join(root_dir, 'Dataset/HCI-python')
         if data_files is None:
@@ -142,7 +144,9 @@ class HCIDataset_Python(Dataset):
 
 
 class DEAPDataset_Python(Dataset):
-    def __init__(self, root_dir = '/home/fss', data_files = None, label = 'arousal'):
+    def __init__(self, root_dir = None, data_files = None, label = 'arousal'):
+        if root_dir is None:
+            root_dir = os.environ.get('NEURO_ROOT', '/home/fss')
         # Get the data files list
         self.root_dir = os.path.join(root_dir, 'Dataset/DEAP-python')
         if data_files is None:

@@ -1,0 +1,9 @@
+torch
+numpy
+scipy
+tensorboard
+pandas
+plotly
+matplotlib
+scikit-learn
+tqdm

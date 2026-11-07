@@ -1,6 +1,7 @@
 from venv import logger
 import numpy as np
 import argparse
+import os
 
 global logger
 def get_args(description='NeuroFDAN on Emotion Recognition'):
@@ -9,6 +10,8 @@ def get_args(description='NeuroFDAN on Emotion Recognition'):
     # 添加文件路径参数
     parser.add_argument('--label', type=str, required=True, help="Emotion recognition label, optional: 'arousal' and 'valence'.")
     parser.add_argument('--dataset', type=str, required=True, help="Dataset, optional: 'DEAP' and 'HCI'.")
+
+    parser.add_argument('--root_dir', type=str, default=os.environ.get('NEURO_ROOT', '/home/fss'), help='Framework root (default: NEURO_ROOT or /home/fss).')
 
     # 解析命令行参数
     args = parser.parse_args()
@@ -19,7 +22,7 @@ def get_args(description='NeuroFDAN on Emotion Recognition'):
 def main():
     args = get_args()
 
-    file_path = f'/home/zkx/NeuroFDAN/NeuroFDAN-{args.dataset}_{args.label}_cm.npy'
+    file_path = os.path.join(args.root_dir, 'NeuroFDAN', f'NeuroFDAN-{args.dataset}_{args.label}_cm.npy')
     # shape: (32, 2, 2)
     confusion_matrices = np.load(file_path)
     print(confusion_matrices)
