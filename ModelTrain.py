@@ -143,7 +143,13 @@ def _add_confusion(confusion, y, probs):
 
 def prediction_probabilities(outputs, fd_mode):
     """训练诊断、测试、选模始终使用同一输出；消融明确改用观察路径。"""
-    return outputs['probs_do'] if fd_mode == 'full' else outputs['probs_obs']
+    probs = outputs['probs_do'] if fd_mode == 'full' else outputs['probs_obs']
+    if probs.ndim != 2 or probs.shape[1] != 2 or not torch.isfinite(probs).all():
+        raise FloatingPointError('主输出必须为有限的[B,2]概率；发现NaN/Inf或形状错误')
+    if not ((probs >= 0) & (probs <= 1)).all() or not torch.allclose(
+            probs.sum(-1), torch.ones_like(probs[:, 0]), atol=1e-5, rtol=1e-5):
+        raise FloatingPointError('主输出概率范围或行归一化错误，停止记录指标')
+    return probs
 
 
 def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
@@ -155,6 +161,7 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
         optimizer.zero_grad(set_to_none=True)
         output = model(xc, xa, reference_bank=raw_bank if fd_mode == 'full' else None,
                        source_ids=batch['source_ids'].to(device), fd_mode=fd_mode)
+        primary_probs = prediction_probabilities(output, fd_mode)
         terms = frontdoor_loss(output, y, model.frontdoor_config, epoch=epoch)
         # 真实观察标签从不用于监督probs_do，也不传入任何oracle概率。
         loss = terms['loss'] + (lambda_obs - 1.) * terms['loss_obs'] + fire_weight * output['fire_loss']
@@ -164,7 +171,7 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.)
         optimizer.step()
         model.weights_updated()
-        _add_confusion(cm, y, prediction_probabilities(output, fd_mode))
+        _add_confusion(cm, y, primary_probs)
         values = dict(output['mediator_statistics'], loss=loss.detach(),
                       factual_ce=terms['loss_obs'].detach(), kl=terms['loss_kl'].detach(),
                       fire_loss=output['fire_loss'].detach())

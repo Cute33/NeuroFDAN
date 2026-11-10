@@ -19,6 +19,7 @@ results/
 *.csv
 data/
 .venv/
+.venv*/
 venv/
 .pytest_cache/
 *.tmp
