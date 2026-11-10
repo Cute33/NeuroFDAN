@@ -1,27 +1,22 @@
 # NeuroFDAN
 
-当前开发版本把 Phase 1 前门 SCM 核心接入真实生理骨干和 LOSO train/test 流程。代码版本以 Git 分支为准：第一阶段备份为 `feat/neurofdan-phase1`，第二阶段为 `feat/neurofdan-phase2`；未合并 main。
+当前开发版本把 Phase 1 前门 SCM 核心接入真实生理骨干和 LOSO train/test 流程。第一阶段备份为 `feat/neurofdan-phase1`，第二阶段稳定版本为 `feat/neurofdan-phase2`。第三阶段 `feat/neurofdan-phase3` 从第二阶段核验提交独立创建，提供服务器操作指南与结果完整性审计。核验时第二阶段已由 PR #3 合并 main；本轮不修改 main。
 
+- [第三阶段：完整 Xshell/Linux 服务器操作指南](docs/phase3_server_guide.md)
+- [第三阶段：修改、版本关系与交付报告](docs/phase3_delivery_report.md)
+- [第三阶段：实际轻量检查记录](docs/phase3_checks.md)
 - [第二阶段实现与限制](docs/phase2_integration_report.md)
 - [服务器环境、数据格式、单fold检查和完整LOSO命令](docs/phase2_server_guide.md)
 - [第一阶段历史合成验证报告](docs/phase1_implementation_report.md)
 
 ## 安装与运行
 
-建议 Python 3.10+，PyTorch 2.0+。GPU 用户先按官方说明安装匹配 CUDA 驱动的 PyTorch。
+建议 Python 3.10+，PyTorch 2.0+。先按第三阶段指南检查并优先复用服务器已有环境；安装其余依赖时保留已验证的 PyTorch/NumPy 版本。无可用环境时才新建环境，GPU 版本依据实际驱动和官方安装说明选择。
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-export NEURO_ROOT=/path/to/data_root
+cd /home/fss/NeuroFDAN
 python mainNeuroFDAN.py --help
-
-# 在自己的实验服务器运行；云端没有执行正式数据训练
-python mainNeuroFDAN.py --dataset DEAP --label arousal --seed 42 \
-  --root_dir "$NEURO_ROOT" --run_name full42 --device cuda:0
-python mainNeuroFDAN.py --dataset HCI --label valence --seed 42 \
-  --root_dir "$NEURO_ROOT" --run_name full42 --device cuda:0
+python CalculateResult.py --help
 ```
 
 数据仍为 `Dataset/DEAP-python/1.npy…32.npy` 和 `Dataset/HCI-python/1.npy…24.npy` 的既有 pickle 字典。标签阈值5，窗口6秒；数据、checkpoint和临时产物不提交。
