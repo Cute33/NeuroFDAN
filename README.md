@@ -8,6 +8,8 @@
 
 E1已在服务器完成。后续独立分支 `feat/neurofdan-e1b-backbone-probe` 提供[骨干逐层只读探针及完整运行/上传命令](docs/e1b_backbone_probe.md)，用于定位输入差异在哪一层消失；不训练，不修改已有checkpoint。
 
+E1b已观察到epoch37卷积核严重收缩与骨干输出变常量。独立分支 `feat/neurofdan-e2-gradient-audit` 提供[E1b证据分析及E2分项梯度/Adam L2只读审计命令](docs/e2_gradient_audit.md)。E2只读梯度，不执行参数更新，尚待服务器运行。
+
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
 - [第五阶段：日志分层、GitHub结果回传与认证说明](docs/phase5_server_upload_guide.md)

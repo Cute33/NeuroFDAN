@@ -40,10 +40,13 @@ def activation_summary(value) -> dict:
     result = tensor_summary(value)
     x = value.detach().cpu().double().reshape(value.shape[0], -1)
     spread = x.std(0, unbiased=False)
+    span = x.amax(0) - x.amin(0)
     result.update(between_sample_std_mean=spread.mean().item(),
                   between_sample_std_max=spread.max().item(),
-                  variable_feature_fraction=(spread > 0).double().mean().item(),
-                  exact_constant_across_samples=bool((spread == 0).all()))
+                  between_sample_range_mean=span.mean().item(),
+                  between_sample_range_max=span.max().item(),
+                  variable_feature_fraction=(span > 0).double().mean().item(),
+                  exact_constant_across_samples=bool((x == x[:1]).all()))
     return result
 
 
