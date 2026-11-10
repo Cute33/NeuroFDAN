@@ -1,6 +1,7 @@
 """LOSO二分训练：事实监督、训练总体参考、held-out测试选择checkpoint。"""
 import json
 import logging
+import math
 import random
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -44,6 +45,40 @@ def resolve_device(value='auto'):
     if device.type not in ('cpu', 'cuda'):
         raise ValueError('当前训练入口仅支持CPU或CUDA')
     return device
+
+
+def optimizer_weight_decay(args):
+    """旧Namespace没有此字段时沿用原值，不隐式关闭耦合L2。"""
+    value = float(getattr(args, 'weight_decay', .01))
+    if not math.isfinite(value) or value < 0:
+        raise ValueError('weight_decay必须为有限非负数')
+    return value
+
+
+def build_optimizer(model, args):
+    """沿用原单组Adam及全部参数；仅公开已有耦合L2配置。"""
+    return torch.optim.Adam(model.parameters(), lr=args.lr, betas=(.9, .999), eps=1e-8,
+                            weight_decay=optimizer_weight_decay(args), amsgrad=False)
+
+
+def validate_resume_weight_decay(state, args):
+    """保存的优化器会覆盖构造配置，故禁止以续训静默切换衰减系数。"""
+    expected = optimizer_weight_decay(args)
+    groups = state['optimizer']['param_groups']
+    if not groups or any(group.get('weight_decay') != expected for group in groups):
+        raise ValueError('checkpoint的Adam weight_decay与本次参数不一致；对照必须新run从头训练')
+
+
+def parameter_rms(model):
+    """只读各参数RMS；full诊断保留逐参数尺度，避免模块范数掩盖卷积核收缩。"""
+    result = {}
+    with torch.no_grad():
+        for name, value in model.named_parameters():
+            rms = float(value.detach().double().square().mean().sqrt())
+            if not math.isfinite(rms):
+                raise FloatingPointError(f'参数RMS含NaN/Inf：{name}')
+            result[name] = rms
+    return result
 
 
 def confusion_metrics(confusion, dataset):
@@ -199,6 +234,7 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
     metrics = dict(confusion_metrics(cm, dataset), **{k: v / count for k, v in sums.items()})
     if gradients is not None:
         metrics['gradients'] = gradients.finish()
+        metrics['parameter_rms'] = parameter_rms(model)
     return metrics, cm
 
 
@@ -323,6 +359,7 @@ def frontdoor_config(args):
 def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, optimizer=None):
     """额外对象仅供轻量级接口测试和兼容调用注入，不提供替代真实实验模式。"""
     seed_everything(args.seed)
+    optimizer_weight_decay(args)
     dataset, label = canonical_dataset(args.dataset), canonical_label(args.label)
     spec = DATASET_SPECS[dataset]
     train_subjects = cal_train_index(held_out, spec['subjects'])
@@ -343,8 +380,7 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     model = model if model is not None else NeuroFDAN(ecg_channels=2 if dataset == 'DEAP' else 3,
                                                        frontdoor_config=frontdoor_config(args))
     model.to(device)
-    optimizer = optimizer if optimizer is not None else torch.optim.Adam(model.parameters(), lr=args.lr,
-                           betas=(.9, .999), eps=1e-8, weight_decay=.01, amsgrad=False)
+    optimizer = optimizer if optimizer is not None else build_optimizer(model, args)
     run_name = args.run_name or f'{args.fd_mode}_cns_{"off" if args.no_cns2ans else "on"}_ref{args.ref_dim}'
     run_dir = Path(args.output_dir) / dataset / label / 'seed42' / run_name
     fold_dir = run_dir / f'fold{held_out:02d}'
@@ -364,6 +400,7 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     best, first_epoch = BestCheckpoint(), 1
     if args.resume:
         state = load_checkpoint(args.resume, model, optimizer, device)
+        validate_resume_weight_decay(state, args)
         old = state['reference_report']
         if old['held_out_subject'] != held_out or old['dataset'] != dataset or state['arguments']['label'] != label:
             raise ValueError('checkpoint数据集、任务或held-out不匹配')
@@ -376,6 +413,13 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
         if args.epochs < first_epoch:
             raise ValueError('指定epochs不大于checkpoint已完成轮数，没有可继续训练的epoch')
         logger.info('已加载checkpoint；继续epoch=%s；续训不是逐位等同未中断训练的承诺', first_epoch)
+    fold_config['optimizer'] = dict(name=type(optimizer).__name__,
+        parameter_groups=[{key: group.get(key) for key in ('lr', 'betas', 'eps', 'weight_decay', 'amsgrad')}
+                          for group in optimizer.param_groups])
+    if diagnostic_level == 'full':
+        fold_config['start_parameter_rms'] = parameter_rms(model)
+    logger.info('优化器=%s；各组weight_decay=%s；观察标签仅监督事实路径',
+                type(optimizer).__name__, [group.get('weight_decay') for group in optimizer.param_groups])
     (fold_dir / 'fold.json').write_text(json.dumps(fold_config, ensure_ascii=False, indent=2), encoding='utf-8')
     _record_sources(fold_dir / 'reference_sources.json', raw_bank)
     logger.info('当前fold=%s；训练被试=%s；测试被试=%s；参考库=%s/%s；来源检查通过',

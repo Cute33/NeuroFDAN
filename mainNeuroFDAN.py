@@ -1,6 +1,7 @@
 """服务器端NeuroFDAN训练入口；默认完整LOSO，显式支持单fold接口检查。"""
 import argparse
 import logging
+import math
 import os
 
 
@@ -16,6 +17,8 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--seed', type=int, choices=[42], default=42, help='固定随机种子，初始化模型及数据之前设置')
     parser.add_argument('--device', default='auto', help='auto、cpu、cuda:0或旧版GPU数字编号')
     parser.add_argument('--lr', type=float, default=.0001, help='Adam初始学习率')
+    parser.add_argument('--weight_decay', type=float, default=.01,
+                        help='Adam耦合L2系数；默认沿用0.01，零仅用于显式单变量对照，不切换AdamW')
     parser.add_argument('--epochs', type=int, default=100, help='每个fold的训练轮数')
     parser.add_argument('--batch_size', type=int, default=40, help='训练/测试batch大小，训练末尾不足batch明确丢弃')
     parser.add_argument('--workers', type=int, default=0, help='DataLoader进程数，内存有限时保持零')
@@ -51,6 +54,8 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--log_detail_interval', type=int, default=10,
                         help='终端简洁诊断摘要间隔；每轮仍打印两组紧凑矩阵，零关闭周期摘要；不影响逐轮诊断保存')
     args = parser.parse_args(argv)
+    if not math.isfinite(args.weight_decay) or args.weight_decay < 0:
+        parser.error('weight_decay必须为有限非负数')
     if args.batch_size < 2 or args.epochs < 1 or args.workers < 0 or args.cpu_threads < 0 or args.lr <= 0:
         parser.error('batch至少2、epochs至少1、workers非负且学习率为正')
     if min(args.max_train_batches, args.max_test_batches) < 0 or args.lambda_obs < 0 or (args.fire_weight is not None and args.fire_weight < 0):

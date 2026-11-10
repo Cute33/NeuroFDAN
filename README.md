@@ -8,7 +8,13 @@
 
 E1已在服务器完成。后续独立分支 `feat/neurofdan-e1b-backbone-probe` 提供[骨干逐层只读探针及完整运行/上传命令](docs/e1b_backbone_probe.md)，用于定位输入差异在哪一层消失；不训练，不修改已有checkpoint。
 
-E1b已观察到epoch37卷积核严重收缩与骨干输出变常量。独立分支 `feat/neurofdan-e2-gradient-audit` 提供[E1b证据分析及E2分项梯度/Adam L2只读审计命令](docs/e2_gradient_audit.md)。E2只读梯度，不执行参数更新，尚待服务器运行。
+E1b已观察到epoch37卷积核严重收缩与骨干输出变常量。独立分支 `feat/neurofdan-e2-gradient-audit` 提供[E1b证据分析及E2分项梯度/Adam L2只读审计命令](docs/e2_gradient_audit.md)。E2现已在服务器完成，未执行参数更新。
+
+独立分支 `feat/neurofdan-weight-decay-control` 提供[E2结果、局限与5轮耦合L2单变量对照命令](docs/e2_results_and_weight_decay_control.md)。新增 `--weight_decay` 默认仍0.01；显式取0仅供服务器对照，full诊断增加逐参数RMS，禁止用不匹配的衰减配置续训。该入口已用于服务器短程对照，不代表已修复全部退化问题。
+
+W1两组现已在服务器完成5轮：关闭衰减保留了中介参数尺度，但事实分类仍很弱、前门测试输出仍为单类别。独立分支 `feat/neurofdan-mechanism-probe` 提供[W1结果与E3/E4配对机制探针](docs/w1_results_and_mechanism_probe.md)，读取现有权重分离真实输入、中介噪声与参考边缘化，不再训练，不改变核心模型。
+
+E3/E4现已回传：B组输入路径存在，但局部输入影响远弱于采样噪声。参见[结果分析、20轮有限续训与正式实验门槛](docs/e3e4_results_and_training_gate.md)。文档分支 `feat/neurofdan-e3e4-review` 不修改源码；建议在独立副本上复用9d698f3训练工具，新增15轮后复盘，不自动扩展LOSO。
 
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
