@@ -4,7 +4,11 @@
 
 第四阶段 `feat/neurofdan-phase4` 从 Phase 3 的 `cd844c85d28f2335acf4d41083184d8ad98e5bbd` 创建，仅增强训练诊断。默认每轮完整评估优化训练子集与测试集，打印混淆矩阵；`--diagnostic_level full` 增加中介和裁剪前梯度统计。模型、损失、数据及测试选模协议保持不变。
 
-第五阶段 `feat/neurofdan-phase5-diagnosis` 基于 Phase 4 的真实服务器日志做分级诊断；终端改为每轮紧凑摘要与两组矩阵，完整JSONL/NPZ保留。新增独立 `server-diagnostics` 分支上传工具，不修改模型或训练目标。本轮未执行测试或模型实验，工具待服务器首次验证。
+第五阶段 `feat/neurofdan-phase5-diagnosis` 基于 Phase 4 的真实服务器日志做分级诊断；终端改为每轮紧凑摘要与两组矩阵，完整JSONL/NPZ保留。新增独立 `server-diagnostics` 分支上传工具，不修改模型或训练目标。该阶段没有运行云端测试或模型实验；服务器上传现已用于Phase 4快照和E1结果回传。
+
+E1已在服务器完成。后续独立分支 `feat/neurofdan-e1b-backbone-probe` 提供[骨干逐层只读探针及完整运行/上传命令](docs/e1b_backbone_probe.md)，用于定位输入差异在哪一层消失；不训练，不修改已有checkpoint。
+
+E1b已观察到epoch37卷积核严重收缩与骨干输出变常量。独立分支 `feat/neurofdan-e2-gradient-audit` 提供[E1b证据分析及E2分项梯度/Adam L2只读审计命令](docs/e2_gradient_audit.md)。E2只读梯度，不执行参数更新，尚待服务器运行。
 
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
