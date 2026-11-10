@@ -1,0 +1,11 @@
+开始A_wd001 epoch=5：eval/no_grad，无optimizer.step
+  change_cns_input：mu_a变化RMS=0.000000e+00；do概率变化RMS=0.000000e+00
+  change_ans_input：mu_a变化RMS=1.016846e-12；do概率变化RMS=0.000000e+00
+  change_cns_noise：mu_a变化RMS=1.534548e-03；do概率变化RMS=1.534892e-06
+  E4单次事实、同S事实、同S前门P1均值： [0.4792997818440199, 0.4761227183043957, 0.47632038593292236]
+开始B_wd0 epoch=5：eval/no_grad，无optimizer.step
+  change_cns_input：mu_a变化RMS=4.060575e-03；do概率变化RMS=2.320895e-06
+  change_ans_input：mu_a变化RMS=1.403754e-02；do概率变化RMS=1.288093e-05
+  change_cns_noise：mu_a变化RMS=2.643803e-01；do概率变化RMS=9.056544e-05
+  E4单次事实、同S事实、同S前门P1均值： [0.49499338306486607, 0.49213733337819576, 0.4936142601072788]
+完成：<已屏蔽绝对路径>
