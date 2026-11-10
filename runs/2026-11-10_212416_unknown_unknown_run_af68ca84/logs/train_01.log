@@ -1,0 +1,121 @@
+实际checkpoint epoch： 37
+{
+  "operation": "E1只读输入依赖诊断",
+  "dataset": "DEAP",
+  "task": "arousal",
+  "fold": 1,
+  "seed": 42,
+  "device": "cpu",
+  "samples": 16,
+  "S": 16,
+  "checkpoint_epoch": 37,
+  "checkpoint_filename": "last.pt",
+  "checkpoint_sha256": "50d22cd66f07a745a5be478444bf72387d06018c3420d492b9fe5f5c26322e0b",
+  "project_source_sha": "967f529c6d916f9ccf3acf50de71f2d7fbe338bc",
+  "sample_sources": [
+    [
+      1,
+      0,
+      0
+    ],
+    [
+      1,
+      2,
+      6
+    ],
+    [
+      1,
+      5,
+      3
+    ],
+    [
+      1,
+      7,
+      9
+    ],
+    [
+      1,
+      10,
+      6
+    ],
+    [
+      1,
+      13,
+      3
+    ],
+    [
+      1,
+      15,
+      9
+    ],
+    [
+      1,
+      18,
+      6
+    ],
+    [
+      1,
+      21,
+      2
+    ],
+    [
+      1,
+      23,
+      9
+    ],
+    [
+      1,
+      26,
+      6
+    ],
+    [
+      1,
+      29,
+      2
+    ],
+    [
+      1,
+      31,
+      9
+    ],
+    [
+      1,
+      34,
+      5
+    ],
+    [
+      1,
+      37,
+      2
+    ],
+    [
+      1,
+      39,
+      9
+    ]
+  ],
+  "input_std_c": 0.9782742246549536,
+  "input_std_a": 0.9700111405864411,
+  "feature_std_c": 0.0,
+  "feature_std_a": 0.0,
+  "graph_nonself_rows": 30,
+  "mu_c_std": 0.0,
+  "logvar_c_std": 0.0,
+  "mu_a_mean_std": 0.00038735765022840287,
+  "logvar_a_mean_std": 0.00024490059073506274,
+  "conditional_mu_a_std": 0.0016813604530430154,
+  "reference_representation_std": 0.0,
+  "factual_probability_mean": [
+    0.4948751740157604,
+    0.5051248110830784
+  ],
+  "factual_probability_std": [
+    0.0003069103606906645,
+    0.00030690500939774154
+  ],
+  "note": "16窗口初筛；ANS统计含有限MC误差；none不是重训或物理干预；未执行参考积分",
+  "model_state_unchanged": true,
+  "checkpoint_file_unchanged": true,
+  "optimizer_created": false
+}
+E1完成，结果目录： <已屏蔽绝对路径>
