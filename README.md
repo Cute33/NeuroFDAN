@@ -2,6 +2,11 @@
 
 当前开发版本把 Phase 1 前门 SCM 核心接入真实生理骨干和 LOSO train/test 流程。第一阶段备份为 `feat/neurofdan-phase1`，第二阶段稳定版本为 `feat/neurofdan-phase2`。第三阶段 `feat/neurofdan-phase3` 从第二阶段核验提交独立创建，提供服务器操作指南与结果完整性审计。核验时第二阶段已由 PR #3 合并 main；本轮不修改 main。
 
+第四阶段 `feat/neurofdan-phase4` 从 Phase 3 的 `cd844c85d28f2335acf4d41083184d8ad98e5bbd` 创建，仅增强训练诊断。默认每轮完整评估优化训练子集与测试集，打印混淆矩阵；`--diagnostic_level full` 增加中介和裁剪前梯度统计。模型、损失、数据及测试选模协议保持不变。
+
+- [第四阶段：诊断依据、输出路径与科学边界](docs/phase4_diagnostic_analysis.md)
+- [第四阶段：保留旧结果、服务器第1折诊断与产物读取](docs/phase4_server_guide.md)
+- [第四阶段：完整轻量测试结果](docs/phase4_test_results.md)
 - [第三阶段：完整 Xshell/Linux 服务器操作指南](docs/phase3_server_guide.md)
 - [第三阶段：修改、版本关系与交付报告](docs/phase3_delivery_report.md)
 - [第三阶段：实际轻量检查记录](docs/phase3_checks.md)

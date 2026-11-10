@@ -10,9 +10,11 @@ import torch
 from torch.utils.data import DataLoader, Subset
 
 from Datasets import (DATASET_SPECS, PhysiologicalWindows, WindowSelection,
-                      cal_train_index, canonical_dataset, canonical_label, make_loaders)
+                      cal_train_index, canonical_dataset, canonical_label, make_loaders, seed_worker)
 from NeuroFDAN import NeuroFDAN
 from frontdoor_scm import FrontDoorConfig, ReferenceBank, frontdoor_loss
+from training_diagnostics import (GradientDiagnostics, MediatorDiagnostics, PredictionDiagnostics,
+                                  isolated_evaluation, log_evaluation, save_epoch_diagnostics)
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +61,12 @@ def confusion_metrics(confusion, dataset):
     positive = 1 if canonical_dataset(dataset) == 'DEAP' else 0
     scores['selection_f1'] = scores[f'f1_class{positive}']
     scores['selection_positive_class'] = positive
+    tp, tn = int(cm[positive, positive]), int(cm[1-positive, 1-positive])
+    fp, fn = int(cm[1-positive, positive]), int(cm[positive, 1-positive])
+    scores.update(precision=tp / (tp + fp) if tp + fp else 0.,
+                  recall=tp / (tp + fn) if tp + fn else 0.,
+                  sensitivity=tp / (tp + fn) if tp + fn else 0.,
+                  specificity=tn / (tn + fp) if tn + fp else 0.)
     return scores
 
 
@@ -153,8 +161,10 @@ def prediction_probabilities(outputs, fd_mode):
 
 
 def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
-                    fd_mode='full', lambda_obs=1., fire_weight=0., max_batches=0):
+                    fd_mode='full', lambda_obs=1., fire_weight=0., max_batches=0,
+                    diagnostic_level='basic'):
     model.train()
+    gradients = GradientDiagnostics(model) if diagnostic_level == 'full' else None
     cm, sums, count = torch.zeros(2, 2, dtype=torch.long), {}, 0
     for batch_index, (batch, _) in enumerate(loader):
         xc, xa, y = batch['x_c'].to(device), batch['x_a'].to(device), batch['Labels'].to(device)
@@ -168,6 +178,8 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
         if not torch.isfinite(loss):
             raise FloatingPointError('训练损失出现非有限数值，请检查输入和模型设置')
         loss.backward()
+        if gradients is not None:
+            gradients.update()
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.)
         optimizer.step()
         model.weights_updated()
@@ -183,12 +195,22 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
             break
     if not count:
         raise ValueError('训练没有执行任何batch')
-    return dict(confusion_metrics(cm, dataset), **{k: v / count for k, v in sums.items()}), cm
+    metrics = dict(confusion_metrics(cm, dataset), **{k: v / count for k, v in sums.items()})
+    if gradients is not None:
+        metrics['gradients'] = gradients.finish()
+    return metrics, cm
 
 
-def evaluate(model, loader, raw_bank, device, dataset, fd_mode='full', max_batches=0):
+def evaluate(model, loader, raw_bank, device, dataset, fd_mode='full', max_batches=0, *,
+             diagnostic_level='basic', cached_bank=None, cache_holder=None, collect_predictions=True):
     model.eval()
-    cached = cache_reference_features(model, raw_bank, device, loader.batch_size) if fd_mode == 'full' else None
+    cached = cached_bank
+    if fd_mode == 'full' and cached is None:
+        cached = cache_reference_features(model, raw_bank, device, loader.batch_size)
+    if cache_holder is not None:
+        cache_holder['bank'] = cached
+    diagnostics = PredictionDiagnostics()
+    mediators = MediatorDiagnostics(model.frontdoor_config) if diagnostic_level == 'full' else None
     cm, predictions, sums, count = torch.zeros(2, 2, dtype=torch.long), [], {}, 0
     # 固定评估MC随机流并恢复训练随机流，减少不同epoch的选模采样噪声。
     devices = list(range(torch.cuda.device_count())) if torch.cuda.is_available() else []
@@ -200,18 +222,50 @@ def evaluate(model, loader, raw_bank, device, dataset, fd_mode='full', max_batch
                            source_ids=batch['source_ids'].to(device), fd_mode=fd_mode)
             probs = prediction_probabilities(output, fd_mode)
             _add_confusion(cm, y, probs)
+            diagnostics.update(probs, output['probs_obs'], y)
+            if mediators is not None:
+                mediators.update(output, y)
             for key, value in output['mediator_statistics'].items():
                 sums[key] = sums.get(key, 0.) + float(value) * len(y)
+            sums['factual_ce'] = sums.get('factual_ce', 0.) + float(torch.nn.functional.cross_entropy(output['logits_obs'], y)) * len(y)
             count += len(y)
-            for ids, truth, probability in zip(batch['source_ids'].tolist(), y.cpu().tolist(), probs.cpu().tolist()):
-                predictions.append({'subject_id': ids[0], 'trial_id': ids[1], 'window_id': ids[2],
-                                    'dataset': dataset, 'label': truth, 'probabilities': probability})
+            if collect_predictions:
+                for ids, truth, probability in zip(batch['source_ids'].tolist(), y.cpu().tolist(), probs.cpu().tolist()):
+                    predictions.append({'subject_id': ids[0], 'trial_id': ids[1], 'window_id': ids[2],
+                                        'dataset': dataset, 'label': truth, 'probabilities': probability})
             if max_batches and batch_index + 1 >= max_batches:
                 break
     metrics = confusion_metrics(cm, dataset)
     metrics.update({k: v / count for k, v in sums.items()})
     metrics['complete_test'] = count == len(loader.dataset)
+    metrics.update(complete_evaluation=metrics['complete_test'],
+                   prediction_path='probs_do' if fd_mode == 'full' else 'probs_obs',
+                   prediction_diagnostics=diagnostics.finish())
+    for path in ('primary', 'factual'):
+        entry = metrics['prediction_diagnostics'][path]
+        entry['metrics'] = confusion_metrics(entry['confusion_matrix'], dataset)
+    if mediators is not None:
+        metrics['mediator_diagnostics'] = mediators.finish()
     return metrics, cm, predictions
+
+
+def make_train_evaluation_loader(dataset, batch_size=40, workers=0):
+    """完整优化训练子集，只读、不打乱、不丢尾batch，独立于优化和测试加载器。"""
+    return DataLoader(dataset, batch_size=batch_size, shuffle=False, drop_last=False,
+                      num_workers=workers, worker_init_fn=seed_worker,
+                      generator=torch.Generator().manual_seed(42))
+
+
+def evaluate_training_set(model, loader, raw_bank, device, dataset, fd_mode='full', max_batches=0, **kwargs):
+    """额外诊断不step、不更新BN，恢复模式与全局随机流；调用方提供独立加载器。"""
+    generator_state = loader.generator.get_state() if loader.generator is not None else None
+    try:
+        with isolated_evaluation(model):
+            return evaluate(model, loader, raw_bank, device, dataset, fd_mode, max_batches,
+                            collect_predictions=False, **kwargs)
+    finally:
+        if generator_state is not None:
+            loader.generator.set_state(generator_state)
 
 
 def save_checkpoint(path, model, optimizer, epoch, best, args, raw_bank, metrics):
@@ -281,6 +335,8 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     selected = population.balanced_indices(args.seed) if not args.no_balance else torch.arange(len(population))
     train_dataset = WindowSelection(population, selected)
     train_loader, test_loader = make_loaders(train_dataset, test_dataset, args.batch_size, args.workers, args.seed)
+    train_eval_loader = make_train_evaluation_loader(train_dataset, args.batch_size, args.workers)
+    diagnostic_level = getattr(args, 'diagnostic_level', 'basic')
     raw_bank = build_reference_bank(population, train_subjects, held_out, args.N_ref, args.seed)
     device = resolve_device(args.device)
     model = model if model is not None else NeuroFDAN(ecg_channels=2 if dataset == 'DEAP' else 3,
@@ -322,6 +378,8 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     _record_sources(fold_dir / 'reference_sources.json', raw_bank)
     logger.info('当前fold=%s；训练被试=%s；测试被试=%s；参考库=%s/%s；来源检查通过',
                 held_out, train_subjects, held_out, raw_bank.used_count, len(population))
+    logger.info('训练集评估覆盖全部%s个优化窗口（不丢尾batch）；未平衡参考总体%s窗口；诊断级别=%s',
+                len(train_dataset), len(population), diagnostic_level)
     if raw_bank.shortfall:
         logger.info('参考总体不足N_ref，使用全部%s个训练窗口', raw_bank.used_count)
     if fold_config['smoke']:
@@ -334,16 +392,26 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     try:
         for epoch in range(first_epoch, args.epochs + 1):
             train_metrics, _ = train_one_epoch(model, train_loader, raw_bank, optimizer, device, dataset,
-                           epoch, args.fd_mode, args.lambda_obs, fire_weight, args.max_train_batches)
+                           epoch, args.fd_mode, args.lambda_obs, fire_weight, args.max_train_batches,
+                           diagnostic_level=diagnostic_level)
+            cache_holder = {}
+            # 原测试路径先执行；额外训练集评估随后隔离随机流，不参与选模。
             metrics, cm, predictions = evaluate(model, test_loader, raw_bank, device, dataset,
-                                                args.fd_mode, args.max_test_batches)
+                                                args.fd_mode, args.max_test_batches,
+                                                diagnostic_level=diagnostic_level, cache_holder=cache_holder)
+            train_evaluation, train_cm, _ = evaluate_training_set(model, train_eval_loader, raw_bank,
+                device, dataset, args.fd_mode, args.max_test_batches, diagnostic_level=diagnostic_level,
+                cached_bank=cache_holder['bank'])
+            del cache_holder
+            mediator_records = {stage: value.pop('mediator_diagnostics', None)
+                                for stage, value in [('train', train_evaluation), ('test', metrics)]}
             selected_best = best.consider(metrics, epoch)
             last_metrics = metrics
             history = dict(epoch=epoch, train=train_metrics, test=metrics, selected_best=selected_best,
                            confusion_matrix=cm.tolist(), reference=raw_bank.report)
             with (fold_dir / 'history.jsonl').open('a', encoding='utf-8') as stream:
                 stream.write(json.dumps(history, ensure_ascii=False) + '\n')
-            for stage, values in [('训练', train_metrics), ('测试', metrics)]:
+            for stage, values in [('训练', train_metrics), ('训练集评估', train_evaluation), ('测试', metrics)]:
                 for key, value in values.items():
                     if isinstance(value, (int, float)):
                         writer.add_scalar(f'{stage}/{key}', value, epoch)
@@ -352,10 +420,28 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
             writer.add_scalar('参考库/实际样本数', raw_bank.used_count, epoch)
             writer.add_scalar('参考库/样本不足', int(raw_bank.shortfall), epoch)
             writer.add_scalar('配置/切断CNS路径', int(args.no_cns2ans), epoch)
-            if train_metrics['mu_c_spread'] < 1e-3 or train_metrics['mu_a_spread'] < 1e-3:
-                logger.info('中介均值离散程度低于1e-3，建议检查塌缩诊断；该阈值不是识别证明')
-            logger.info('fold=%s epoch=%s 测试ACC=%.4f 选择F1=%.4f 保存最佳=%s',
-                        held_out, epoch, metrics['acc'], metrics['selection_f1'], selected_best)
+            logger.info('========== fold=%s epoch=%s ==========\n'
+                        '优化训练Loss=%.6f 事实CE=%.6f CNS_KL=%.6f ANS_KL=%.6f 发放率损失=%.6f',
+                        held_out, epoch, train_metrics['loss'], train_metrics['factual_ce'],
+                        train_metrics['kl_c'], train_metrics['kl_a'], train_metrics['fire_loss'])
+            log_evaluation('训练集', train_evaluation, train_cm)
+            log_evaluation('测试集', metrics, cm)
+            if diagnostic_level == 'basic':
+                low = [f'{name}={train_metrics[key]:.6g}' for name, key in
+                       [('CNS', 'mu_c_spread'), ('ANS', 'mu_a_spread')] if train_metrics[key] < 1e-3]
+                if low:
+                    logger.info('历史batch均值离散度低：%s；不是完整跨样本统计，不能单独判塌缩；可启用full诊断', ', '.join(low))
+            else:
+                for stage, diagnosis in mediator_records.items():
+                    for branch in ('cns', 'ans'):
+                        d = diagnosis[branch]
+                        logger.info('%s/%s 完整评估中介：均值跨样本std=%s posterior_std=%s '
+                                    '采样内std=%s 类均值L2=%s；均值变化低=%s（不是识别/塌缩证明）',
+                                    stage, branch, d['posterior_mean_between_sample_std'], d['posterior_std'],
+                                    d['sampled_within_sample_std'], d['class_mean_distance_l2'], d['low_mean_variation'])
+                logger.info('裁剪前模块梯度范数：%s', train_metrics['gradients'])
+            logger.info('Checkpoint：测试ACC=%.4f 测试选择F1=%.4f 保存最佳=%s',
+                        metrics['acc'], metrics['selection_f1'], selected_best)
             save_checkpoint(fold_dir / 'last.pt', model, optimizer, epoch, best, args, raw_bank, metrics)
             if selected_best:
                 # 保留原有含数据集/任务/被试/正确数的文件名，另提供稳定best.pt入口。
@@ -364,6 +450,23 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
                 save_checkpoint(fold_dir / 'best.pt', model, optimizer, epoch, best, args, raw_bank, metrics)
                 (fold_dir / 'best_predictions.json').write_text(json.dumps(predictions, ensure_ascii=False), encoding='utf-8')
                 save_fold_confusion(run_dir, fold_dir, dataset, label, held_out, cm)
+            mediator_summary = {}
+            for stage, diagnosis in mediator_records.items():
+                mediator_summary[stage] = None if diagnosis is None else {
+                    branch: {key: diagnosis[branch][key] for key in
+                             ('posterior_mean_between_sample_std', 'posterior_std', 'low_mean_variation')}
+                    for branch in ('cns', 'ans')}
+            record = dict(epoch=epoch, fold=held_out, dataset=dataset, label=label,
+                          smoke=fold_config['smoke'], diagnostic_level=diagnostic_level,
+                          complete=train_evaluation['complete_evaluation'] and metrics['complete_test'],
+                          prediction_path=fold_config['prediction'],
+                          training_population='实际用于优化的训练窗口子集，评估不丢尾batch',
+                          optimization_windows=len(train_dataset), reference_population_windows=len(population),
+                          train=train_evaluation, test=metrics, optimization=train_metrics,
+                          train_confusion_matrix=train_cm.tolist(), test_confusion_matrix=cm.tolist(),
+                          selected_best=selected_best, mediator_summary=mediator_summary,
+                          mediator_details_file='mediator_diagnostics.jsonl')
+            save_epoch_diagnostics(fold_dir, record, mediator_records)
     finally:
         writer.close()
     summary = dict(held_out=held_out, best=asdict(best), last_test=last_metrics,
