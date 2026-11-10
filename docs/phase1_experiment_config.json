@@ -1,0 +1,75 @@
+{
+  "experiment": {
+    "output": "results/phase1_scm",
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "gammas": [
+      0.0,
+      0.5,
+      1.0,
+      2.0
+    ],
+    "train_sizes": [
+      512,
+      2048
+    ],
+    "epochs": 20,
+    "points": 16,
+    "direct_n": 65536,
+    "oracle_s": 2048,
+    "oracle_k": 1024,
+    "reference_dims": [
+      0,
+      8,
+      64,
+      128
+    ],
+    "threads": 1
+  },
+  "scm": {
+    "d_u": 8,
+    "d_xc": 16,
+    "d_xa": 8,
+    "d_mc": 64,
+    "d_ma": 64,
+    "matrix_scale": 0.7,
+    "cns_ans_scale": 0.7,
+    "outcome_scale": 1.0,
+    "bias": 0.2,
+    "seed": 2026
+  },
+  "model_defaults": {
+    "mediator_dim": 64,
+    "hidden_dim": 128,
+    "dropout": 0.3,
+    "S_train": 4,
+    "K_train": 16,
+    "S_eval": 16,
+    "K_eval": 64,
+    "N_ref": 2048,
+    "beta": 0.001,
+    "beta_warmup_epochs": 10,
+    "logvar_min": -6.0,
+    "logvar_max": 2.0,
+    "ref_dim": 0,
+    "num_classes": 2,
+    "time_steps": 4,
+    "no_cns2ans": false,
+    "mediator_family": "normal"
+  },
+  "torch_version": "2.15.0+cpu",
+  "cuda_available": false,
+  "learned_mediator_family": "tanh_normal",
+  "learned_supervision": "仅合成训练集真实中介条件似然及事实结果 CE；无干预 oracle 监督",
+  "reference_sampling": "训练经验配对样本，无标签选择；有放回抽取 K；库不足时使用全部",
+  "train_batch_size": 128,
+  "learning_rate": 0.001,
+  "conditional_model_gh_nodes": 32,
+  "truth_se_note": "直接积分独立样本标准误；前门为两向一阶近似标准误，不保证覆盖率",
+  "evaluation_point_source": "gamma=0 的独立输入分布，所有 gamma 使用相同点，避免只测混杂变化后的极端点"
+}
