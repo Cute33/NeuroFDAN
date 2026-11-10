@@ -4,6 +4,11 @@
 
 第四阶段 `feat/neurofdan-phase4` 从 Phase 3 的 `cd844c85d28f2335acf4d41083184d8ad98e5bbd` 创建，仅增强训练诊断。默认每轮完整评估优化训练子集与测试集，打印混淆矩阵；`--diagnostic_level full` 增加中介和裁剪前梯度统计。模型、损失、数据及测试选模协议保持不变。
 
+第五阶段 `feat/neurofdan-phase5-diagnosis` 基于 Phase 4 的真实服务器日志做分级诊断；终端改为每轮紧凑摘要与两组矩阵，完整JSONL/NPZ保留。新增独立 `server-diagnostics` 分支上传工具，不修改模型或训练目标。本轮未执行测试或模型实验，工具待服务器首次验证。
+
+- [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
+- [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
+- [第五阶段：日志分层、GitHub结果回传与认证说明](docs/phase5_server_upload_guide.md)
 - [第四阶段：诊断依据、输出路径与科学边界](docs/phase4_diagnostic_analysis.md)
 - [第四阶段：保留旧结果、服务器第1折诊断与产物读取](docs/phase4_server_guide.md)
 - [第四阶段：完整轻量测试结果](docs/phase4_test_results.md)

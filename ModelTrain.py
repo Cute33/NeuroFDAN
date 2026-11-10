@@ -14,7 +14,8 @@ from Datasets import (DATASET_SPECS, PhysiologicalWindows, WindowSelection,
 from NeuroFDAN import NeuroFDAN
 from frontdoor_scm import FrontDoorConfig, ReferenceBank, frontdoor_loss
 from training_diagnostics import (GradientDiagnostics, MediatorDiagnostics, PredictionDiagnostics,
-                                  isolated_evaluation, log_evaluation, save_epoch_diagnostics)
+                                  isolated_evaluation, log_epoch_summary, save_epoch_diagnostics)
+from run_reporting import source_version, write_run_reports
 
 logger = logging.getLogger(__name__)
 
@@ -358,7 +359,8 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
                        prediction='probs_do' if args.fd_mode == 'full' else 'probs_obs',
                        smoke=bool(args.max_train_batches or args.max_test_batches),
                        selection='held-out ACC上升且>0.5，ACC相等时F1上升；DEAP正类1/HCI正类0',
-                       arguments=vars(args), model=asdict(model.frontdoor_config))
+                       arguments=vars(args), model=asdict(model.frontdoor_config),
+                       source_version=source_version(Path(__file__).resolve().parent))
     best, first_epoch = BestCheckpoint(), 1
     if args.resume:
         state = load_checkpoint(args.resume, model, optimizer, device)
@@ -420,28 +422,6 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
             writer.add_scalar('参考库/实际样本数', raw_bank.used_count, epoch)
             writer.add_scalar('参考库/样本不足', int(raw_bank.shortfall), epoch)
             writer.add_scalar('配置/切断CNS路径', int(args.no_cns2ans), epoch)
-            logger.info('========== fold=%s epoch=%s ==========\n'
-                        '优化训练Loss=%.6f 事实CE=%.6f CNS_KL=%.6f ANS_KL=%.6f 发放率损失=%.6f',
-                        held_out, epoch, train_metrics['loss'], train_metrics['factual_ce'],
-                        train_metrics['kl_c'], train_metrics['kl_a'], train_metrics['fire_loss'])
-            log_evaluation('训练集', train_evaluation, train_cm)
-            log_evaluation('测试集', metrics, cm)
-            if diagnostic_level == 'basic':
-                low = [f'{name}={train_metrics[key]:.6g}' for name, key in
-                       [('CNS', 'mu_c_spread'), ('ANS', 'mu_a_spread')] if train_metrics[key] < 1e-3]
-                if low:
-                    logger.info('历史batch均值离散度低：%s；不是完整跨样本统计，不能单独判塌缩；可启用full诊断', ', '.join(low))
-            else:
-                for stage, diagnosis in mediator_records.items():
-                    for branch in ('cns', 'ans'):
-                        d = diagnosis[branch]
-                        logger.info('%s/%s 完整评估中介：均值跨样本std=%s posterior_std=%s '
-                                    '采样内std=%s 类均值L2=%s；均值变化低=%s（不是识别/塌缩证明）',
-                                    stage, branch, d['posterior_mean_between_sample_std'], d['posterior_std'],
-                                    d['sampled_within_sample_std'], d['class_mean_distance_l2'], d['low_mean_variation'])
-                logger.info('裁剪前模块梯度范数：%s', train_metrics['gradients'])
-            logger.info('Checkpoint：测试ACC=%.4f 测试选择F1=%.4f 保存最佳=%s',
-                        metrics['acc'], metrics['selection_f1'], selected_best)
             save_checkpoint(fold_dir / 'last.pt', model, optimizer, epoch, best, args, raw_bank, metrics)
             if selected_best:
                 # 保留原有含数据集/任务/被试/正确数的文件名，另提供稳定best.pt入口。
@@ -457,6 +437,7 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
                              ('posterior_mean_between_sample_std', 'posterior_std', 'low_mean_variation')}
                     for branch in ('cns', 'ans')}
             record = dict(epoch=epoch, fold=held_out, dataset=dataset, label=label,
+                          source_version=fold_config['source_version'],
                           smoke=fold_config['smoke'], diagnostic_level=diagnostic_level,
                           complete=train_evaluation['complete_evaluation'] and metrics['complete_test'],
                           prediction_path=fold_config['prediction'],
@@ -466,7 +447,8 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
                           train_confusion_matrix=train_cm.tolist(), test_confusion_matrix=cm.tolist(),
                           selected_best=selected_best, mediator_summary=mediator_summary,
                           mediator_details_file='mediator_diagnostics.jsonl')
-            save_epoch_diagnostics(fold_dir, record, mediator_records)
+            collapse = save_epoch_diagnostics(fold_dir, record, mediator_records)
+            log_epoch_summary(record, collapse, args.epochs, getattr(args, 'log_detail_interval', 10))
     finally:
         writer.close()
     summary = dict(held_out=held_out, best=asdict(best), last_test=last_metrics,
@@ -474,6 +456,10 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     (fold_dir / 'summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
     if best.epoch == 0:
         logger.info('该fold没有满足原ACC>0.5规则的最佳checkpoint；仅保留last.pt，不伪造best')
+    try:
+        write_run_reports(run_dir)
+    except (OSError,ValueError,TypeError) as error:
+        logger.warning('训练已结束但摘要未完成：%s；原summary/checkpoint保持原样', type(error).__name__)
     return summary
 
 
@@ -486,7 +472,14 @@ def run_loso(args):
         raise ValueError('LOSO被试列表为空、重复或越界')
     if args.resume and len(subjects) != 1:
         raise ValueError('--resume只能用于单个fold')
-    return [run_fold(args, subject) for subject in subjects]
+    try:
+        return [run_fold(args, subject) for subject in subjects]
+    finally:
+        run_name = args.run_name or f'{args.fd_mode}_cns_{"off" if args.no_cns2ans else "on"}_ref{args.ref_dim}'
+        try:
+            write_run_reports(Path(args.output_dir) / dataset / args.label / 'seed42' / run_name)
+        except (OSError, ValueError, TypeError) as error:
+            logger.warning('运行摘要未完成：%s；保留原异常/训练产物，请结合日志判断状态', type(error).__name__)
 
 
 class DEAPModelTrainer:

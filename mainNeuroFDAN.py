@@ -48,11 +48,15 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--max_test_batches', type=int, default=0, help='仅用于服务器接口检查；零完整测试')
     parser.add_argument('--diagnostic_level', choices=['basic', 'full'], default='basic',
                         help='默认逐轮完整训练/测试矩阵与概率统计；full增加中介分布和裁剪前梯度；不改变训练目标')
+    parser.add_argument('--log_detail_interval', type=int, default=10,
+                        help='终端简洁诊断摘要间隔；每轮仍打印两组紧凑矩阵，零关闭周期摘要；不影响逐轮诊断保存')
     args = parser.parse_args(argv)
     if args.batch_size < 2 or args.epochs < 1 or args.workers < 0 or args.cpu_threads < 0 or args.lr <= 0:
         parser.error('batch至少2、epochs至少1、workers非负且学习率为正')
     if min(args.max_train_batches, args.max_test_batches) < 0 or args.lambda_obs < 0 or (args.fire_weight is not None and args.fire_weight < 0):
         parser.error('接口检查batch上限及损失权重不得为负')
+    if args.log_detail_interval < 0:
+        parser.error('终端诊断摘要间隔不得为负')
     from Datasets import canonical_dataset, canonical_label
     try:
         args.dataset, args.label = canonical_dataset(args.dataset), canonical_label(args.label)
