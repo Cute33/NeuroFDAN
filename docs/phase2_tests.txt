@@ -1,0 +1,86 @@
+第二阶段轻量级测试记录；不是正式数据实验。
+
+整套命令：python -m unittest discover -s tests -v
+test_ans_no_cns_features_or_current_input_argument (test_frontdoor_scm.FrontDoorTests.test_ans_no_cns_features_or_current_input_argument) ... ok
+test_bank_heldout_duplicates_and_empty (test_frontdoor_scm.FrontDoorTests.test_bank_heldout_duplicates_and_empty) ... ok
+test_bank_pairing_exclusion_and_provenance (test_frontdoor_scm.FrontDoorTests.test_bank_pairing_exclusion_and_provenance) ... ok
+test_cns_ans_ablation_eliminates_path (test_frontdoor_scm.FrontDoorTests.test_cns_ans_ablation_eliminates_path) ... ok
+test_cns_current_reaches_lif_spikes (test_frontdoor_scm.FrontDoorTests.test_cns_current_reaches_lif_spikes) ... ok
+test_complete_gnn_feature_interface (test_frontdoor_scm.FrontDoorTests.test_complete_gnn_feature_interface) ... ok
+test_conditional_ans_and_gradient (test_frontdoor_scm.FrontDoorTests.test_conditional_ans_and_gradient) ... ok
+test_cuda_forward_backward (test_frontdoor_scm.FrontDoorTests.test_cuda_forward_backward) ... skipped '当前环境无可用 CUDA，未执行 GPU 测试'
+test_do_head_isolated_from_current_input (test_frontdoor_scm.FrontDoorTests.test_do_head_isolated_from_current_input) ... ok
+test_full_reference_shapes_and_no_pooling (test_frontdoor_scm.FrontDoorTests.test_full_reference_shapes_and_no_pooling) ... ok
+test_hierarchical_shapes_and_clamp (test_frontdoor_scm.FrontDoorTests.test_hierarchical_shapes_and_clamp) ... ok
+test_invalid_shapes_and_singleton_training (test_frontdoor_scm.FrontDoorTests.test_invalid_shapes_and_singleton_training) ... ok
+test_kl_axes_and_oracle_opt_in (test_frontdoor_scm.FrontDoorTests.test_kl_axes_and_oracle_opt_in) ... ok
+test_none_never_samples_reference_bank (test_frontdoor_scm.FrontDoorTests.test_none_never_samples_reference_bank) ... ok
+test_outcome_inputs_and_nondegenerate_dependence (test_frontdoor_scm.FrontDoorTests.test_outcome_inputs_and_nondegenerate_dependence) ... ok
+test_projection_gradient_and_optimizer_step_cpu (test_frontdoor_scm.FrontDoorTests.test_projection_gradient_and_optimizer_step_cpu) ... ok
+test_softmax_before_two_means (test_frontdoor_scm.FrontDoorTests.test_softmax_before_two_means) ... ok
+test_tanh_density_matches_transformed_distribution (test_frontdoor_scm.FrontDoorTests.test_tanh_density_matches_transformed_distribution) ... ok
+test_tanh_normal_likelihood_and_support (test_frontdoor_scm.FrontDoorTests.test_tanh_normal_likelihood_and_support) ... ok
+test_convergence_in_repeated_runs (test_frontdoor_scm.OracleTests.test_convergence_in_repeated_runs) ... ok
+test_gamma_oracle_direct_agreement (test_frontdoor_scm.OracleTests.test_gamma_oracle_direct_agreement) ... ok
+test_invalid_point_shapes_are_rejected (test_frontdoor_scm.OracleTests.test_invalid_point_shapes_are_rejected) ... ok
+test_oracle_independent_of_direct_function (test_frontdoor_scm.OracleTests.test_oracle_independent_of_direct_function) ... ok
+test_outcome_conditional_independence_moments (test_frontdoor_scm.OracleTests.test_outcome_conditional_independence_moments) ... ok
+test_balance_keeps_pairing_and_unbalanced_population (test_phase2_integration.DatasetTests.test_balance_keeps_pairing_and_unbalanced_population) ... ok
+test_deap_balance_uses_task_labels_not_arousal (test_phase2_integration.DatasetTests.test_deap_balance_uses_task_labels_not_arousal) ... ok
+test_deap_dimensions_baseline_windows_and_threshold (test_phase2_integration.DatasetTests.test_deap_dimensions_baseline_windows_and_threshold) ... ok
+test_hci_windows_labels_metadata (test_phase2_integration.DatasetTests.test_hci_windows_labels_metadata) ... ok
+test_loader_single_instance_sources_and_drop_last (test_phase2_integration.DatasetTests.test_loader_single_instance_sources_and_drop_last) ... ok
+test_normalization_local_axis_and_constant (test_phase2_integration.DatasetTests.test_normalization_local_axis_and_constant) ... ok
+test_one_batch_fold_cpu_checkpoint_no_formal_results (test_phase2_integration.DatasetTests.test_one_batch_fold_cpu_checkpoint_no_formal_results) ... ok
+test_reference_population_not_balanced_and_no_test (test_phase2_integration.DatasetTests.test_reference_population_not_balanced_and_no_test) ... ok
+test_valence_forwarded_to_compatibility_constructor (test_phase2_integration.DatasetTests.test_valence_forwarded_to_compatibility_constructor) ... ok
+test_backbone_preserved_and_batchnorm_frozen (test_phase2_integration.ModelTests.test_backbone_preserved_and_batchnorm_frozen) ... ok
+test_both_dataset_feature_dimensions_and_full_output (test_phase2_integration.ModelTests.test_both_dataset_feature_dimensions_and_full_output) ... ok
+test_cached_reference_expiry_and_cpu_eval (test_phase2_integration.ModelTests.test_cached_reference_expiry_and_cpu_eval) ... ok
+test_forward_backward_optimizer_step_and_fact_loss (test_phase2_integration.ModelTests.test_forward_backward_optimizer_step_and_fact_loss) ... ok
+test_legacy_ce_constructor_fixed_without_weight_changes (test_phase2_integration.ModelTests.test_legacy_ce_constructor_fixed_without_weight_changes) ... ok
+test_live_reference_backbone_not_detached (test_phase2_integration.ModelTests.test_live_reference_backbone_not_detached) ... ok
+test_live_reference_gradient_and_conditional_path (test_phase2_integration.ModelTests.test_live_reference_gradient_and_conditional_path) ... ok
+test_no_cns_path_and_none_modes_remain_explicit (test_phase2_integration.ModelTests.test_no_cns_path_and_none_modes_remain_explicit) ... ok
+test_reference_chunking_preserves_probability_formula (test_phase2_integration.ModelTests.test_reference_chunking_preserves_probability_formula) ... ok
+test_seed_before_initialization_and_no_unconditional_cuda (test_phase2_integration.ModelTests.test_seed_before_initialization_and_no_unconditional_cuda) ... ok
+test_single_model_definition_and_no_prototype_path (test_phase2_integration.ModelTests.test_single_model_definition_and_no_prototype_path) ... ok
+test_checkpoint_acc_gate_and_dataset_specific_f1_tie (test_phase2_integration.ProtocolTests.test_checkpoint_acc_gate_and_dataset_specific_f1_tie) ... ok
+test_fold_matrix_updates_preserve_other_subjects (test_phase2_integration.ProtocolTests.test_fold_matrix_updates_preserve_other_subjects) ... ok
+test_results_ignore_zero_unrun_folds (test_phase2_integration.ProtocolTests.test_results_ignore_zero_unrun_folds) ... ok
+
+----------------------------------------------------------------------
+Ran 47 tests in 33.099s
+
+OK (skipped=1)
+
+最后的来源/none诊断修订后重跑受影响测试：
+python -m unittest discover -s tests -p test_phase2_integration.py -v
+test_balance_keeps_pairing_and_unbalanced_population (test_phase2_integration.DatasetTests.test_balance_keeps_pairing_and_unbalanced_population) ... ok
+test_deap_balance_uses_task_labels_not_arousal (test_phase2_integration.DatasetTests.test_deap_balance_uses_task_labels_not_arousal) ... ok
+test_deap_dimensions_baseline_windows_and_threshold (test_phase2_integration.DatasetTests.test_deap_dimensions_baseline_windows_and_threshold) ... ok
+test_hci_windows_labels_metadata (test_phase2_integration.DatasetTests.test_hci_windows_labels_metadata) ... ok
+test_loader_single_instance_sources_and_drop_last (test_phase2_integration.DatasetTests.test_loader_single_instance_sources_and_drop_last) ... ok
+test_normalization_local_axis_and_constant (test_phase2_integration.DatasetTests.test_normalization_local_axis_and_constant) ... ok
+test_one_batch_fold_cpu_checkpoint_no_formal_results (test_phase2_integration.DatasetTests.test_one_batch_fold_cpu_checkpoint_no_formal_results) ... ok
+test_reference_population_not_balanced_and_no_test (test_phase2_integration.DatasetTests.test_reference_population_not_balanced_and_no_test) ... ok
+test_valence_forwarded_to_compatibility_constructor (test_phase2_integration.DatasetTests.test_valence_forwarded_to_compatibility_constructor) ... ok
+test_backbone_preserved_and_batchnorm_frozen (test_phase2_integration.ModelTests.test_backbone_preserved_and_batchnorm_frozen) ... ok
+test_both_dataset_feature_dimensions_and_full_output (test_phase2_integration.ModelTests.test_both_dataset_feature_dimensions_and_full_output) ... ok
+test_cached_reference_expiry_and_cpu_eval (test_phase2_integration.ModelTests.test_cached_reference_expiry_and_cpu_eval) ... ok
+test_forward_backward_optimizer_step_and_fact_loss (test_phase2_integration.ModelTests.test_forward_backward_optimizer_step_and_fact_loss) ... ok
+test_legacy_ce_constructor_fixed_without_weight_changes (test_phase2_integration.ModelTests.test_legacy_ce_constructor_fixed_without_weight_changes) ... ok
+test_live_reference_backbone_not_detached (test_phase2_integration.ModelTests.test_live_reference_backbone_not_detached) ... ok
+test_live_reference_gradient_and_conditional_path (test_phase2_integration.ModelTests.test_live_reference_gradient_and_conditional_path) ... ok
+test_no_cns_path_and_none_modes_remain_explicit (test_phase2_integration.ModelTests.test_no_cns_path_and_none_modes_remain_explicit) ... ok
+test_reference_chunking_preserves_probability_formula (test_phase2_integration.ModelTests.test_reference_chunking_preserves_probability_formula) ... ok
+test_seed_before_initialization_and_no_unconditional_cuda (test_phase2_integration.ModelTests.test_seed_before_initialization_and_no_unconditional_cuda) ... ok
+test_single_model_definition_and_no_prototype_path (test_phase2_integration.ModelTests.test_single_model_definition_and_no_prototype_path) ... ok
+test_checkpoint_acc_gate_and_dataset_specific_f1_tie (test_phase2_integration.ProtocolTests.test_checkpoint_acc_gate_and_dataset_specific_f1_tie) ... ok
+test_fold_matrix_updates_preserve_other_subjects (test_phase2_integration.ProtocolTests.test_fold_matrix_updates_preserve_other_subjects) ... ok
+test_results_ignore_zero_unrun_folds (test_phase2_integration.ProtocolTests.test_results_ignore_zero_unrun_folds) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 2.064s
+
+OK

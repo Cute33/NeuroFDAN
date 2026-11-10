@@ -1,62 +1,31 @@
 # NeuroFDAN
 
-用于 DEAP / HCI 情绪识别的训练与结果统计。
+当前开发版本把 Phase 1 前门 SCM 核心接入真实生理骨干和 LOSO train/test 流程。代码版本以 Git 分支为准：第一阶段备份为 `feat/neurofdan-phase1`，第二阶段为 `feat/neurofdan-phase2`；未合并 main。
 
-## 安装
+- [第二阶段实现与限制](docs/phase2_integration_report.md)
+- [服务器环境、数据格式、单fold检查和完整LOSO命令](docs/phase2_server_guide.md)
+- [第一阶段历史合成验证报告](docs/phase1_implementation_report.md)
 
-建议使用 Python 3.10+ 和虚拟环境：
+## 安装与运行
+
+建议 Python 3.10+，PyTorch 2.0+。GPU 用户先按官方说明安装匹配 CUDA 驱动的 PyTorch。
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
+export NEURO_ROOT=/path/to/data_root
+python mainNeuroFDAN.py --help
+
+# 在自己的实验服务器运行；云端没有执行正式数据训练
+python mainNeuroFDAN.py --dataset DEAP --label arousal --seed 42 \
+  --root_dir "$NEURO_ROOT" --run_name full42 --device cuda:0
+python mainNeuroFDAN.py --dataset HCI --label valence --seed 42 \
+  --root_dir "$NEURO_ROOT" --run_name full42 --device cuda:0
 ```
 
-GPU 训练请按照 [PyTorch 官方说明](https://pytorch.org/get-started/locally/)安装与本机 CUDA 驱动兼容的 PyTorch。依赖根据源码 import 列出，未锁定版本。
+数据仍为 `Dataset/DEAP-python/1.npy…32.npy` 和 `Dataset/HCI-python/1.npy…24.npy` 的既有 pickle 字典。标签阈值5，窗口6秒；数据、checkpoint和临时产物不提交。
 
-## 数据与路径
+默认完整LOSO。用 `--held_out_subjects 1` 运行单折；用 `--max_train_batches 1 --max_test_batches 1` 执行有限batch接口检查，不能当作正式结果。输出默认在 `outputs/phase2`，用独立 `--run_name` 避免覆盖已有fold。
 
-根目录优先级为：显式 `--root_dir` > 环境变量 `NEURO_ROOT` > `/home/fss`。
-直接使用 `HCIDataset_Python` 或 `DEAPDataset_Python` 时，显式 `root_dir` 参数同样优先于环境变量。
-代码可以放在任意目录，模块导入路径根据 `__file__` 定位。
-
-请自行准备数据；仓库不包含数据集或预处理脚本。目录结构：
-
-```text
-$NEURO_ROOT/
-├── Dataset/
-│   ├── DEAP-python/    # 1.npy … 32.npy
-│   └── HCI-python/     # 1.npy … 24.npy
-└── NeuroFDAN/          # 混淆矩阵输出目录，运行前创建
-```
-
-尽管后缀为 `.npy`，数据加载器使用 `pickle.load` 读取包含 `data` 和 `labels` 的字典。
-DEAP 的 `data` 应包含 40 个 trial、至少 37 个通道和 8064 个时间点（含 384 点基线）；
-HCI 的 `data` 应包含 20 个 trial、至少 36 个通道和 3840 个时间点。
-HCI 当前预处理实现需要支持 `.numpy()` 的数据（如 CPU Tensor）。
-标签包含 valence（第 0 列）与 arousal（第 1 列）。
-
-## 运行
-
-在仓库目录执行：
-
-```bash
-export NEURO_ROOT=/path/to/root
-mkdir -p "$NEURO_ROOT/NeuroFDAN"
-python mainNeuroFDAN.py --dataset HCI --label arousal
-# 或显式指定根目录（覆盖 NEURO_ROOT）
-python mainNeuroFDAN.py --dataset DEAP --label valence --root_dir /path/to/root
-python CalculateResult.py --dataset HCI --label arousal
-tensorboard --logdir ./logs
-```
-
-`--device` 为 CUDA 设备编号，`--start_subject` 为起始测试被试。
-保留原有默认训练配置：学习率 0.0001、100 epochs、batch size 40。
-混淆矩阵保存在 `<root_dir>/NeuroFDAN/NeuroFDAN-<dataset>_<label>_cm.npy`；
-checkpoint、`epoch.png` 和 `logs/` 保存在当前工作目录下。
-
-## 当前代码限制
-
-本次路径修改未改动训练逻辑：训练器初始化仍无条件调用 CUDA 设备名称查询，CPU 训练可能在此失败；
-当前模型返回 7 项结果，而 DEAP 训练器只解包 3 项，DEAP 训练存在接口不匹配。
-完整训练需要数据集、可用的 CUDA 环境，并另行处理上述原有问题。
+没有独立validation，保留 held-out test performance 选择 best checkpoint 的旧协议并明确其选择偏差。参考库只来自当前fold未平衡的训练窗口。真实训练使用事实CE、KL及明确的发放率约束，不使用合成oracle监督，也不把公式实现解释为真实潜在中介已获无条件识别。

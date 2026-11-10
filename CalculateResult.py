@@ -1,85 +1,64 @@
-from venv import logger
-import numpy as np
+"""按LOSO被试汇总混淆矩阵；不将未运行的全零行当成结果。"""
 import argparse
+import json
 import os
+from pathlib import Path
 
-global logger
-def get_args(description='NeuroFDAN on Emotion Recognition'):
-    parser = argparse.ArgumentParser(description=description)
-    
-    # 添加文件路径参数
-    parser.add_argument('--label', type=str, required=True, help="Emotion recognition label, optional: 'arousal' and 'valence'.")
-    parser.add_argument('--dataset', type=str, required=True, help="Dataset, optional: 'DEAP' and 'HCI'.")
+import numpy as np
 
-    parser.add_argument('--root_dir', type=str, default=os.environ.get('NEURO_ROOT', '/home/fss'), help='Framework root (default: NEURO_ROOT or /home/fss).')
 
-    # 解析命令行参数
-    args = parser.parse_args()
+def get_args(description='NeuroFDAN跨被试结果统计', argv=None):
+    parser = argparse.ArgumentParser(description=description, add_help=False)
+    parser.add_argument('-h', '--help', action='help', help='显示中文帮助并退出')
+    parser.add_argument('--label', required=True, help='arousal或valence')
+    parser.add_argument('--dataset', required=True, help='DEAP或HCI/MAHNOB_HCI')
+    parser.add_argument('--root_dir', default=os.environ.get('NEURO_ROOT', '/home/fss'), help='兼容旧结果根目录')
+    parser.add_argument('--result_file', default=None, help='第二阶段某个run目录下的混淆矩阵npy文件')
+    parser.add_argument('--positive_class', type=int, choices=[0, 1], default=0, help='统计F1的正类；默认0保留旧统计脚本含义')
+    parser.add_argument('--allow_smoke', action='store_true', help='允许查看不完整接口检查输出，不能作为论文实验结果')
+    return parser.parse_args(argv)
 
-    return args
+
+def summarize(confusion_matrices, positive_class=0):
+    matrices = np.asarray(confusion_matrices)
+    if matrices.ndim != 3 or matrices.shape[1:] != (2, 2) or (matrices < 0).any() or not np.isfinite(matrices).all():
+        raise ValueError('结果必须为非负、有限的[N,2,2]混淆矩阵')
+    matrices = matrices[matrices.sum((1, 2)) > 0]
+    if not len(matrices):
+        raise ValueError('没有完成且满足选模规则的被试结果，不能统计全零占位行')
+    scores = []
+    p = positive_class
+    for cm in matrices:
+        tp, tn, fp, fn = cm[p, p], cm[1-p, 1-p], cm[1-p, p], cm[p, 1-p]
+        accuracy = (tp + tn) / cm.sum()
+        sensitivity = tp / (tp + fn) if tp + fn else 0.
+        specificity = tn / (tn + fp) if tn + fp else 0.
+        f1 = 2 * tp / (2 * tp + fp + fn) if 2 * tp + fp + fn else 0.
+        scores.append([accuracy, sensitivity, specificity, f1])
+    values = np.array(scores)
+    return {'completed_subjects': len(values), 'mean': values.mean(0), 'std': values.std(0)}
 
 
 def main():
     args = get_args()
+    dataset = args.dataset.upper().replace('-', '_')
+    dataset = 'HCI' if dataset == 'MAHNOB_HCI' else dataset
+    if dataset not in ('DEAP', 'HCI') or args.label.lower() not in ('arousal', 'valence'):
+        raise ValueError('数据集或任务名称无效')
+    path = Path(args.result_file) if args.result_file else Path(args.root_dir) / 'NeuroFDAN' / f'NeuroFDAN-{dataset}_{args.label.lower()}_cm.npy'
+    matrices = np.load(path)
+    if args.allow_smoke:
+        print('已显式允许接口检查输出，以下数值不得作为正式论文实验结果。')
+    if not args.allow_smoke:
+        for metadata in path.parent.glob('fold*/fold.json'):
+            if json.loads(metadata.read_text(encoding='utf-8')).get('smoke'):
+                raise ValueError('目录含接口检查结果，拒绝作为正式统计；仅查看时显式加--allow_smoke')
+    result = summarize(matrices, args.positive_class)
+    print(f'已统计{result["completed_subjects"]}名被试；全零/未运行/未达选模门槛的行不计入；F1正类={args.positive_class}')
+    for index, name in enumerate(('准确率', '敏感度', '特异性', 'F1')):
+        print(f'{name}均值：{result["mean"][index]:.4f}；被试间标准差：{result["std"][index]:.4f}')
+    print('标准差来自LOSO被试，不是多随机种子；held-out测试集参与了checkpoint选择。')
 
-    file_path = os.path.join(args.root_dir, 'NeuroFDAN', f'NeuroFDAN-{args.dataset}_{args.label}_cm.npy')
-    # shape: (32, 2, 2)
-    confusion_matrices = np.load(file_path)
-    print(confusion_matrices)
 
-    # 初始化存储结果的数组
-    accuracy_list = []
-    sensitivity_list = []
-    specificity_list = []
-    f1_score_list = []
-
-    for cm in confusion_matrices:
-        TP = cm[1, 1]
-        TN = cm[0, 0]
-        FP = cm[1, 0]
-        FN = cm[0, 1]
-
-        
-        TP = cm[0, 0]
-        TN = cm[1, 1]
-        FP = cm[0, 1]
-        FN = cm[1, 0]
-        
-
-        # 计算准确率
-        accuracy = (TP + TN) / (TP + TN + FP + FN)
-
-        # 计算敏感度（召回率）
-        sensitivity = TP / (TP + FN) if (TP + FN) > 0 else 0
-
-        # 计算特异性
-        specificity = TN / (TN + FP) if (TN + FP) > 0 else 0
-
-        # 计算F1指数
-        precision = TP / (TP + FP) if (TP + FP) > 0 else 0
-        f1_score = 2 * (precision * sensitivity) / (precision + sensitivity) if (precision + sensitivity) > 0 else 0
-
-        # 将结果添加到列表中
-        accuracy_list.append(accuracy)
-        sensitivity_list.append(sensitivity)
-        specificity_list.append(specificity)
-        f1_score_list.append(f1_score)
-
-    # 转换为 numpy 数组以便进一步处理
-    accuracy_list = np.array(accuracy_list)
-    sensitivity_list = np.array(sensitivity_list)
-    specificity_list = np.array(specificity_list)
-    f1_score_list = np.array(f1_score_list)
-
-    # 打印每个指标的平均值
-    print(f"平均准确率: {np.mean(accuracy_list):.4f}")
-    print(f"平均敏感度: {np.mean(sensitivity_list):.4f}")
-    print(f"平均特异性: {np.mean(specificity_list):.4f}")
-    print(f"平均F1指数: {np.mean(f1_score_list):.4f}")
-    print(f"准确率标准差: {np.std(accuracy_list):.4f}")
-    print(f"敏感度标准差: {np.std(sensitivity_list):.4f}")
-    print(f"特异性标准差: {np.std(specificity_list):.4f}")
-    print(f"F1指数标准差: {np.std(f1_score_list):.4f}")
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

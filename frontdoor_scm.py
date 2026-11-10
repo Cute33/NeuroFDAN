@@ -1,4 +1,4 @@
-"""第一阶段独立前门估计器；不接管旧版真实数据训练入口。"""
+"""第一阶段前门核心；独立合成验证与第二阶段真实模型共同复用。"""
 from dataclasses import dataclass
 from typing import Optional
 
@@ -27,13 +27,14 @@ class FrontDoorConfig:
     time_steps: int = 4
     no_cns2ans: bool = False
     mediator_family: str = 'normal'
+    reference_chunk_size: int = 0
 
     def __post_init__(self):
         for key in ('mediator_dim', 'hidden_dim', 'S_train', 'K_train', 'S_eval',
                     'K_eval', 'N_ref', 'beta_warmup_epochs', 'time_steps'):
             if getattr(self, key) < 1:
                 raise ValueError(f'{key} 必须为正整数')
-        if self.ref_dim < 0 or self.num_classes < 2:
+        if self.ref_dim < 0 or self.num_classes < 2 or self.reference_chunk_size < 0:
             raise ValueError('参考维度不得为负；softmax 类别数至少为二')
         if not 0 <= self.dropout < 1 or self.logvar_min >= self.logvar_max or self.beta < 0:
             raise ValueError('dropout、方差边界或 KL 系数无效')
@@ -94,7 +95,8 @@ class CurrentLIF(nn.Module):
             spike = surrogate_spike(voltage, threshold, torch.ones_like(voltage))
             voltage = voltage - spike * threshold
             spikes.append(spike)
-        return torch.stack(spikes, 1).mean(1), current.mean(1)
+        self.last_rates = torch.stack(spikes, 1).mean(1)
+        return self.last_rates, current.mean(1)
 
 
 class GaussianMediator(nn.Module):
@@ -179,10 +181,10 @@ class OutcomeHead(nn.Module):
 
 
 class ReferenceBank(nn.Module):
-    """经验配对输入及 [被试,trial,window] 来源；不是可学习原型。"""
+    """经验配对输入、[被试,trial,window]来源和数据集标识；不是学习原型。"""
     def __init__(self, x_c: Tensor, x_a: Tensor, source_ids: Tensor,
                  forbidden_subjects: tuple[int, ...] = (), max_size: Optional[int] = None,
-                 seed: int = 0):
+                 seed: int = 0, detach_inputs: bool = True, dataset: Optional[str] = None):
         super().__init__()
         n = x_c.shape[0]
         if n < 1 or x_a.shape[0] != n or source_ids.shape != (n, 3):
@@ -197,8 +199,11 @@ class ReferenceBank(nn.Module):
         indices = torch.randperm(n, generator=torch.Generator().manual_seed(seed))[:limit].to(x_c.device)
         self.available_count, self.used_count = n, limit
         self.shortfall = max_size is not None and n < max_size
-        self.register_buffer('x_c', x_c[indices].detach().clone())
-        self.register_buffer('x_a', x_a[indices].detach().clone())
+        self.dataset = dataset
+        c, a = x_c[indices], x_a[indices]
+        # 训练 batch 的骨干特征保留参考路径梯度；评估缓存仍采用独立数据快照。
+        self.register_buffer('x_c', (c.detach() if detach_inputs else c).clone())
+        self.register_buffer('x_a', (a.detach() if detach_inputs else a).clone())
         self.register_buffer('source_ids', source_ids.to(x_c.device)[indices].detach().clone())
 
     def sample(self, batch_size: int, K: int, exclude_ids: Optional[Tensor] = None,
@@ -220,7 +225,7 @@ class ReferenceBank(nn.Module):
 
 
 class FrontDoorEstimator(nn.Module):
-    """对分层中介和经验联合参考分别边缘化，旧训练入口不自动切换。"""
+    """对分层中介和经验联合参考分别边缘化；真实/合成共享唯一积分实现。"""
     def __init__(self, cns_dim: int, ans_dim: int, config: Optional[FrontDoorConfig] = None):
         super().__init__()
         self.config = config or FrontDoorConfig()
@@ -237,8 +242,13 @@ class FrontDoorEstimator(nn.Module):
             raise ValueError('中介与参考必须分别为 [B,S,D] 和 [B,K,d_ref]')
         b, s, d = m_a.shape
         k, r = reference.shape[1:]
-        logits = self.outcome(m_a[:, :, None, :].expand(b, s, k, d),
-                              reference[:, None, :, :].expand(b, s, k, r))
+        chunk = self.config.reference_chunk_size or k
+        pieces = []
+        for start in range(0, k, chunk):
+            count = min(chunk, k - start)
+            pieces.append(self.outcome(m_a[:, :, None, :].expand(b, s, count, d),
+                          reference[:, None, start:start + count, :].expand(b, s, count, r)))
+        logits = torch.cat(pieces, dim=2)
         probs = logits.softmax(-1).mean(2).mean(1)
         return probs, logits
 
@@ -267,7 +277,7 @@ class FrontDoorEstimator(nn.Module):
         if bank is None:
             if not self.training or source_ids is None:
                 raise ValueError('评估必须提供仅含训练数据的参考库')
-            bank = ReferenceBank(x_c, x_a, source_ids)
+            bank = ReferenceBank(x_c, x_a, source_ids, detach_inputs=False)
         rc, ra, ids = bank.sample(b, K, exclude_ids=source_ids)
         # 参考原始输入仅存数据；可学习 ReferenceEncoder 的梯度不会 detach。
         reference = self.reference_encoder(rc.reshape(b * K, *rc.shape[2:]),

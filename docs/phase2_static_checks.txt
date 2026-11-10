@@ -1,0 +1,125 @@
+静态/接口检查，以下不是真实数据训练记录。
+全部13个Python源文件编译通过。
+导入通过：NeuroFDAN
+导入通过：frontdoor_scm
+导入通过：Datasets
+导入通过：ModelTrain
+导入通过：mainNeuroFDAN
+导入通过：CalculateResult
+导入通过：loss
+导入通过：torch.utils.tensorboard
+NeuroFDAN.py顶层类无重复覆盖。
+frontdoor_scm.py顶层类无重复覆盖。
+帮助接口检查：mainNeuroFDAN.py --help
+usage: mainNeuroFDAN.py [-h] [--dataset DATASET] --label LABEL
+                        [--root_dir ROOT_DIR] [--output_dir OUTPUT_DIR]
+                        [--run_name RUN_NAME] [--seed {42}] [--device DEVICE]
+                        [--lr LR] [--epochs EPOCHS] [--batch_size BATCH_SIZE]
+                        [--workers WORKERS] [--cpu_threads CPU_THREADS]
+                        [--start_subject START_SUBJECT]
+                        [--end_subject END_SUBJECT]
+                        [--held_out_subjects HELD_OUT_SUBJECTS [HELD_OUT_SUBJECTS ...]]
+                        [--no_balance] [--fd_mode {full,none}] [--no_cns2ans]
+                        [--mediator_dim MEDIATOR_DIM]
+                        [--hidden_dim HIDDEN_DIM] [--dropout DROPOUT]
+                        [--ref_dim REF_DIM] [--S_train S_TRAIN]
+                        [--K_train K_TRAIN] [--S_eval S_EVAL]
+                        [--K_eval K_EVAL] [--N_ref N_REF]
+                        [--reference_chunk_size REFERENCE_CHUNK_SIZE]
+                        [--beta BETA]
+                        [--beta_warmup_epochs BETA_WARMUP_EPOCHS]
+                        [--lambda_obs LAMBDA_OBS] [--fire_weight FIRE_WEIGHT]
+                        [--time_steps TIME_STEPS] [--logvar_min LOGVAR_MIN]
+                        [--logvar_max LOGVAR_MAX] [--resume RESUME]
+                        [--max_train_batches MAX_TRAIN_BATCHES]
+                        [--max_test_batches MAX_TEST_BATCHES]
+
+NeuroFDAN第二阶段LOSO训练
+
+options:
+  -h, --help            显示中文参数说明并退出
+  --dataset DATASET     DEAP或HCI/MAHNOB_HCI (default: DEAP)
+  --label LABEL, --task LABEL
+                        arousal或valence，不区分大小写 (default: None)
+  --root_dir ROOT_DIR   包含Dataset子目录的数据根目录 (default: /home/fss)
+  --output_dir OUTPUT_DIR
+                        第二阶段结果目录，不与旧实验结果混用 (default: outputs/phase2)
+  --run_name RUN_NAME   实验名称；默认由前门模式、路径消融和参考维度生成 (default: None)
+  --seed {42}           固定随机种子，初始化模型及数据之前设置 (default: 42)
+  --device DEVICE       auto、cpu、cuda:0或旧版GPU数字编号 (default: auto)
+  --lr LR               Adam初始学习率 (default: 0.0001)
+  --epochs EPOCHS       每个fold的训练轮数 (default: 100)
+  --batch_size BATCH_SIZE
+                        训练/测试batch大小，训练末尾不足batch明确丢弃 (default: 40)
+  --workers WORKERS     DataLoader进程数，内存有限时保持零 (default: 0)
+  --cpu_threads CPU_THREADS
+                        CPU计算线程数；零保留PyTorch默认，接口检查可设1 (default: 0)
+  --start_subject START_SUBJECT
+                        完整LOSO起始被试，包含该编号 (default: 1)
+  --end_subject END_SUBJECT
+                        LOSO末尾被试，默认数据集最后一名 (default: None)
+  --held_out_subjects HELD_OUT_SUBJECTS [HELD_OUT_SUBJECTS ...], --held_out_subject HELD_OUT_SUBJECTS [HELD_OUT_SUBJECTS ...]
+                        显式指定一个或多个held-out被试，覆盖起止范围 (default: None)
+  --no_balance          显式关闭既有trial标签平衡；参考总体始终不做标签平衡 (default: False)
+  --fd_mode {full,none}
+                        完整前门概率或Phase 1事实路径对照 (default: full)
+  --no_cns2ans          估计器消融：切断CNS中介到ANS电流的路径 (default: False)
+  --mediator_dim MEDIATOR_DIM
+                        CNS和ANS潜在中介维度 (default: 64)
+  --hidden_dim HIDDEN_DIM
+                        Phase 1中介及结果模型隐藏维度，不改变卷积通道数 (default: 128)
+  --dropout DROPOUT     结果模型dropout (default: 0.3)
+  --ref_dim REF_DIM     零完整保留当前骨干特征；正整数为额外投影维度 (default: 0)
+  --S_train S_TRAIN     训练中介采样次数 (default: 4)
+  --K_train K_TRAIN     训练经验参考采样次数 (default: 16)
+  --S_eval S_EVAL       测试中介采样次数 (default: 16)
+  --K_eval K_EVAL       测试经验参考采样次数 (default: 64)
+  --N_ref N_REF         从全部未平衡训练窗口抽取的参考库容量 (default: 2048)
+  --reference_chunk_size REFERENCE_CHUNK_SIZE
+                        结果模型每次计算的K分块大小，零不分块，概率积分公式不变 (default: 4)
+  --beta BETA           标准正态KL正则系数 (default: 0.001)
+  --beta_warmup_epochs BETA_WARMUP_EPOCHS
+                        KL系数线性warmup轮数 (default: 10)
+  --lambda_obs LAMBDA_OBS
+                        事实分类CE权重，不用观察标签监督干预概率 (default: 1.0)
+  --fire_weight FIRE_WEIGHT
+                        发放率正则权重，默认沿用HCI为1、DEAP为0 (default: None)
+  --time_steps TIME_STEPS
+                        Phase 1独立中介LIF的驱动步数，非原始窗口采样点数 (default: 4)
+  --logvar_min LOGVAR_MIN
+                        中介log方差下界 (default: -6.0)
+  --logvar_max LOGVAR_MAX
+                        中介log方差上界 (default: 2.0)
+  --resume RESUME       单fold加载本项目checkpoint继续训练，支持CPU/CUDA映射 (default: None)
+  --max_train_batches MAX_TRAIN_BATCHES
+                        仅用于服务器接口检查；零执行完整训练epoch (default: 0)
+  --max_test_batches MAX_TEST_BATCHES
+                        仅用于服务器接口检查；零完整测试 (default: 0)
+帮助接口检查：CalculateResult.py --help
+usage: CalculateResult.py [-h] --label LABEL --dataset DATASET
+                          [--root_dir ROOT_DIR] [--result_file RESULT_FILE]
+                          [--positive_class {0,1}] [--allow_smoke]
+
+NeuroFDAN跨被试结果统计
+
+options:
+  -h, --help            显示中文帮助并退出
+  --label LABEL         arousal或valence
+  --dataset DATASET     DEAP或HCI/MAHNOB_HCI
+  --root_dir ROOT_DIR   兼容旧结果根目录
+  --result_file RESULT_FILE
+                        第二阶段某个run目录下的混淆矩阵npy文件
+  --positive_class {0,1}
+                        统计F1的正类；默认0保留旧统计脚本含义
+  --allow_smoke         允许查看不完整接口检查输出，不能作为论文实验结果
+服务器指南中数据集/任务别名和单fold参数解析通过。
+临时混淆矩阵CLI格式测试；数值不是实际分类结果：
+已统计1名被试；全零/未运行/未达选模门槛的行不计入；F1正类=0
+准确率均值：0.8500；被试间标准差：0.0000
+敏感度均值：0.8000；被试间标准差：0.0000
+特异性均值：0.9000；被试间标准差：0.0000
+F1均值：0.8421；被试间标准差：0.0000
+标准差来自LOSO被试，不是多随机种子；held-out测试集参与了checkpoint选择。
+No broken requirements found.
+依赖一致性与git diff --check通过。
+{"python": "3.12.14", "torch": "2.15.0+cpu", "numpy": "2.3.5", "cuda_available": false, "正式数据实验": "未运行", "GPU训练": "未运行"}
