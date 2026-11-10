@@ -1,0 +1,131 @@
+{
+  "held_out": 1,
+  "best": {
+    "acc": 0.6,
+    "f1": 0.75,
+    "epoch": 1
+  },
+  "last_test": {
+    "f1_class0": 0.5714285714285714,
+    "f1_class1": 0.0,
+    "acc": 0.4,
+    "count": 400,
+    "correct": 160,
+    "selection_f1": 0.0,
+    "selection_positive_class": 1,
+    "precision": 0.0,
+    "recall": 0.0,
+    "sensitivity": 0.0,
+    "specificity": 1.0,
+    "mu_c": 0.0002752196742221713,
+    "var_c": 0.944085156917572,
+    "mu_a": 0.001878284174017608,
+    "var_a": 0.9962458193302155,
+    "kl_c": 0.06658643186092376,
+    "kl_a": 1.607900285720825,
+    "mu_c_spread": 0.001065757352625951,
+    "mu_a_spread": 0.18009639233350755,
+    "firing_rate_c": 0.0019677734468132257,
+    "firing_rate_a": 0.20571869164705275,
+    "factual_ce": 0.6987861394882202,
+    "complete_test": true,
+    "complete_evaluation": true,
+    "prediction_path": "probs_do",
+    "prediction_diagnostics": {
+      "primary": {
+        "confusion_matrix": [
+          [
+            160,
+            0
+          ],
+          [
+            240,
+            0
+          ]
+        ],
+        "true_counts": [
+          160,
+          240
+        ],
+        "predicted_counts": [
+          400,
+          0
+        ],
+        "probability_mean": [
+          0.5071646603941918,
+          0.4928353375941515
+        ],
+        "probability_std": [
+          0.001689406397133649,
+          0.0016894080207370292
+        ],
+        "mean_entropy": 0.6930388035379267,
+        "single_class": true,
+        "extreme_imbalance": true,
+        "imbalance_threshold": 0.01,
+        "metrics": {
+          "f1_class0": 0.5714285714285714,
+          "f1_class1": 0.0,
+          "acc": 0.4,
+          "count": 400,
+          "correct": 160,
+          "selection_f1": 0.0,
+          "selection_positive_class": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "sensitivity": 0.0,
+          "specificity": 1.0
+        }
+      },
+      "factual": {
+        "confusion_matrix": [
+          [
+            122,
+            38
+          ],
+          [
+            201,
+            39
+          ]
+        ],
+        "true_counts": [
+          160,
+          240
+        ],
+        "predicted_counts": [
+          323,
+          77
+        ],
+        "probability_mean": [
+          0.5077295506745577,
+          0.492270449846983
+        ],
+        "probability_std": [
+          0.0112787666967791,
+          0.011278766871181775
+        ],
+        "mean_entropy": 0.6927731585056653,
+        "single_class": false,
+        "extreme_imbalance": false,
+        "imbalance_threshold": 0.01,
+        "metrics": {
+          "f1_class0": 0.505175983436853,
+          "f1_class1": 0.24605678233438485,
+          "acc": 0.4025,
+          "count": 400,
+          "correct": 161,
+          "selection_f1": 0.24605678233438485,
+          "selection_positive_class": 1,
+          "precision": 0.5064935064935064,
+          "recall": 0.1625,
+          "sensitivity": 0.1625,
+          "specificity": 0.7625
+        }
+      },
+      "factual_primary_disagreement": 0.1925,
+      "factual_primary_probability_l1": 0.017056429982185362
+    }
+  },
+  "has_eligible_best": true,
+  "smoke": false
+}
