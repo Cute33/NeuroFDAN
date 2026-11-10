@@ -22,7 +22,7 @@ class CausalMultiLoss(nn.Module):
 
         self.loss_type = loss_type
         if loss_type == 'ce':
-            self.criterion = nn.CrossEntropyLoss(weights=self.class_weights)
+            self.criterion = nn.CrossEntropyLoss(weight=self.class_weights)
         elif loss_type == 'bce':
             self.criterion = nn.BCEWithLogitsLoss(pos_weight=self.pos_weights)
         else:

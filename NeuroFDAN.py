@@ -463,468 +463,131 @@ class SpikingMediator(nn.Module):
 
 
 
-# ========== 5. 前门调整模块 ==========
-class FrontDoorInterventionModule(nn.Module):
-    def __init__(self, x_dim, m_dim, proj_dim):
-        super().__init__()
-        # 添加投影层
-        #self.x_proj = nn.Linear(x_dim, proj_dim)
-        #self.m_proj = nn.Linear(m_dim, proj_dim)
-        self.x_proj = nn.Sequential(
-            nn.Linear(x_dim, x_dim // 2),
-            nn.SiLU(),
-            nn.Linear(x_dim // 2, proj_dim),
-            nn.BatchNorm1d(proj_dim),
-            nn.Dropout(0.1)
-        )
-        self.m_proj = nn.Sequential(
-            nn.Linear(m_dim, m_dim // 2),
-            nn.SiLU(),
-            nn.Linear(m_dim // 2, proj_dim),
-            nn.BatchNorm1d(proj_dim),
-            nn.Dropout(0.1)
-        )
-        self.proj_dim = proj_dim
-
-    def forward(self, x, m):
-        """
-        Args:
-            x: 输入特征 X [batch_size, x_dim]
-            m: 中介变量 M [batch_size, m_dim]
-        """
-        # 投影到相同维度
-        x_proj = self.x_proj(x)  # [batch_size, proj_dim]
-        m_proj = self.m_proj(m)  # [batch_size, proj_dim]
-
-        # 扩展维度以便进行注意力计算
-        x_proj = x_proj.unsqueeze(0)  # [1, batch_size, proj_dim]
-        m_proj = m_proj.unsqueeze(0)  # [1, batch_size, proj_dim]
-
-        # 第一步: 计算 P(M=m|X=x)
-        attn_weights = torch.matmul(m_proj, x_proj.transpose(-2, -1)) / math.sqrt(self.proj_dim)
-        attn_weights = F.softmax(attn_weights, dim=-1)
-        first_fusion = torch.matmul(attn_weights, x_proj)   # shape: [1, B, B]
-
-        # 第二步: 计算 ∑_x' P(Y|X=x', M=m)P(X=x')
-        mediator_attn = torch.matmul(x_proj, m_proj.transpose(-2, -1)) / math.sqrt(self.proj_dim)
-        mediator_attn = F.softmax(mediator_attn, dim=-1)
-        deconfounded_features = torch.matmul(mediator_attn, first_fusion)
-
-        # 压缩维度
-        deconfounded_features = deconfounded_features.squeeze(0)  # [batch_size, proj_dim]
-
-        return deconfounded_features
-
-
-# ==================== 5. 前门干预模块 ====================
-class FrontDoorInterventionModule(nn.Module):
-    def __init__(self, x_dim, m_dim, proj_dim):
-        super().__init__()
-        # 路径一：建模 P(M|X)
-        self.x_to_m_path = nn.Sequential(
-            nn.Linear(x_dim, proj_dim),
-            nn.SiLU(),
-            nn.Linear(proj_dim, m_dim * 2),  # 输出均值和log_方差
-        )
-
-        # 路径二：建模 P(Y|M)
-        self.m_to_y_proj = nn.Sequential(
-            nn.Linear(m_dim, m_dim // 2),
-            nn.SiLU(),
-            nn.Linear(m_dim // 2, proj_dim),
-        )
-        self.proj_dim = proj_dim
-
-    def forward(self, x, m_real):
-        batch_size = x.size(0)
-        
-        # ----------------- Step 1: 建模 P(M|X) -----------------
-        # 预测 M 的分布参数 （假设为高斯分布）
-        m_params = self.x_to_m_path(x)
-        mu, log_var = m_params.chunk(2, dim=1)
-        log_var = torch.clamp(log_var, min=-10, max=10)
-        std = torch.exp(0.5 * log_var)
-        
-        # 从该分布中采样 M 来模拟干预 do(X)
-        # 即前门机制中的 do(M)
-        epsilon = torch.randn_like(mu)
-        m_do = mu + epsilon * std
-
-        # ----------------- Step 2: 建模 P(Y|M) 并进行求和 -----------------
-        # 根据前门公式，需要对所有可能的 M 值求和，但在神经网络中使用采样来逼近
-        # 用两个不同的 M 值来预测，然后取平均或注意力融合
-        
-        # 1. 原始路径的特征 （来自真实的 M）
-        deconfounded_real = self.m_to_y_proj(m_real)
-        # 2. 干预路径的特征 （来子采样的 M）
-        deconfounded_do = self.m_to_y_proj(m_do)
-        # 简单的求和/平均操作来逼近前门公式中的求和
-        deconfounded_features = (deconfounded_real + deconfounded_do) / 2
-        
-        return deconfounded_features, m_do
-
-
-class FrontDoorInterventionModule(nn.Module):
-    def __init__(self, x_dim, m_dim, proj_dim):
-        super().__init__()
-        # 第1步: 建模 P(M|X) -> 预测M的分布参数
-        self.x_to_m = nn.Sequential(
-            nn.Linear(x_dim, proj_dim),
-            nn.SiLU(),
-            nn.Linear(proj_dim, m_dim * 2),  # 输出均值和log_方差
-        )
-        
-        # 第2步: 建模 P(Y|M) -> 从M到Y的映射，使用一个共享的投影层
-        self.m_to_y = nn.Sequential(
-            nn.Linear(m_dim, proj_dim),
-            nn.SiLU(),
-        )
-        
-        # 用一个简单的注意力机制来模拟求和/积分
-        self.attention_net = nn.MultiheadAttention(
-            embed_dim=proj_dim, num_heads=4, batch_first=True
-        )
-
-    def forward(self, x, m_real):
-        # ''
-        #   x       [B, C_cns+C_ans]
-        #   m_real  [B, C_cns+C_ans]
-        # ''
-        # --- Step 1: 建模 P(M|X) 和采样 ---
-        # x_to_m 返回 mu 和 log_var
-        m_params = self.x_to_m(x)
-        mu, log_var = m_params.chunk(2, dim=1)
-        log_var = torch.clamp(log_var, min=-10, max=10)
-        std = torch.exp(0.5 * log_var)
-        
-        # 重参数化采样
-        epsilon = torch.randn_like(mu)
-        m_do = mu + epsilon * std
-        
-        # --- Step 2: 建模 P(Y|M) 并使用注意力机制融合 ---
-        # 1. 原始路径: 使用真实的M
-        h_m_real = self.m_to_y(m_real)
-        
-        # 2. 干预路径: 使用采样的M
-        h_m_do = self.m_to_y(m_do)
-        
-        # 3. 使用注意力机制模拟前门公式中的求和/积分
-        # 这里，h_m_do 作为 Query，h_m_real 作为 Key 和 Value
-        # 目标是让采样的 M 特征去“关注”真实的 M 特征
-        h_m_do = h_m_do.unsqueeze(1)  # [B, 1, proj_dim]
-        h_m_real = h_m_real.unsqueeze(1) # [B, 1, proj_dim]
-
-        # 注意力机制的输入需要是 [batch_size, sequence_length, feature_dim]
-        # 但我们这里只有1个序列长度，所以需要更巧妙地使用
-        # 我们可以把 h_m_real 当作 keys 和 values，然后让 h_m_do 
-        # 当作 query 去查询整个批次的 h_m_real
-        
-        # 让我们换一种更直观的注意力方式：
-        # 计算 m_do 对所有 m_real 的关注度
-        attn_scores = torch.matmul(h_m_do, h_m_real.transpose(-2, -1)) / math.sqrt(h_m_real.size(-1))
-        
-        # softmax 归一化注意力权重
-        attn_weights = F.softmax(attn_scores, dim=-1)
-        
-        # 加权求和
-        deconfounded_features = torch.matmul(attn_weights, h_m_real).squeeze(1) # [B, proj_dim]
-
-        return deconfounded_features, m_do
-   
- 
-# ========== 7. 主模型 ==========
-class NeuroFDAN(nn.Module):
-    def __init__(self, eeg_channels, ecg_channels, gsr_channels, input_len, hidden_dim, num_classes, device=device):
-        super().__init__()
-        self.cns_channel = eeg_channels
-        self.ans_channel = ecg_channels + gsr_channels
-        self.device = device
-        
-        # 编码器
-        self.eeg_temporal_encoder = DeepTemporalEncoder(eeg_channels, eeg_channels, num_layers=1, kernel_size=5, dilation_rate=5)
-        self.ecg_temporal_encoder = DeepTemporalEncoder(ecg_channels, ecg_channels, num_layers=1, kernel_size=3, dilation_rate=5)
-        self.gsr_temporal_encoder = DeepTemporalEncoder(gsr_channels, gsr_channels, num_layers=1, kernel_size=3, dilation_rate=5)
-        
-        # GNN 因果图学习模块
-        self.eeg_dag_gnn = DAGGNN(
-            in_dim=input_len, 
-            hidden_dim=hidden_dim, 
-            out_dim=hidden_dim, 
-            num_nodes=eeg_channels
-        )
-        self.ans_dag_gnn = DAGGNN(
-            in_dim=input_len, 
-            hidden_dim=hidden_dim, 
-            out_dim=hidden_dim, 
-            num_nodes=ecg_channels + gsr_channels
-        )
-        
-        self.cns = SpikingMediator(self.cns_channel, hidden_dim, self.cns_channel, time_steps=128, device=self.device)
-        self.ans = SpikingMediator(self.ans_channel, hidden_dim, self.ans_channel, time_steps=128, device=self.device)
-
-        # 前门干预模块
-        self.fim = FrontDoorInterventionModule(
-            x_dim=self.cns_channel + self.ans_channel,
-            m_dim=self.cns_channel + self.ans_channel,
-            proj_dim=hidden_dim
-        )
-        
-        def init_last_layer(m):
-            if isinstance(m, nn.Linear):
-                nn.init.xavier_uniform_(m.weight)
-                nn.init.zeros_(m.bias)
-
-        # 情绪分类器
-        self.emotion_classifier = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim // 2),
-            nn.SiLU(),
-            nn.BatchNorm1d(hidden_dim // 2),
-            nn.Dropout(p=0.5),
-            nn.Linear(hidden_dim // 2, num_classes),
-        )
-        self.emotion_classifier.apply(init_last_layer)
-
-        
-        self.mlp = nn.Sequential(
-            nn.Linear(96, 96 // 2),
-            nn.SiLU(),
-            nn.BatchNorm1d(96 // 2),
-            nn.Dropout(p=0.5),
-            nn.Linear(96 // 2, num_classes),
-        )
-        self.emotion_classifier.apply(init_last_layer)
-
-
-    def forward(self, eeg, ecg, gsr):
-        # Inpute Shape: [B, C, T]
-
-        # 1. 通道时序编码
-        h_eeg = self.eeg_temporal_encoder(eeg) # [B, C_eeg, T]
-        h_ecg = self.ecg_temporal_encoder(ecg) # [B, C_ecg, T]
-        h_gsr = self.gsr_temporal_encoder(gsr) # [B, C_gsr, T]
-
-        # 2. GNN 因果图学习
-        eeg_gcn_out, cns_adj, eeg_dag_penalty = self.eeg_dag_gnn(h_eeg)             # [B, C_cns, D], [C_cns, C_cns], loss
-        h_ans = torch.cat([h_ecg, h_gsr], dim=1)                                    # [B, C_ans, T]
-        ans_gcn_out, ans_adj, ans_dag_penalty = self.ans_dag_gnn(h_ans)             # [B, C_ans, D], [C_ans, C_ans], loss
-        
-        X = torch.cat([eeg_gcn_out, ans_gcn_out], dim=1)                            # [B, C_cns+C_ans, D]
-        X_mean = X.mean(dim=1)  # [B, D] 对通道平均
-        emotion_logits = self.emotion_classifier(X_mean)
-        return emotion_logits, eeg_dag_penalty, ans_dag_penalty
-
-        # 3. 神经系统潜变量
-        cns_spikes, cns_Vs, cns_rates, cns_pooled = self.cns(eeg_gcn_out, None)     # [B, C_cns, C_cns], [B, C_cns, C_cns], [B, C_cns]
-        ans_spikes, ans_Vs, ans_rates, ans_pooled = self.ans(ans_gcn_out, None)     # [B, C_ans, C_ans], [B, C_ans, C_ans], [B, C_ans]
-        M = torch.cat([cns_pooled, ans_pooled], dim=1)                              # [B, C_cns+C_ans]
-        # return self.mlp(M), eeg_dag_penalty, ans_dag_penalty
-        # return self.mlp(X), eeg_dag_penalty, ans_dag_penalty
-
-        # 4. 前门干预
-        X = X.mean(dim=2)
-        
-        deconfounded_features, m_do = self.fim(X, M)
-        
-        # 情绪分类
-        emotion_logits = self.emotion_classifier(deconfounded_features)
-
-        return emotion_logits, eeg_dag_penalty, ans_dag_penalty
-
-
-
-
-
-
-
-
-
-class CausalMemoryBank(nn.Module):
-    def __init__(self, input_dim, num_prototypes=64, tau=0.1):
-        """
-        Args:
-            input_dim: 输入特征维度 (D)
-            num_prototypes: 记忆库大小 (K), 代表 K 种典型的神经活动模式
-            tau: 温度系数，控制 Attention 的稀疏度
-        """
-        super().__init__()
-        self.num_prototypes = num_prototypes
-        self.input_dim = input_dim
-        self.tau = tau
-
-        # Memory G: [K, D] -> 对应前门公式中的 P(X) 离散化表示
-        # 这是一个可学习的“字典”，存储跨被试共享的神经原型
-        self.memory = nn.Parameter(torch.randn(num_prototypes, input_dim))
-
-        # 投影层
-        self.q_proj = nn.Linear(input_dim, input_dim)
-        self.k_proj = nn.Linear(input_dim, input_dim)
-        self.v_proj = nn.Linear(input_dim, input_dim)
-
-    def forward(self, x):
-        """
-        x: SNN 输出的特征 [B, D] (即 Query)
-        Returns:
-            m_causal: 经过前门干预后的特征
-            attn: P(M|X) 的概率分布
-        """
-        # 1. 计算 P(M|X) -> Attention Weights
-        # Query:    当前样本的特征
-        Q = self.q_proj(x)  # [B, D]
-        # Key:      记忆库中的原型
-        K = self.k_proj(self.memory)  # [K, D]
-
-        # 计算相似度 logits: [B, K]
-        scores = torch.matmul(Q, K.t()) / self.tau
-
-        # Softmax 归一化得到概率分布 P(M|X)
-        attn_weights = F.softmax(scores, dim=-1)  # [B, K]
-
-        # 2. 前门干预 (NWGM 近似)
-        # Value: 记忆库中的原型值
-        V = self.v_proj(self.memory)  # [K, D]
-
-        # 重构 M: 使用“纯净”的记忆库原型重组特征
-        # 这阻断了 X -> Y 的直接路径 (及其背后的 U -> X -> Y)
-        # 强制模型使用通用原型来表达当前样本
-        m_causal = torch.matmul(attn_weights, V)  # [B, D]
-
-        # 辅助Loss
-        rec_loss = F.mse_loss(m_causal, x)
-        mean_usage = attn_weights.mean(dim=0)
-        div_loss = -torch.sum(mean_usage * torch.log(mean_usage + 1e-8))
-
-        return m_causal, attn_weights, rec_loss, div_loss
-        # 这是之前71ACC版本，没有别的损失的
-        return m_causal, attn_weights
-
-
-class NeuroFDAN(nn.Module):
-    def __init__(self, eeg_channels, ecg_channels, gsr_channels, input_len, hidden_dim, num_classes=1):
-        super().__init__()
-        self.eeg_channels, self.ans_channels = eeg_channels, ecg_channels + gsr_channels
-
-        # 1. Efficient Encoders (Time: 768 -> 96, Feat: 1 -> 4)
-        # Grouped conv ensures channel independence for DAG
-        self.cns_enc = nn.Sequential(
-            nn.Conv1d(self.eeg_channels, self.eeg_channels * 4, kernel_size=5, stride=2, padding=2, groups=32),  # 384
-            nn.BatchNorm1d(32 * 4), nn.SiLU(),
-            nn.Conv1d(32 * 4, 32 * 4, kernel_size=3, stride=2, padding=1, groups=32),  # 192
-            nn.BatchNorm1d(32 * 4), nn.SiLU(),
-            nn.Conv1d(32 * 4, 32 * 4, kernel_size=3, stride=2, padding=1, groups=32),  # 96
-            nn.BatchNorm1d(32 * 4), nn.SiLU()
-        )
-        # ANS (4 channels)
-        self.ans_enc = nn.Sequential(
-            nn.Conv1d(self.ans_channels, self.ans_channels * 4, kernel_size=5, stride=2, padding=2, groups=self.ans_channels),
-            nn.BatchNorm1d(self.ans_channels * 4), nn.SiLU(),
-            nn.Conv1d(self.ans_channels * 4, self.ans_channels * 4, kernel_size=3, stride=2, padding=1, groups=self.ans_channels),
-            nn.BatchNorm1d(self.ans_channels * 4), nn.SiLU(),
-            nn.Conv1d(self.ans_channels * 4, self.ans_channels * 4, kernel_size=3, stride=2, padding=1, groups=self.ans_channels),
-            nn.BatchNorm1d(self.ans_channels * 4), nn.SiLU()
-        )
-
-        # 2. Spatial DAG (Micro-SCM for CNS)
-        # Learn adjacency [32, 32] to mix spatial info
-        initial_adj = torch.eye(32) * 1.0 + torch.randn(32, 32) * 0.1
-        self.dag_adj = nn.Parameter(initial_adj)
-
-        # 3. SNN Dynamics
-        # Input dim = (32*4) + (4*4) = 128 + 16 = 144
-        self.snn_input_proj = nn.Linear((self.eeg_channels+self.ans_channels)*4, 64)
-        self.lif = VectorizedLIFLayer(num_neurons=64, in_dim=64)
-
-        # 4. Causal Memory (Front-Door)
-        self.memory = CausalMemoryBank(input_dim=64, num_prototypes=64)
-
-        # 5. Classifier
-        self.classifier = nn.Sequential(
-            nn.Linear(64, 64 // 2),
-            nn.SiLU(),
-            nn.BatchNorm1d(64 // 2),
-            nn.Dropout(p=0.5),
-            nn.Linear(64 // 2, num_classes),
-        )
-
-        self.mlp = nn.Sequential(
-            nn.Linear(144, 64 // 2),
-            nn.SiLU(),
-            nn.BatchNorm1d(64 // 2),
-            nn.Dropout(p=0.5),
-            nn.Linear(64 // 2, num_classes),
-        )
-
-    def forward(self, eeg, ecg, gsr):
-        # eeg: [B, 32, 768]
-        # ans: [B, 4, 768]
-        B = eeg.shape[0]
-        ans = torch.cat([ecg, gsr], dim=1)
-
-        # x_cns = self.cns_enc(eeg).mean(dim=1)
-        # return self.mlp(x_cns), torch.tensor(0.0, requires_grad=True), torch.tensor(0.0, requires_grad=True)
-
-        # --- Step 1: Encoding & Temporal Abstraction ---
-        # Output: [B, 128, 96] -> view -> [B, 32, 4, 96]
-        x_cns = self.cns_enc(eeg).view(B, self.eeg_channels, 4, -1) # [B, 32, 4, 96]
-        x_ans = self.ans_enc(ans).view(B, self.ans_channels, 4, -1)  # [B, 4, 4, 96]
-
-        # --- Step 2: Spatial DAG (CNS Only) ---
-        # DAG Constraint: H_new = A @ H_old
-        # x_cns: [B, N, D, T] -> permute -> [B, T, D, N]
-        adj = F.gumbel_softmax(self.dag_adj, tau=1, hard=True)
-        adj = adj * (1 - torch.eye(32, device=adj.device))  # No self-loop
-
-        x_cns_perm = x_cns.permute(0, 3, 2, 1)  # [B, 96, 4, 32]
-        x_cns_dag = torch.matmul(x_cns_perm, adj.t())  # Spatial Mix
-
-        # x = x_cns_dag.reshape(B, 96, -1)
-        # x = x.mean(dim=1)
-        # return self.mlp(x), torch.tensor(0.0, requires_grad=True), torch.tensor(0.0, requires_grad=True)
-
-        # --- Step 3: Fusion & SNN ---
-        # Flatten channels and features: [B, 96, 32*4]
-        flat_cns = x_cns_dag.reshape(B, 96, -1)
-        flat_ans = x_ans.permute(0, 3, 1, 2).reshape(B, 96, -1)
-
-        # Concat: [B, 96, 144]
-        snn_in = torch.cat([flat_cns, flat_ans], dim=-1)
-
-        # snn_in = snn_in.mean(dim=1)
-        # return self.mlp(snn_in), torch.tensor(0.0, requires_grad=True), torch.tensor(0.0, requires_grad=True)
-
-        # LIF
-        snn_drive = self.snn_input_proj(snn_in)  # [B, 96, 64]
-        spikes, _, rates = self.lif(snn_drive)  # rates: [B, 64]
-
-        # === 新增：计算发放率 Loss ===
-        # 目标：让所有神经元的平均发放率接近 0.05 (5% 的时间在发放)
-        # spikes shape: [Batch, Time, Neurons]
-        # 我们希望在 Batch 和 Time 维度上取平均，得到每个神经元的平均活跃度
-        mean_firing_rate = torch.mean(spikes, dim=(0, 1))  # [Neurons]
-
-        target_rate = 0.05  # 目标发放率，可以设为 0.05 ~ 0.1
-        # 使用 MSE 惩罚偏离目标的神经元
-        fire_rate_loss = torch.mean((mean_firing_rate - target_rate) ** 2)
-        # ==========================
-
-        # --- Step 4: Front-Door Intervention ---
-        # rates is our 'Z', use it to query Memory to get 'M'
-        m_causal, attn, rec_loss, div_loss = self.memory(rates) # 捕获 attn 用于可视化
-        # 这是之前71ACC版本，没有别的损失的
-        # m_causal, attn = self.memory(rates)
-
-
-        # --- Step 5: Prediction ---
-        logits = self.classifier(m_causal)
-
-        return logits, torch.tensor(0.0, requires_grad=True), torch.tensor(0.0, requires_grad=True), attn, rec_loss, div_loss, fire_rate_loss
-
-        # 这是之前71ACC版本，没有别的损失的
-        return logits, torch.tensor(0.0, requires_grad=True), torch.tensor(0.0, requires_grad=True)
-
-        return logits, adj, spikes
-
-# 第一阶段独立接口；保留旧模型绑定，真实数据入口留待第二阶段对接。
+# 第二阶段唯一有效模型；上方历史基础组件保留供已有研究接口使用。
 from frontdoor_scm import (
     FrontDoorConfig, CNSMediator, ANSMediator, ReferenceEncoder, OutcomeHead,
     ReferenceBank, FrontDoorEstimator, frontdoor_loss,
 )
+
+
+class PhysiologicalBackbone(nn.Module):
+    """复用原实际执行的分组时序卷积及 CNS 通道图，两个模态不交叉读取。"""
+    def __init__(self, eeg_channels=32, ans_channels=4, input_len=768):
+        super().__init__()
+        if eeg_channels != 32 or ans_channels not in (3, 4) or input_len != 768:
+            raise ValueError('真实数据骨干要求32个EEG通道、3/4个ANS通道和768个时间点')
+        self.ans_channels = ans_channels
+        def encoder(channels):
+            return nn.Sequential(
+                nn.Conv1d(channels, channels * 4, 5, stride=2, padding=2, groups=channels),
+                nn.BatchNorm1d(channels * 4), nn.SiLU(),
+                nn.Conv1d(channels * 4, channels * 4, 3, stride=2, padding=1, groups=channels),
+                nn.BatchNorm1d(channels * 4), nn.SiLU(),
+                nn.Conv1d(channels * 4, channels * 4, 3, stride=2, padding=1, groups=channels),
+                nn.BatchNorm1d(channels * 4), nn.SiLU())
+        self.cns_enc, self.ans_enc = encoder(32), encoder(ans_channels)
+        self.dag_adj = nn.Parameter(torch.eye(32) + .1 * torch.randn(32, 32))
+        uniform = torch.rand(32, 32, generator=torch.Generator().manual_seed(42))
+        self.register_buffer('eval_gumbel', -torch.log(-torch.log(uniform)))
+        self.cns_dim, self.ans_dim = 96 * 128, 96 * ans_channels * 4
+        self.train(True)
+
+    def train(self, mode=True):
+        """冻结既有 BN 运行统计，保留仿射参数，避免 batch 内样本相互泄漏。"""
+        super().train(mode)
+        for module in self.modules():
+            if isinstance(module, nn.BatchNorm1d):
+                module.eval()
+        return self
+
+    def forward(self, x_c, x_a):
+        """[B,32,768]、[B,A,768] → [B,96,128]、[B,96,4A]，完整保留时序轴。"""
+        b = x_c.shape[0]
+        if x_c.shape != (b, 32, 768) or x_a.shape != (b, self.ans_channels, 768):
+            raise ValueError('CNS/ANS窗口形状或配对关系错误')
+        cns = self.cns_enc(x_c).reshape(b, 32, 4, 96)
+        ans = self.ans_enc(x_a).reshape(b, self.ans_channels, 4, 96)
+        if self.training:
+            adjacency = F.gumbel_softmax(self.dag_adj, tau=1., hard=True)
+        else:
+            # 固定seed42的Gumbel扰动，保持原硬图采样形式且可缓存；不宣称必为DAG。
+            # 不直接取权重argmax，否则初始单位阵去自环后会使全部CNS特征归零。
+            adjacency = F.one_hot((self.dag_adj + self.eval_gumbel).argmax(-1), num_classes=32).to(cns)
+        adjacency = adjacency * (1 - torch.eye(32, device=cns.device))
+        cns = torch.matmul(cns.permute(0, 3, 2, 1), adjacency.t()).reshape(b, 96, 128)
+        ans = ans.permute(0, 3, 1, 2).reshape(b, 96, self.ans_channels * 4)
+        return cns, ans
+
+
+class _LiveReferenceView:
+    """只适配特征，不另写抽样：原始训练参考经当前骨干编码并保留梯度。"""
+    def __init__(self, bank, backbone, device):
+        self.bank, self.backbone, self.device = bank, backbone, device
+
+    def sample(self, batch_size, K, exclude_ids=None):
+        c, a, ids = self.bank.sample(batch_size, K, exclude_ids=exclude_ids)
+        hc, ha = self.backbone(c.reshape(-1, *c.shape[2:]).to(self.device),
+                               a.reshape(-1, *a.shape[2:]).to(self.device))
+        return hc.reshape(batch_size, K, *hc.shape[1:]), ha.reshape(batch_size, K, *ha.shape[1:]), ids.to(self.device)
+
+
+class NeuroFDAN(nn.Module):
+    """真实骨干 + 唯一 Phase 1 前门估计器；不接受真实数据 oracle 标签。"""
+    def __init__(self, eeg_channels=32, ecg_channels=3, gsr_channels=1, input_len=768,
+                 hidden_dim=32, num_classes=2, frontdoor_config=None):
+        super().__init__()
+        if num_classes != 2:
+            raise ValueError('第二阶段使用两个logits；不能对单个logit执行类别softmax')
+        self.backbone = PhysiologicalBackbone(eeg_channels, ecg_channels + gsr_channels, input_len)
+        self.frontdoor_config = frontdoor_config or FrontDoorConfig()
+        if self.frontdoor_config.num_classes != 2 or self.frontdoor_config.mediator_family != 'normal':
+            raise ValueError('真实数据模式使用双类别高斯潜在中介，不使用合成真值分布接口')
+        # hidden_dim 保留旧构造参数兼容；旧实际骨干同样未使用它决定通道数。
+        self.frontdoor = FrontDoorEstimator(self.backbone.cns_dim, self.backbone.ans_dim, self.frontdoor_config)
+        self.feature_version = 0
+
+    def forward(self, x_c=None, x_a=None, gsr=None, *, reference_bank=None,
+                source_ids=None, fd_mode='full', S=None, K=None):
+        """支持旧的 EEG/ECG/GSR 三位置参数；统一返回概率、事实logits和统计字典。"""
+        if x_c is None or x_a is None:
+            raise ValueError('必须提供配对的CNS和ANS输入')
+        if gsr is not None:
+            x_a = torch.cat((x_a, gsr), dim=1)
+        raw_reference = reference_bank is not None and getattr(reference_bank, 'raw_windows', False)
+        if reference_bank is not None and not raw_reference:
+            if getattr(reference_bank, 'feature_version', None) != self.feature_version:
+                raise ValueError('参考特征缓存已过期或未由当前模型构建，需按当前权重重建')
+            if getattr(reference_bank, 'model_identity', None) != id(self):
+                raise ValueError('参考库不属于当前fold模型')
+            if reference_bank.parameter_versions != tuple(p._version for p in self.parameters()):
+                raise ValueError('模型权重已更新，参考特征缓存必须重建')
+        h_c, h_a = self.backbone(x_c, x_a)
+        effective_bank = _LiveReferenceView(reference_bank, self.backbone, x_c.device) if raw_reference else reference_bank
+        outputs = self.frontdoor(h_c, h_a, effective_bank, source_ids, fd_mode, S, K)
+        rates_c = self.frontdoor.cns.snn.last_rates
+        rates_a = self.frontdoor.ans.snn.last_rates
+        fire_loss = .5 * ((rates_c.mean(0) - .05).square().mean()
+                         + (rates_a.mean(0) - .05).square().mean())
+        outputs['fire_loss'] = fire_loss
+        outputs['logits_factual'] = outputs['logits_obs']
+        outputs['mediator_statistics'] = {
+            'mu_c': outputs['mu_c'].detach().mean(), 'var_c': outputs['logvar_c'].detach().exp().mean(),
+            'mu_a': outputs['mu_a'].detach().mean(), 'var_a': outputs['logvar_a'].detach().exp().mean(),
+            'kl_c': outputs['kl_c'].detach().mean(), 'kl_a': outputs['kl_a'].detach().mean(),
+            'mu_c_spread': outputs['mu_c'].detach().std(dim=0, unbiased=False).mean(),
+            'mu_a_spread': outputs['mu_a'].detach().flatten(0, 1).std(dim=0, unbiased=False).mean(),
+            'firing_rate_c': rates_c.detach().mean(), 'firing_rate_a': rates_a.detach().mean(),
+        }
+        outputs['reference_statistics'] = {
+            'S': outputs['m_a'].shape[1],
+            'K': outputs['reference_indices'].shape[1] if 'reference_indices' in outputs else 0,
+            'bank_count': 0 if fd_mode == 'none' else (reference_bank.used_count if reference_bank is not None else x_c.shape[0]),
+            'factual_reference_count': x_c.shape[0],
+            'shortfall': reference_bank.shortfall if reference_bank is not None else False,
+            'dataset': reference_bank.dataset if reference_bank is not None else None,
+        }
+        return outputs
+
+    def weights_updated(self):
+        """优化器step或加载权重后显式失效旧缓存。"""
+        self.feature_version += 1

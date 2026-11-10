@@ -1,146 +1,75 @@
-import os
-import gc
-import sys
-import torch
+"""服务器端NeuroFDAN训练入口；默认完整LOSO，显式支持单fold接口检查。"""
 import argparse
-from datetime import datetime
-from torch.optim.lr_scheduler import OneCycleLR, ExponentialLR
-sys.path.extend([os.path.dirname(os.path.abspath(__file__))])
-from NeuroFDAN import NeuroFDAN
-from ModelTrain import *
+import logging
+import os
 
 
-global logger
-def get_args(description='CPCC on Emotion Recognition'):
-    parser = argparse.ArgumentParser(description=description)
-    
-    # 添加文件路径参数
-    parser.add_argument('--label', type=str, required=True, help="Emotion recognition label, optional: 'arousal' and 'valence'.")
-    parser.add_argument('--root_dir', type=str, default=os.environ.get('NEURO_ROOT', '/home/fss'), help='Framework root (default: NEURO_ROOT or /home/fss).')
-    parser.add_argument('--lr', type=float, default=0.0001, help='Initial learning rate.')
-    parser.add_argument('--epochs', type=int, default=100, help='Upper epoch limit.')
-    parser.add_argument('--batch_size', type=int, default=40, help='Batch size.')
-    parser.add_argument('--device', type=int, default=0, help='Training device.')
-    parser.add_argument('--start_subject', type=int, default=1, help='Start subject.')
-    parser.add_argument('--dataset', type=str, default='DEAP', help='DEAP and HCI dataset.')
-
-    # 解析命令行参数
-    args = parser.parse_args()
-
+def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
+    parser = argparse.ArgumentParser(description=description, add_help=False,
+                                    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-h', '--help', action='help', help='显示中文参数说明并退出')
+    parser.add_argument('--dataset', default='DEAP', help='DEAP或HCI/MAHNOB_HCI')
+    parser.add_argument('--label', '--task', dest='label', required=True, help='arousal或valence，不区分大小写')
+    parser.add_argument('--root_dir', default=os.environ.get('NEURO_ROOT', '/home/fss'), help='包含Dataset子目录的数据根目录')
+    parser.add_argument('--output_dir', default='outputs/phase2', help='第二阶段结果目录，不与旧实验结果混用')
+    parser.add_argument('--run_name', default=None, help='实验名称；默认由前门模式、路径消融和参考维度生成')
+    parser.add_argument('--seed', type=int, choices=[42], default=42, help='固定随机种子，初始化模型及数据之前设置')
+    parser.add_argument('--device', default='auto', help='auto、cpu、cuda:0或旧版GPU数字编号')
+    parser.add_argument('--lr', type=float, default=.0001, help='Adam初始学习率')
+    parser.add_argument('--epochs', type=int, default=100, help='每个fold的训练轮数')
+    parser.add_argument('--batch_size', type=int, default=40, help='训练/测试batch大小，训练末尾不足batch明确丢弃')
+    parser.add_argument('--workers', type=int, default=0, help='DataLoader进程数，内存有限时保持零')
+    parser.add_argument('--cpu_threads', type=int, default=0, help='CPU计算线程数；零保留PyTorch默认，接口检查可设1')
+    parser.add_argument('--start_subject', type=int, default=1, help='完整LOSO起始被试，包含该编号')
+    parser.add_argument('--end_subject', type=int, default=None, help='LOSO末尾被试，默认数据集最后一名')
+    parser.add_argument('--held_out_subjects', '--held_out_subject', type=int, nargs='+', default=None, help='显式指定一个或多个held-out被试，覆盖起止范围')
+    parser.add_argument('--no_balance', action='store_true', help='显式关闭既有trial标签平衡；参考总体始终不做标签平衡')
+    parser.add_argument('--fd_mode', choices=['full', 'none'], default='full', help='完整前门概率或Phase 1事实路径对照')
+    parser.add_argument('--no_cns2ans', action='store_true', help='估计器消融：切断CNS中介到ANS电流的路径')
+    parser.add_argument('--mediator_dim', type=int, default=64, help='CNS和ANS潜在中介维度')
+    parser.add_argument('--hidden_dim', type=int, default=128, help='Phase 1中介及结果模型隐藏维度，不改变卷积通道数')
+    parser.add_argument('--dropout', type=float, default=.3, help='结果模型dropout')
+    parser.add_argument('--ref_dim', type=int, default=0, help='零完整保留当前骨干特征；正整数为额外投影维度')
+    parser.add_argument('--S_train', type=int, default=4, help='训练中介采样次数')
+    parser.add_argument('--K_train', type=int, default=16, help='训练经验参考采样次数')
+    parser.add_argument('--S_eval', type=int, default=16, help='测试中介采样次数')
+    parser.add_argument('--K_eval', type=int, default=64, help='测试经验参考采样次数')
+    parser.add_argument('--N_ref', type=int, default=2048, help='从全部未平衡训练窗口抽取的参考库容量')
+    parser.add_argument('--reference_chunk_size', type=int, default=4, help='结果模型每次计算的K分块大小，零不分块，概率积分公式不变')
+    parser.add_argument('--beta', type=float, default=.001, help='标准正态KL正则系数')
+    parser.add_argument('--beta_warmup_epochs', type=int, default=10, help='KL系数线性warmup轮数')
+    parser.add_argument('--lambda_obs', type=float, default=1., help='事实分类CE权重，不用观察标签监督干预概率')
+    parser.add_argument('--fire_weight', type=float, default=None, help='发放率正则权重，默认沿用HCI为1、DEAP为0')
+    parser.add_argument('--time_steps', type=int, default=4, help='Phase 1独立中介LIF的驱动步数，非原始窗口采样点数')
+    parser.add_argument('--logvar_min', type=float, default=-6., help='中介log方差下界')
+    parser.add_argument('--logvar_max', type=float, default=2., help='中介log方差上界')
+    parser.add_argument('--resume', default=None, help='单fold加载本项目checkpoint继续训练，支持CPU/CUDA映射')
+    parser.add_argument('--max_train_batches', type=int, default=0, help='仅用于服务器接口检查；零执行完整训练epoch')
+    parser.add_argument('--max_test_batches', type=int, default=0, help='仅用于服务器接口检查；零完整测试')
+    args = parser.parse_args(argv)
+    if args.batch_size < 2 or args.epochs < 1 or args.workers < 0 or args.cpu_threads < 0 or args.lr <= 0:
+        parser.error('batch至少2、epochs至少1、workers非负且学习率为正')
+    if min(args.max_train_batches, args.max_test_batches) < 0 or args.lambda_obs < 0 or (args.fire_weight is not None and args.fire_weight < 0):
+        parser.error('接口检查batch上限及损失权重不得为负')
+    from Datasets import canonical_dataset, canonical_label
+    try:
+        args.dataset, args.label = canonical_dataset(args.dataset), canonical_label(args.label)
+        from ModelTrain import frontdoor_config
+        frontdoor_config(args)
+    except ValueError as error:
+        parser.error(str(error))
     return args
 
 
 def main():
     args = get_args()
-    
-    if args.dataset == 'DEAP':
-        for subject_index in range(args.start_subject, 33):
-            eeg_channels = 32
-            emg_channels = 2
-            gsr_channels = 1
-            time_len = 768
-            hidden_dim = 32
-            num_classes = 1
-            model = NeuroFDAN(
-                eeg_channels=eeg_channels,
-                ecg_channels=emg_channels,
-                gsr_channels=gsr_channels,
-                input_len=time_len,
-                hidden_dim=hidden_dim,
-                num_classes=num_classes
-            )
-
-            device = torch.device(f'cuda:{args.device}' if torch.cuda.is_available() else 'cpu')
-            model.to(device)
-            optimizer = torch.optim.Adam(
-                model.parameters(),
-                lr=args.lr,
-                betas=(0.9, 0.999),
-                eps=1e-8,
-                weight_decay=0.01,
-                amsgrad=False,
-            )
-
-            # scheduler = OneCycleLR(optimizer, max_lr=0.1, total_steps=(31*40*10*args.epochs)//args.batch_size, pct_start=0.3)
-            # scheduler = OneCycleLR(optimizer, max_lr=0.01, steps_per_epoch=31*40*10//args.batch_size, epochs=args.epochs, pct_start=0.3, anneal_strategy='cos')
-            #scheduler = ExponentialLR(optimizer, gamma=0.98)  # 每次调用使学习率乘以 0.95
-
-            # 尝试不使用scheduler
-
-            # 时间戳作为events路径名
-            TIMESTAMP = "{0:%Y-%m-%d---%H-%M-%S/}".format(datetime.now())          
-            
-            mt = DEAPModelTrainer(
-                model,
-                root_dir= args.root_dir,
-                optimizer= optimizer,
-                scheduler= None,
-                test_index= subject_index,
-                n_epoch= args.epochs,
-                batch_size= args.batch_size,
-                label= args.label,
-                Trainer_name= TIMESTAMP,
-                device_id= args.device
-            )
-            mt.run()
-
-            del model, mt
-            gc.collect()
-            torch.cuda.empty_cache()
-            
-    elif args.dataset == 'HCI':
-        for subject_index in range(args.start_subject, 25):
-            eeg_channels = 32
-            ecg_channels = 3
-            gsr_channels = 1
-            time_len = 768
-            hidden_dim = 32
-            num_classes = 1
-            model = NeuroFDAN(
-                eeg_channels=eeg_channels,
-                ecg_channels=ecg_channels,
-                gsr_channels=gsr_channels,
-                input_len=time_len,
-                hidden_dim=hidden_dim,
-                num_classes=num_classes
-            )
-
-            device = torch.device(f'cuda:{args.device}' if torch.cuda.is_available() else 'cpu')
-            model.to(device)
-            optimizer = torch.optim.Adam(
-                model.parameters(),
-                lr=args.lr,
-                betas=(0.9, 0.999),
-                eps=1e-8,
-                weight_decay=0.01,
-                amsgrad=False,
-            )
-
-            # scheduler = OneCycleLR(optimizer, max_lr=0.1, total_steps=(31*40*10*args.epochs)//args.batch_size, pct_start=0.3)
-            # scheduler = OneCycleLR(optimizer, max_lr=0.01, steps_per_epoch=31*40*10//args.batch_size, epochs=args.epochs, pct_start=0.3, anneal_strategy='cos')
-            #scheduler = ExponentialLR(optimizer, gamma=0.98)  # 每次调用使学习率乘以 0.95
-
-            # 时间戳作为events路径名
-            TIMESTAMP = "{0:%Y-%m-%d---%H-%M-%S/}".format(datetime.now())
-
-            mt = HCIModelTrainer(
-                model,
-                root_dir= args.root_dir,
-                optimizer= optimizer,
-                scheduler= None,
-                test_index= subject_index,
-                n_epoch= args.epochs,
-                batch_size= args.batch_size,
-                label= args.label,
-                Trainer_name= TIMESTAMP,
-                device_id= args.device
-            )
-            mt.run()
-
-            del model, mt
-            gc.collect()
-            torch.cuda.empty_cache()
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+    if args.cpu_threads:
+        import torch
+        torch.set_num_threads(args.cpu_threads)
+    from ModelTrain import run_loso
+    run_loso(args)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

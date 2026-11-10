@@ -1,474 +1,258 @@
+"""生理窗口读取与来源追踪；分类下采样与训练总体参考分布明确分离。"""
 import os
-import torch
 import pickle
-import scipy.io
-from scipy.stats import zscore
-from torch.utils.data import Dataset, DataLoader, Sampler
-import numpy as np
+from pathlib import Path
 
-'''
-The DEAP dataset and HCI dataset
-'''
+import numpy as np
+import torch
+from torch.utils.data import Dataset, DataLoader, Sampler
+
+
+DATASET_SPECS = {
+    'DEAP': {'subjects': 32, 'trials': 40, 'windows': 10, 'peripheral': (34, 35, 36), 'points': 8064},
+    'HCI': {'subjects': 24, 'trials': 20, 'windows': 5, 'peripheral': (32, 33, 34, 35), 'points': 3840},
+}
+
+
+def canonical_dataset(name: str) -> str:
+    name = name.upper().replace('-', '_')
+    if name in ('HCI', 'MAHNOB_HCI'):
+        return 'HCI'
+    if name != 'DEAP':
+        raise ValueError('数据集只能是DEAP或HCI/MAHNOB_HCI')
+    return name
+
+
+def canonical_label(name: str) -> str:
+    name = name.lower()
+    if name not in ('arousal', 'valence'):
+        raise ValueError('任务只能是arousal或valence')
+    return name
+
+
+def _numpy(value):
+    return value.detach().cpu().numpy() if torch.is_tensor(value) else np.asarray(value)
+
+
+def normalize_subject(data: np.ndarray) -> np.ndarray:
+    """保留原 zscore 默认axis=0：各被试内部沿trial轴计算，不混合其他被试。"""
+    data = np.asarray(data, dtype=np.float32)
+    if not np.isfinite(data).all():
+        raise ValueError('生理输入含NaN或无穷值，请检查服务器预处理文件')
+    mean, std = data.mean(axis=0, keepdims=True), data.std(axis=0, keepdims=True)
+    # 常量位置原实现产生NaN；明确归零，仅修复未定义的零方差情况。
+    return (data - mean) / np.where(std == 0, 1., std)
+
+
 def DEAP_eliminate_individual_differences(data):
-    # shape: (trails 40, channels, time, points)
-    data = zscore(data)
-    data = torch.tensor(data)
-    return data
+    return torch.from_numpy(normalize_subject(_numpy(data)))
+
 
 def HCI_eliminate_individual_differences(data):
-    # shape: (trails 20, channels, time 30, points 128)
-    data = data.numpy()
-    data = zscore(data)
-    data = torch.tensor(data)
-    return data
+    return torch.from_numpy(normalize_subject(_numpy(data)))
 
-class HCIDataset_Python(Dataset):
-    def __init__(self, root_dir = None, data_files = None, label = 'arousal'):
-        if root_dir is None:
-            root_dir = os.environ.get('NEURO_ROOT', '/home/fss')
-        # Get the data files list
-        self.root_dir = os.path.join(root_dir, 'Dataset/HCI-python')
-        if data_files is None:
-            self.data_files = os.listdir(self.root_dir)
-        else:
-            self.data_files = data_files
-        self.data_files.sort(key=lambda x:int(x[:-4]))
-        self.time_window = 6
-        # Loading data
-        print('loading data...')
-        self.EEG = []
-        self.ECG = []
-        self.GSR = []
-        self.Label = []
-        for data_file in self.data_files:
-            if data_file.endswith('.npy'):
-                file_path = os.path.join(self.root_dir, data_file)
-            else:
-                data_file = data_file + '.npy'
-                file_path = os.path.join(self.root_dir, data_file)
-            with open(file_path, 'rb') as f:
-                data = pickle.load(f)
-            tmp_EEG = data['data'][:, 0:32, :]
-            self.EEG.append(tmp_EEG.reshape(20, 32, 30, 128))
-            tmp_ECG = data['data'][:, 32:35, :]
-            self.ECG.append(tmp_ECG.reshape(20, 3, 30, 128))
-            tmp_GSR = (data['data'][:, 35, :])[:,None,:]
-            self.GSR.append(tmp_GSR.reshape(20, 1, 30, 128))
-            self.Label.append(torch.tensor(data['labels']))
 
-        # 去除个体差异性
-        for index in range(len(data_files)):
-            self.EEG[index] = HCI_eliminate_individual_differences(self.EEG[index])
-            self.ECG[index] = HCI_eliminate_individual_differences(self.ECG[index])
-            self.GSR[index] = HCI_eliminate_individual_differences(self.GSR[index])
-        
-        # 为了平衡训练集的样本分布
-        if len(data_files) != 1:         
-            # 合并所有样本到一个列表，方便下采样
-            all_EEG = []
-            all_ECG = []
-            all_GSR = []
-            all_Label = []
-            for i in range(len(self.EEG)):
-                all_EEG.extend(list(self.EEG[i]))
-                all_ECG.extend(list(self.ECG[i]))
-                all_GSR.extend(list(self.GSR[i]))
-                all_Label.extend(list(self.Label[i]))
-            
-            # 转为 numpy 数组，才能用索引
-            all_EEG = np.array(all_EEG)      # [N, 32, 30, 128]
-            all_ECG = np.array(all_ECG)      # [N, 3, 30, 128]
-            all_GSR = np.array(all_GSR)      # [N, 1, 30, 128]
-            all_Label = np.array(all_Label)  # [N, 2]
-
-            # 下采样代码插入点
-            # 统计每个类别的索引  Arousal: 1  Valence: 0
-            # 检查标签类型并选择相应的列索引
-            column_index = 1 if label == 'arousal' else 0  # 如果是arousal用第二列(索引1)，否则用第一列(索引0)
-            labels_np = np.array(all_Label)
-            class0_indices = np.where(labels_np[:,column_index] <= 5)[0]
-            class1_indices = np.where(labels_np[:,column_index] > 5)[0]
-            
-            # 取两类中数量较少的那个，作为下采样目标
-            min_len = min(len(class0_indices), len(class1_indices))
-            np.random.seed(42)  # 保持可复现
-            sampled_class0 = np.random.choice(class0_indices, min_len, replace=False)
-            sampled_class1 = np.random.choice(class1_indices, min_len, replace=False)
-            
-            # 分别丢弃不能整除20的部分
-            valid_trial_num = (min_len // 20) * 20
-            sampled_class0 = sampled_class0[:valid_trial_num]
-            sampled_class1 = sampled_class1[:valid_trial_num]
-
-            # 再拼接和 shuffle
-            sampled_indices = np.concatenate([sampled_class0, sampled_class1])
-            np.random.shuffle(sampled_indices)
-            
-            num_subjects = valid_trial_num // 20 * 2 # 两个类别
-
-            EEG_final = all_EEG[sampled_indices].reshape(num_subjects, 20, *all_EEG.shape[1:])
-            ECG_final = all_ECG[sampled_indices].reshape(num_subjects, 20, *all_ECG.shape[1:])
-            GSR_final = all_GSR[sampled_indices].reshape(num_subjects, 20, *all_GSR.shape[1:])
-            Label_final = all_Label[sampled_indices].reshape(num_subjects, 20, *all_Label.shape[1:])  # 若只要第二列可用 [:, 1]
-                    
-            # 用下采样后的索引更新数据
-            self.EEG = [torch.tensor(EEG_final[i]) for i in range(num_subjects)]      # 每个被试20个trial
-            self.ECG = [torch.tensor(ECG_final[i]) for i in range(num_subjects)]
-            self.GSR = [torch.tensor(GSR_final[i]) for i in range(num_subjects)]
-            self.Label = [Label_final[i] for i in range(num_subjects)]
-        
-    def __getitem__(self, index):
-        # Read a single sample of data from the data array
-        # Return the tensor data
-        data = {
-            'EEG': self.EEG[index],
-            'ECG': self.ECG[index],
-            'GSR': self.GSR[index],
-            'Labels': self.Label[index],
-            'data_files': self.data_files,
-        }
-        # Return the tensor data
-        return (data, index)
-
-    def __reshape_label__(self):
-        tmp_label = self.Label
-        self.Label = []
-        for index in range(self.__len__()):
-            subject_index = index // (20*(30//self.time_window))
-            video_index = (index % (20*(30//self.time_window))) // (30//self.time_window)
-            self.Label.append(tmp_label[subject_index][video_index])
+class PhysiologicalWindows(Dataset):
+    """未做标签选择的配对训练总体；每条记录有被试、trial、窗口和数据集标识。"""
+    def __init__(self, root_dir, dataset, subjects, label='arousal'):
+        self.dataset = canonical_dataset(dataset)
+        self.label = canonical_label(label)
+        spec = DATASET_SPECS[self.dataset]
+        self.subjects = sorted(int(s) for s in subjects)
+        if not self.subjects or len(set(self.subjects)) != len(self.subjects) or any(s < 1 or s > spec['subjects'] for s in self.subjects):
+            raise ValueError('被试列表为空、重复或超出数据集范围')
+        self.windows_per_trial = spec['windows']
+        self.trials_per_subject = spec['trials']
+        root_dir = root_dir if root_dir is not None else os.environ.get('NEURO_ROOT', '/home/fss')
+        self.root_dir = Path(root_dir) / 'Dataset' / f'{self.dataset}-python'
+        self.data_files = [f'{s}.npy' for s in self.subjects]
+        cns, ans, labels, sources = [], [], [], []
+        for subject in self.subjects:
+            path = self.root_dir / f'{subject}.npy'
+            with path.open('rb') as stream:
+                # 仓库既有文件虽名为npy，实际为pickle字典；不改变格式。
+                record = pickle.load(stream)
+            raw, ratings = _numpy(record['data']), _numpy(record['labels'])
+            if raw.ndim != 3 or raw.shape[0] != spec['trials'] or raw.shape[1] <= max(spec['peripheral']) or raw.shape[2] != spec['points']:
+                raise ValueError(f'{path}形状错误：实际{raw.shape}，要求{spec["trials"]}个trial及{spec["points"]}个时间点')
+            if ratings.ndim != 2 or ratings.shape[0] != spec['trials'] or ratings.shape[1] < 2 or not np.isfinite(ratings[:, :2]).all():
+                raise ValueError(f'{path}标签形状或数值错误')
+            offset = 384 if self.dataset == 'DEAP' else 0
+            eeg = normalize_subject(raw[:, :32, offset:])
+            peripheral = normalize_subject(raw[:, spec['peripheral'], offset:])
+            def windowize(array):
+                count, channels, length = array.shape
+                if length != spec['windows'] * 768:
+                    raise ValueError('窗口长度不满足6秒×128Hz')
+                windows = array.reshape(count, channels, spec['windows'], 768).transpose(0, 2, 1, 3)
+                return torch.from_numpy(np.ascontiguousarray(windows.reshape(-1, channels, 768)))
+            cns.append(windowize(eeg))
+            ans.append(windowize(peripheral))
+            column = 1 if self.label == 'arousal' else 0
+            binary = (ratings[:, column] > 5).astype(np.int64)
+            labels.append(torch.from_numpy(np.repeat(binary, spec['windows'])))
+            sources.extend((subject, trial, window) for trial in range(spec['trials']) for window in range(spec['windows']))
+        self.x_c, self.x_a = torch.cat(cns), torch.cat(ans)
+        self.Label = torch.cat(labels)
+        self.source_ids = torch.tensor(sources, dtype=torch.long)
 
     def __len__(self):
-        return len(self.EEG)
-
-
-
-class DEAPDataset_Python(Dataset):
-    def __init__(self, root_dir = None, data_files = None, label = 'arousal'):
-        if root_dir is None:
-            root_dir = os.environ.get('NEURO_ROOT', '/home/fss')
-        # Get the data files list
-        self.root_dir = os.path.join(root_dir, 'Dataset/DEAP-python')
-        if data_files is None:
-            self.data_files = os.listdir(self.root_dir)
-        else:
-            self.data_files = data_files
-        self.data_files.sort(key=lambda x:int(x[:-4]))
-        self.time_window = 6
-        # Loading data
-        print('loading data...')
-        self.EEG = []
-        self.EMG = []
-        self.GSR = []
-        self.Label = []
-        for data_file in self.data_files:
-            if data_file.endswith('.npy'):
-                file_path = os.path.join(self.root_dir, data_file)
-            else:
-                data_file = data_file + '.npy'
-                file_path = os.path.join(self.root_dir, data_file)
-            with open(file_path, 'rb') as f:
-                data = pickle.load(f)
-            tmp_EEG = data['data'][:,0:32,384:]
-            self.EEG.append(tmp_EEG.reshape(40, 32, 60, 128))
-            tmp_EMG = data['data'][:,34:36,384:]
-            self.EMG.append(tmp_EMG.reshape(40, 2, 60, 128))
-            tmp_GSR = (data['data'][:,36,384:])[:,None,:]
-            self.GSR.append(tmp_GSR.reshape(40, 1, 60, 128))
-            self.Label.append(torch.tensor(data['labels']))
-
-        # 去除个体差异性
-        for index in range(len(data_files)):
-            self.EEG[index] = DEAP_eliminate_individual_differences(self.EEG[index])
-            self.EMG[index] = DEAP_eliminate_individual_differences(self.EMG[index])
-            self.GSR[index] = DEAP_eliminate_individual_differences(self.GSR[index])
-
-        # 为了平衡训练集的样本分布
-        if len(data_files) != 1:
-            # 合并所有样本到一个列表，方便下采样
-            all_EEG = []
-            all_EMG = []
-            all_GSR = []
-            all_Label = []
-            for i in range(len(self.EEG)):
-                all_EEG.extend(list(self.EEG[i]))
-                all_EMG.extend(list(self.EMG[i]))
-                all_GSR.extend(list(self.GSR[i]))
-                all_Label.extend(list(self.Label[i]))
-
-            # 转为 numpy 数组，才能用索引
-            all_EEG = np.array(all_EEG)  # [N, 32, 60, 128]
-            all_EMG = np.array(all_EMG)  # [N, 2, 60, 128]
-            all_GSR = np.array(all_GSR)  # [N, 1, 60, 128]
-            all_Label = np.array(all_Label)  # [N, 4]
-
-            # 下采样代码插入点
-            # 统计每个类别的索引  Arousal: 1  Valence: 0
-            # 检查标签类型并选择相应的列索引
-            column_index = 1 if label == 'arousal' else 0  # 如果是arousal用第二列(索引1)，否则用第一列(索引0)
-            labels_np = np.array(all_Label)
-            class0_indices = np.where(labels_np[:, column_index] <= 5)[0]
-            class1_indices = np.where(labels_np[:, column_index] > 5)[0]
-
-            # 取两类中数量较少的那个，作为下采样目标
-            min_len = min(len(class0_indices), len(class1_indices))
-            np.random.seed(42)  # 保持可复现
-            sampled_class0 = np.random.choice(class0_indices, min_len, replace=False)
-            sampled_class1 = np.random.choice(class1_indices, min_len, replace=False)
-
-            # 分别丢弃不能整除40的部分
-            valid_trial_num = (min_len // 40) * 40
-            sampled_class0 = sampled_class0[:valid_trial_num]
-            sampled_class1 = sampled_class1[:valid_trial_num]
-
-            # 再拼接和 shuffle
-            sampled_indices = np.concatenate([sampled_class0, sampled_class1])
-            np.random.shuffle(sampled_indices)
-
-            num_subjects = valid_trial_num // 40 * 2  # 两个类别
-
-            EEG_final = all_EEG[sampled_indices].reshape(num_subjects, 40, *all_EEG.shape[1:])
-            EMG_final = all_EMG[sampled_indices].reshape(num_subjects, 40, *all_EMG.shape[1:])
-            GSR_final = all_GSR[sampled_indices].reshape(num_subjects, 40, *all_GSR.shape[1:])
-            Label_final = all_Label[sampled_indices].reshape(num_subjects, 40, *all_Label.shape[1:])  # 若只要第二列可用 [:, 1]
-
-            # 用下采样后的索引更新数据
-            self.EEG = [torch.tensor(EEG_final[i]) for i in range(num_subjects)]  # 每个被试40个trial
-            self.EMG = [torch.tensor(EMG_final[i]) for i in range(num_subjects)]
-            self.GSR = [torch.tensor(GSR_final[i]) for i in range(num_subjects)]
-            self.Label = [Label_final[i] for i in range(num_subjects)]
+        return len(self.Label)
 
     def __getitem__(self, index):
-        # Read a single sample of data from the data array
-        # Return the tensor data
-        data = {
-            'EEG': self.EEG[index],
-            'EMG': self.EMG[index],
-            'GSR': self.GSR[index],
-            'Labels': self.Label[index],
-            'data_files': self.data_files,
+        subject, trial, window = self.source_ids[index].tolist()
+        peripheral_key = 'EMG' if self.dataset == 'DEAP' else 'ECG'
+        payload = {
+            'x_c': self.x_c[index], 'x_a': self.x_a[index], 'EEG': self.x_c[index],
+            peripheral_key: self.x_a[index, :-1], 'GSR': self.x_a[index, -1:],
+            'Labels': self.Label[index], 'source_ids': self.source_ids[index],
+            'subject_id': subject, 'trial_id': trial, 'window_id': window, 'dataset': self.dataset,
         }
-        # Return the tensor data
-        return (data, index)
+        return payload, int(index)
 
-    def __reshape_label__(self):
-        tmp_label = self.Label
-        self.Label = []
-        for index in range(self.__len__()):
-            subject_index = index // (40*(60//self.time_window))
-            video_index = (index % (40*(60//self.time_window))) // (60//self.time_window)
-            self.Label.append(tmp_label[subject_index][video_index])
-            
+    def balanced_indices(self, seed=42):
+        """沿用trial级二类下采样及整组截断；不会修改未平衡总体或来源。"""
+        w, group = self.windows_per_trial, self.trials_per_subject
+        trial_labels = self.Label[::w].numpy()
+        zero, one = np.flatnonzero(trial_labels == 0), np.flatnonzero(trial_labels == 1)
+        size = min(len(zero), len(one))
+        size = size // group * group
+        if size == 0:
+            raise ValueError('原trial平衡规则截断后无样本；请检查标签或明确使用--no_balance')
+        rng = np.random.RandomState(seed)
+        # 先抽取min_len再截断，与既有选择顺序一致；使用当前任务的标签。
+        minimum = min(len(zero), len(one))
+        selected = np.concatenate((rng.choice(zero, minimum, replace=False)[:size],
+                                   rng.choice(one, minimum, replace=False)[:size]))
+        rng.shuffle(selected)
+        return torch.tensor((selected[:, None] * w + np.arange(w)[None, :]).reshape(-1), dtype=torch.long)
+
+
+class WindowSelection(Dataset):
+    """只保存总体窗口索引，共享原始张量，不复制或丢失来源。"""
+    def __init__(self, population, indices):
+        self.population = population
+        self.indices = torch.as_tensor(indices, dtype=torch.long)
+        if self.indices.ndim != 1 or not len(self.indices) or self.indices.min() < 0 or self.indices.max() >= len(population):
+            raise ValueError('窗口子集索引错误')
+        self.dataset, self.label = population.dataset, population.label
+        self.windows_per_trial = population.windows_per_trial
+
+    @property
+    def source_ids(self):
+        return self.population.source_ids[self.indices]
+
+    @property
+    def Label(self):
+        return self.population.Label[self.indices]
+
     def __len__(self):
-        return len(self.EEG)
+        return len(self.indices)
 
-# make sure input is list
-def to_list(input):
-    if isinstance(input, list):
-        return input
-    elif isinstance(input, int):
-        return [input]
-    else:
-        raise ValueError("Input must be an integer or a list")
-
-
-from collections import Counter
-
-
-def HCISubdataset(root_dir, index, label):
-    if index == []:
-        return []
-    # args:
-    #   [1, 3, 5]
-    file_index = [f"{str(item)}.npy" for item in index]
-    #   ['1.npy', '3.npy', '5.npy']
-    subset = HCIDataset_Python(root_dir, file_index, label)
-    
-    def Reshape_data(data_list, time_window = 6):
-        if data_list == []:
-            return []
-        # data_list[index] : videos * channels * (windows * split_size) * timepoints
-        # eg. 20, 32, 30(5*6), 128
-        videos, channel, time, timepoints = data_list[0].shape
-
-        # Ensure that the time dimension is divisible by time_window
-        assert time % time_window == 0, "Time dimension must be divisible by time_window"
-        new_data_list = []
-
-        for index in range(0, len(data_list)):
-            # Reshape the tensor
-            reshaped = data_list[index].reshape(videos, channel, -1, time_window, timepoints)
-            reshaped = reshaped.permute(0, 2, 1, 3, 4)
-            reshaped = reshaped.reshape(-1, channel, time_window * timepoints)
-            new_data_list.extend(reshaped)
-
-        return new_data_list
-
-    subset.EEG, subset.ECG, subset.GSR = Reshape_data(subset.EEG), Reshape_data(subset.ECG), Reshape_data(subset.GSR)
-
-    # deal Label: n * 20 * 2
-    # need to be (n*20) * 2
-    # this is Coarse Label -> Arousal Valence
-    for index in range(0, len(subset.Label)):
-        # drop last two dimensions
-        if label == 'arousal':
-            subset.Label[index] = subset.Label[index][:,1]
-        elif label == 'valence':
-            subset.Label[index] = subset.Label[index][:,0]
-
-    # 目前Label [1,9]，需要划分至[0,1]
-    # https://ieeexplore.ieee.org/document/9096541
-    # https://www.mdpi.com/1424-8220/18/8/2739
-    # Label     HVHA    HVLA    LVHA    LVLA
-    # Valence   >5      >5      <=5     <=5
-    # Arousal   >5      <=5     >5      <=5
-    for index in range(0, len(subset.Label)):
-        for video_index in range(20):
-            if subset.Label[index][video_index] <= 5:
-                subset.Label[index][video_index] = 0
-            else:
-                subset.Label[index][video_index] = 1
-
-    # 这一步是扩展原来的类别标签到每一个窗口上
-    subset.__reshape_label__()
-    return subset
-
-
-
-
-def DEAPSubdataset(root_dir, index, label):
-    if index == []:
-        return []
-    # args:
-    #   [1, 3, 5]
-    file_index = [f"{str(item)}.npy" for item in index]
-    #   ['1.npy', '3.npy', '5.npy']
-    subset = DEAPDataset_Python(root_dir, file_index)
-
-    def Reshape_data(data_list, time_window = 6):
-        if data_list == []:
-            return []
-        # data_list[index] : videos * channels * (windows * split_size) * timepoints
-        # eg. 40, 32, 60(10*6), 128
-        videos, channel, time, timepoints = data_list[0].shape
-
-        # Ensure that the time dimension is divisible by time_window
-        assert time % time_window == 0, "Time dimension must be divisible by time_window"
-        new_data_list = []
-
-        for index in range(0, len(data_list)):
-            # Reshape the tensor
-            reshaped = data_list[index].reshape(videos, channel, -1, time_window, timepoints)
-            reshaped = reshaped.permute(0, 2, 1, 3, 4)
-            reshaped = reshaped.reshape(-1, channel, time_window * timepoints)
-            new_data_list.extend(reshaped)
-
-        return new_data_list
-
-    subset.EEG, subset.EMG, subset.GSR = Reshape_data(subset.EEG), Reshape_data(subset.EMG), Reshape_data(subset.GSR)
-
-    # deal Label: n * 40 * 4 
-    # need to be (n*40) * 2
-    # this is Coarse Label -> Arousal Valence
-    for index in range(0, len(subset.Label)):
-        # drop last two dimensions
-        if label == 'arousal':
-            subset.Label[index] = subset.Label[index][:,1]
-        elif label == 'valence':
-            subset.Label[index] = subset.Label[index][:,0]
-
-    # 目前Label [1,9]，需要划分至[0,1]
-    # https://ieeexplore.ieee.org/document/9096541
-    # https://www.mdpi.com/1424-8220/18/8/2739
-    # Label     HVHA    HVLA    LVHA    LVLA
-    # Valence   >5      >5      <=5     <=5
-    # Arousal   >5      <=5     >5      <=5
-    for index in range(0, len(subset.Label)):
-        for video_index in range(40):
-            if subset.Label[index][video_index] <= 5:
-                subset.Label[index][video_index] = 0
-            else:
-                subset.Label[index][video_index] = 1
-
-    # 这一步是扩展原来的类别标签到每一个窗口上
-    subset.__reshape_label__()
-    return subset
+    def __getitem__(self, index):
+        return self.population[int(self.indices[index])]
 
 
 class GroupedSampler(Sampler):
-    def __init__(self, data_source, group_size, shuffle=True):
-        self.data_source = data_source
-        self.group_size = group_size
-        self.shuffle = shuffle
-        self.num_groups = len(data_source) // group_size  # 确定组数
+    """保留原有按trial窗口分组打乱；使用独立固定种子生成器逐epoch推进。"""
+    def __init__(self, data_source, group_size, shuffle=True, seed=42):
+        self.data_source, self.group_size, self.shuffle = data_source, group_size, shuffle
+        self.generator = torch.Generator().manual_seed(seed)
 
     def __iter__(self):
-        # 创建按每10个一组的索引
-        indices = np.arange(len(self.data_source))
-        grouped_indices = [indices[i:i + self.group_size] for i in range(0, len(self.data_source), self.group_size)]
-
-        # 打乱这些组
+        groups = list(range(0, len(self.data_source), self.group_size))
         if self.shuffle:
-            np.random.shuffle(grouped_indices)
-
-        # 将打乱后的组展开成一个列表，保持原始长度
-        shuffled_indices = [idx for group in grouped_indices for idx in group]
-
-        return iter(shuffled_indices)
+            groups = [groups[i] for i in torch.randperm(len(groups), generator=self.generator).tolist()]
+        return iter([j for start in groups for j in range(start, min(start + self.group_size, len(self.data_source)))])
 
     def __len__(self):
         return len(self.data_source)
 
-def HCIDataLoader(root_dir, test_index, label, batch_size = 20):
-    # don't need to input dataset, instead, input the root dir of dataset
-    test_index = to_list(test_index)
-    # Leave one subject out
-    assert 1 <= min(test_index) and max(test_index) <= 24, "Index must be between 1 and 24 (inclusive)"
 
-    train_index = [i for i in range(1, 25) if i != test_index[0]]
-    # train_index = [3]
-    test_index = test_index
-
-    group_size = 5
-
-    train_dataloader = DataLoader(HCISubdataset(root_dir, train_index, label), batch_size=batch_size, sampler=GroupedSampler(HCISubdataset(root_dir, train_index, label), group_size))
-    test_dataloader = DataLoader(HCISubdataset(root_dir, test_index, label), batch_size=batch_size, sampler=GroupedSampler(HCISubdataset(root_dir, test_index, label), group_size))
-
-    return train_dataloader, test_dataloader
+def seed_worker(worker_id):
+    """DataLoader提供的确定性worker种子同时应用于NumPy和Python。"""
+    import random
+    seed = torch.initial_seed() % 2 ** 32
+    np.random.seed(seed)
+    random.seed(seed)
 
 
-def DEAPDataLoader(root_dir, test_index, label, batch_size = 40):
-    # don't need to input dataset, instead, input the root dir of dataset
-    test_index = to_list(test_index)
-    # Leave one subject out
-    assert 1 <= min(test_index) and max(test_index) <= 32, "Index must be between 1 and 32 (inclusive)"
-
-    train_index = [i for i in range(1, 33) if i != test_index[0]]
-    # train_index = [14]
-    test_index = test_index
-
-    group_size = 10
-
-    train_dataloader = DataLoader(DEAPSubdataset(root_dir, train_index, label), batch_size=batch_size, sampler=GroupedSampler(DEAPSubdataset(root_dir, train_index, label), group_size))
-    test_dataloader = DataLoader(DEAPSubdataset(root_dir, test_index, label), batch_size=batch_size, sampler=GroupedSampler(DEAPSubdataset(root_dir, test_index, label), group_size))
-
-    return train_dataloader, test_dataloader
+def make_loaders(train_dataset, test_dataset, batch_size=40, workers=0, seed=42):
+    if batch_size < 2 or len(train_dataset) < 2:
+        raise ValueError('训练batch及训练集至少包含两个窗口，以便排除自身参考')
+    common = {'num_workers': workers, 'worker_init_fn': seed_worker,
+              'generator': torch.Generator().manual_seed(seed)}
+    sampler = GroupedSampler(train_dataset, train_dataset.windows_per_trial, seed=seed)
+    train = DataLoader(train_dataset, batch_size=batch_size, sampler=sampler, drop_last=True, **common)
+    if len(train) == 0:
+        raise ValueError('训练数据少于batch_size；请显式减小batch_size')
+    test = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, drop_last=False, **common)
+    return train, test
 
 
+def cal_train_index(test_index, total_subjects=32):
+    tests = to_list(test_index)
+    if not tests or min(tests) < 1 or max(tests) > total_subjects:
+        raise ValueError('held-out被试超出范围')
+    return [s for s in range(1, total_subjects + 1) if s not in tests]
 
-# 根据输入测试集索引计算训练集索引
-def cal_train_index(test_index, total_subjects = 32):
-    def to_list(input):
-        if isinstance(input, list):
-            return input
-        elif isinstance(input, int):
-            return [input]
-        else:
-            raise ValueError("Input must be an integer or a list")
 
-    test_index = to_list(test_index)
-    # Leave one subject out
-    assert 1 <= min(test_index) and max(test_index) <= total_subjects, "Index must be between 1 and 32 (inclusive)"
-    train_index = [i for i in range(1, total_subjects + 1) if i != test_index[0]]
-    # return [3]
-    return train_index
+def to_list(value):
+    return value if isinstance(value, list) else [int(value)]
+
+
+def _compat_dataset(root_dir, data_files, label, dataset):
+    directory = Path(root_dir if root_dir is not None else os.environ.get('NEURO_ROOT', '/home/fss')) / 'Dataset' / f'{dataset}-python'
+    subjects = [int(Path(str(f)).stem) for f in data_files] if data_files is not None else [int(f.stem) for f in directory.glob('*.npy')]
+    population = PhysiologicalWindows(root_dir, dataset, subjects, label)
+    if len(subjects) > 1:
+        return WindowSelection(population, population.balanced_indices())
+    return population
+
+
+class DEAPDataset_Python(Dataset):
+    """保留既有构造名和getitem格式，valence参数正确传入trial平衡。"""
+    def __init__(self, root_dir=None, data_files=None, label='arousal'):
+        self.wrapped = _compat_dataset(root_dir, data_files, label, 'DEAP')
+
+    def __len__(self):
+        return len(self.wrapped)
+
+    def __getitem__(self, index):
+        return self.wrapped[index]
+
+    @property
+    def source_ids(self):
+        return self.wrapped.source_ids
+
+
+class HCIDataset_Python(DEAPDataset_Python):
+    def __init__(self, root_dir=None, data_files=None, label='arousal'):
+        self.wrapped = _compat_dataset(root_dir, data_files, label, 'HCI')
+
+
+def DEAPSubdataset(root_dir, index, label):
+    return _compat_dataset(root_dir, [f'{i}.npy' for i in to_list(index)], label, 'DEAP')
+
+
+def HCISubdataset(root_dir, index, label):
+    return _compat_dataset(root_dir, [f'{i}.npy' for i in to_list(index)], label, 'HCI')
+
+
+def _compat_loaders(root_dir, test_index, label, batch_size, dataset):
+    tests = to_list(test_index)
+    if len(tests) != 1:
+        raise ValueError('LOSO只允许一个held-out被试')
+    count = DATASET_SPECS[dataset]['subjects']
+    population = PhysiologicalWindows(root_dir, dataset, cal_train_index(tests, count), label)
+    train = WindowSelection(population, population.balanced_indices())
+    test = PhysiologicalWindows(root_dir, dataset, tests, label)
+    return make_loaders(train, test, batch_size)
+
+
+def DEAPDataLoader(root_dir, test_index, label, batch_size=40):
+    return _compat_loaders(root_dir, test_index, label, batch_size, 'DEAP')
+
+
+def HCIDataLoader(root_dir, test_index, label, batch_size=20):
+    return _compat_loaders(root_dir, test_index, label, batch_size, 'HCI')
