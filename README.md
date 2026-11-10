@@ -14,6 +14,8 @@ E1b已观察到epoch37卷积核严重收缩与骨干输出变常量。独立分�
 
 W1两组现已在服务器完成5轮：关闭衰减保留了中介参数尺度，但事实分类仍很弱、前门测试输出仍为单类别。独立分支 `feat/neurofdan-mechanism-probe` 提供[W1结果与E3/E4配对机制探针](docs/w1_results_and_mechanism_probe.md)，读取现有权重分离真实输入、中介噪声与参考边缘化，不再训练，不改变核心模型。
 
+E3/E4现已回传：B组输入路径存在，但局部输入影响远弱于采样噪声。参见[结果分析、20轮有限续训与正式实验门槛](docs/e3e4_results_and_training_gate.md)。文档分支 `feat/neurofdan-e3e4-review` 不修改源码；建议在独立副本上复用9d698f3训练工具，新增15轮后复盘，不自动扩展LOSO。
+
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
 - [第五阶段：日志分层、GitHub结果回传与认证说明](docs/phase5_server_upload_guide.md)
