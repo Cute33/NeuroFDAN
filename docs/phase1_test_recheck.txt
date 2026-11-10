@@ -1,0 +1,29 @@
+test_ans_no_cns_features_or_current_input_argument (test_frontdoor_scm.FrontDoorTests.test_ans_no_cns_features_or_current_input_argument) ... ok
+test_bank_heldout_duplicates_and_empty (test_frontdoor_scm.FrontDoorTests.test_bank_heldout_duplicates_and_empty) ... ok
+test_bank_pairing_exclusion_and_provenance (test_frontdoor_scm.FrontDoorTests.test_bank_pairing_exclusion_and_provenance) ... ok
+test_cns_ans_ablation_eliminates_path (test_frontdoor_scm.FrontDoorTests.test_cns_ans_ablation_eliminates_path) ... ok
+test_cns_current_reaches_lif_spikes (test_frontdoor_scm.FrontDoorTests.test_cns_current_reaches_lif_spikes) ... ok
+test_complete_gnn_feature_interface (test_frontdoor_scm.FrontDoorTests.test_complete_gnn_feature_interface) ... ok
+test_conditional_ans_and_gradient (test_frontdoor_scm.FrontDoorTests.test_conditional_ans_and_gradient) ... ok
+test_cuda_forward_backward (test_frontdoor_scm.FrontDoorTests.test_cuda_forward_backward) ... skipped '当前环境无可用 CUDA，未执行 GPU 测试'
+test_do_head_isolated_from_current_input (test_frontdoor_scm.FrontDoorTests.test_do_head_isolated_from_current_input) ... ok
+test_full_reference_shapes_and_no_pooling (test_frontdoor_scm.FrontDoorTests.test_full_reference_shapes_and_no_pooling) ... ok
+test_hierarchical_shapes_and_clamp (test_frontdoor_scm.FrontDoorTests.test_hierarchical_shapes_and_clamp) ... ok
+test_invalid_shapes_and_singleton_training (test_frontdoor_scm.FrontDoorTests.test_invalid_shapes_and_singleton_training) ... ok
+test_kl_axes_and_oracle_opt_in (test_frontdoor_scm.FrontDoorTests.test_kl_axes_and_oracle_opt_in) ... ok
+test_none_never_samples_reference_bank (test_frontdoor_scm.FrontDoorTests.test_none_never_samples_reference_bank) ... ok
+test_outcome_inputs_and_nondegenerate_dependence (test_frontdoor_scm.FrontDoorTests.test_outcome_inputs_and_nondegenerate_dependence) ... ok
+test_projection_gradient_and_optimizer_step_cpu (test_frontdoor_scm.FrontDoorTests.test_projection_gradient_and_optimizer_step_cpu) ... ok
+test_softmax_before_two_means (test_frontdoor_scm.FrontDoorTests.test_softmax_before_two_means) ... ok
+test_tanh_density_matches_transformed_distribution (test_frontdoor_scm.FrontDoorTests.test_tanh_density_matches_transformed_distribution) ... ok
+test_tanh_normal_likelihood_and_support (test_frontdoor_scm.FrontDoorTests.test_tanh_normal_likelihood_and_support) ... ok
+test_convergence_in_repeated_runs (test_frontdoor_scm.OracleTests.test_convergence_in_repeated_runs) ... ok
+test_gamma_oracle_direct_agreement (test_frontdoor_scm.OracleTests.test_gamma_oracle_direct_agreement) ... ok
+test_invalid_point_shapes_are_rejected (test_frontdoor_scm.OracleTests.test_invalid_point_shapes_are_rejected) ... ok
+test_oracle_independent_of_direct_function (test_frontdoor_scm.OracleTests.test_oracle_independent_of_direct_function) ... ok
+test_outcome_conditional_independence_moments (test_frontdoor_scm.OracleTests.test_outcome_conditional_independence_moments) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 36.110s
+
+OK (skipped=1)

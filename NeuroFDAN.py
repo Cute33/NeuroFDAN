@@ -922,3 +922,9 @@ class NeuroFDAN(nn.Module):
         return logits, torch.tensor(0.0, requires_grad=True), torch.tensor(0.0, requires_grad=True)
 
         return logits, adj, spikes
+
+# 第一阶段独立接口；保留旧模型绑定，真实数据入口留待第二阶段对接。
+from frontdoor_scm import (
+    FrontDoorConfig, CNSMediator, ANSMediator, ReferenceEncoder, OutcomeHead,
+    ReferenceBank, FrontDoorEstimator, frontdoor_loss,
+)
