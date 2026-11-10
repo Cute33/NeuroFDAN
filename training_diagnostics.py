@@ -249,7 +249,7 @@ def _replace_epoch(path: Path, record: dict) -> list[dict]:
     return ordered
 
 
-def save_epoch_diagnostics(folder: Path, record: dict, mediators: dict) -> None:
+def save_epoch_diagnostics(folder: Path, record: dict, mediators: dict) -> dict:
     """四类产物只保存统计；全量中介向量仅在mediator文件出现一次。"""
     # 历史/summary/checkpoint复用原metrics；诊断连续计数不能反向修改这些对象。
     record = copy.deepcopy(record)
@@ -268,18 +268,20 @@ def save_epoch_diagnostics(folder: Path, record: dict, mediators: dict) -> None:
             (np.asarray(diagnostic['primary']['probability_mean']) -
              np.asarray(previous[-1][stage]['primary']['probability_mean'])).tolist() if previous else None)
         collapse[stage] = diagnostic
-        if diagnostic['primary']['single_class']:
+        old_primary = previous[-1][stage]['primary'] if previous else {}
+        if diagnostic['primary']['single_class'] and (old == 0 or
+                diagnostic['primary']['predicted_counts'].index(0) != old_primary.get('predicted_counts', [0, 0]).index(0)):
             logger.warning('%s单类别预测：fold=%s epoch=%s 预测=%s 连续%s轮（single-class prediction detected）',
                            '训练集' if stage == 'train' else '测试集', record['fold'], record['epoch'],
                            diagnostic['primary']['predicted_counts'], diagnostic['single_class_streak'])
-        elif diagnostic['primary']['extreme_imbalance']:
+        elif diagnostic['primary']['extreme_imbalance'] and not diagnostic['primary']['single_class'] and not old_primary.get('extreme_imbalance'):
             logger.warning('%s预测极度失衡：最少类别比例<1%%；该阈值仅用于诊断', stage)
     gradient = record['optimization'].get('gradients', {})
     for name, values in gradient.items():
         prior = previous[-1].get('zero_gradient_streak', {}).get(name, 0) if previous else 0
         streak = prior + 1 if values['all_zero'] else 0
         collapse.setdefault('zero_gradient_streak', {})[name] = streak
-        if values['all_zero']:
+        if values['all_zero'] and prior == 0:
             logger.warning('模块%s该轮所有batch梯度范数为零，连续%s轮；需结合缺失梯度和消融配置判断', name, streak)
     records = _replace_epoch(folder / 'epoch_metrics.jsonl', record)
     _replace_epoch(collapse_path, collapse)
@@ -292,6 +294,39 @@ def save_epoch_diagnostics(folder: Path, record: dict, mediators: dict) -> None:
             test=np.array([r['test_confusion_matrix'] for r in records], dtype=np.int64),
             complete=np.array([r['complete'] for r in records], dtype=bool))
     temporary.replace(folder / 'epoch_confusion_matrices.npz')
+    return collapse
+
+
+def log_epoch_summary(record: dict, collapse: dict, total_epochs: int, interval: int = 10) -> None:
+    """每轮一行含两组紧凑矩阵；周期只打印关键量，不倾倒完整字典。"""
+    train, test = record['train'], record['test']
+    counts = test['prediction_diagnostics']['primary']['predicted_counts']
+    compact = lambda cm: f'[[{cm[0][0]},{cm[0][1]}],[{cm[1][0]},{cm[1][1]}]]'
+    logger.info('fold=%s 轮次%03d/%03d | Loss=%.6f | 训练ACC=%.4f F1=%.4f CM=%s | '
+                '测试ACC=%.4f F1=%.4f CM=%s | 测试预测=%s 单类连续=%s | 保存最佳=%s 完整=%s',
+                record['fold'], record['epoch'], total_epochs, record['optimization']['loss'],
+                train['acc'], train['selection_f1'], compact(record['train_confusion_matrix']),
+                test['acc'], test['selection_f1'], compact(record['test_confusion_matrix']),
+                counts, collapse['test']['single_class_streak'], record['selected_best'], record['complete'])
+    if interval and record['epoch'] % interval == 0:
+        primary = test['prediction_diagnostics']['primary']
+        logger.info('周期诊断：事实训练/测试ACC=%.4f/%.4f；两路径测试不一致率=%.4f；'
+                    '测试P1均值/std=%.6f/%.3e；CE=%.6f CNS_KL=%.3e ANS_KL=%.3e',
+                    train['prediction_diagnostics']['factual']['metrics']['acc'],
+                    test['prediction_diagnostics']['factual']['metrics']['acc'],
+                    test['prediction_diagnostics']['factual_primary_disagreement'],
+                    primary['probability_mean'][1], primary['probability_std'][1],
+                    record['optimization']['factual_ce'], record['optimization']['kl_c'], record['optimization']['kl_a'])
+        if record['diagnostic_level'] == 'full':
+            summary = record['mediator_summary']['test']
+            grad = record['optimization']['gradients']
+            logger.info('周期中介诊断：测试mu跨样本std CNS=%.3e ANS=%.3e；posterior std CNS=%.4f ANS=%.4f；'
+                        '裁剪前梯度均值 CNS=%.3e ANS=%.3e CNS→ANS=%.3e；完整统计见JSONL',
+                        summary['cns']['posterior_mean_between_sample_std']['mean'],
+                        summary['ans']['posterior_mean_between_sample_std']['mean'],
+                        summary['cns']['posterior_std']['mean'], summary['ans']['posterior_std']['mean'],
+                        grad['cns_mediator']['pre_clip_l2']['mean'], grad['ans_mediator']['pre_clip_l2']['mean'],
+                        grad['cns2ans']['pre_clip_l2']['mean'])
 
 
 def log_evaluation(stage: str, metrics: dict, matrix: torch.Tensor) -> None:

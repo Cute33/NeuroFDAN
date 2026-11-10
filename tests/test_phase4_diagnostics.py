@@ -250,8 +250,12 @@ class EvaluationTests(unittest.TestCase):
             mediators = json.loads((folder/'mediator_diagnostics.jsonl').read_text())
             self.assertEqual(mediators['train']['cns']['count'],2)
             self.assertEqual(mediators['test']['ans']['count'],2)
-            self.assertIn('[训练集]',' '.join(captured.output))
-            self.assertIn('[测试集]',' '.join(captured.output))
+            # 第五阶段保留两组矩阵，但以一行紧凑格式打印；不再要求旧多行标题。
+            terminal=' '.join(captured.output)
+            self.assertIn('训练ACC=',terminal)
+            self.assertIn('测试ACC=',terminal)
+            self.assertIn('CM=',terminal)
+            self.assertNotIn('裁剪前模块梯度范数：{',terminal)
             self.assertTrue((folder/'epoch_confusion_matrices.npz').exists())
 
 
