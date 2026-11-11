@@ -43,7 +43,9 @@ cd /home/fss/NeuroFDAN
 set -euo pipefail
 git status --short
 git worktree list
-git fetch origin feat/neurofdan-phase6-outcome-sample-size
+if [ -n "${GIT_SSH_COMMAND:-}" ]; then echo '已有自定义SSH命令，停止，不覆盖认证设置'; exit 1; fi
+export GIT_SSH_COMMAND='ssh -p 443 -o HostName=ssh.github.com -o HostKeyAlias=github.com -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=30 -o ConnectionAttempts=2 -o ServerAliveInterval=15 -o ServerAliveCountMax=2'
+timeout 600 git fetch origin feat/neurofdan-phase6-outcome-sample-size
 SIZE_SHA="$(git rev-parse FETCH_HEAD)"
 SIZE_TOOLS=/home/fss/NeuroFDAN-phase6-outcome-size-tools
 if [ ! -e "$SIZE_TOOLS" ]; then
