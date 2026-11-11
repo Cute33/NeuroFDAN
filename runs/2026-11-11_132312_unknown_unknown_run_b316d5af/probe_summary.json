@@ -1,0 +1,72 @@
+{
+  "operation": "普通与隔离模式的纯PyTorch导入诊断",
+  "parent_executable": "<已屏蔽绝对路径>",
+  "attempts": [
+    {
+      "mode": "normal",
+      "attempt": 1,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 0, \"prefix\": \"<已屏蔽绝对路径>\", \"enum_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/enum.py\", \"path_id\": \"f0460573cb96afd4\", \"within_prefix\": true}, \"torch_distribution_version\": \"2.5.1+cu121\", \"torch_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/__init__.py\", \"path_id\": \"33c32045e808a8e7\", \"within_prefix\": true}}\n{\"stage\": \"导入成功\", \"torch_version\": \"2.5.1+cu121\", \"torch_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/model.py\", \"path_id\": \"eb770392b06d4c38\", \"within_prefix\": true}, \"compiled_cuda_version\": \"12.1\"}\n",
+      "stderr": "",
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "normal",
+      "attempt": 2,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 0, \"prefix\": \"<已屏蔽绝对路径>\", \"enum_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/enum.py\", \"path_id\": \"f0460573cb96afd4\", \"within_prefix\": true}, \"torch_distribution_version\": \"2.5.1+cu121\", \"torch_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/__init__.py\", \"path_id\": \"33c32045e808a8e7\", \"within_prefix\": true}}\n{\"stage\": \"导入成功\", \"torch_version\": \"2.5.1+cu121\", \"torch_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/model.py\", \"path_id\": \"eb770392b06d4c38\", \"within_prefix\": true}, \"compiled_cuda_version\": \"12.1\"}\n",
+      "stderr": "",
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "normal",
+      "attempt": 3,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 0, \"prefix\": \"<已屏蔽绝对路径>\", \"enum_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/enum.py\", \"path_id\": \"f0460573cb96afd4\", \"within_prefix\": true}, \"torch_distribution_version\": \"2.5.1+cu121\", \"torch_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/__init__.py\", \"path_id\": \"33c32045e808a8e7\", \"within_prefix\": true}}\n{\"stage\": \"导入成功\", \"torch_version\": \"2.5.1+cu121\", \"torch_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/model.py\", \"path_id\": \"eb770392b06d4c38\", \"within_prefix\": true}, \"compiled_cuda_version\": \"12.1\"}\n",
+      "stderr": "",
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "isolated",
+      "attempt": 1,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 1, \"prefix\": \"<已屏蔽绝对路径>\", \"enum_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/enum.py\", \"path_id\": \"f0460573cb96afd4\", \"within_prefix\": true}, \"torch_distribution_version\": \"2.5.1+cu121\", \"torch_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/__init__.py\", \"path_id\": \"33c32045e808a8e7\", \"within_prefix\": true}}\n{\"stage\": \"导入成功\", \"torch_version\": \"2.5.1+cu121\", \"torch_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/model.py\", \"path_id\": \"eb770392b06d4c38\", \"within_prefix\": true}, \"compiled_cuda_version\": \"12.1\"}\n",
+      "stderr": "",
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "isolated",
+      "attempt": 2,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 1, \"prefix\": \"<已屏蔽绝对路径>\", \"enum_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/enum.py\", \"path_id\": \"f0460573cb96afd4\", \"within_prefix\": true}, \"torch_distribution_version\": \"2.5.1+cu121\", \"torch_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/__init__.py\", \"path_id\": \"33c32045e808a8e7\", \"within_prefix\": true}}\n{\"stage\": \"导入成功\", \"torch_version\": \"2.5.1+cu121\", \"torch_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/model.py\", \"path_id\": \"eb770392b06d4c38\", \"within_prefix\": true}, \"compiled_cuda_version\": \"12.1\"}\n",
+      "stderr": "",
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "isolated",
+      "attempt": 3,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 1, \"prefix\": \"<已屏蔽绝对路径>\", \"enum_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/enum.py\", \"path_id\": \"f0460573cb96afd4\", \"within_prefix\": true}, \"torch_distribution_version\": \"2.5.1+cu121\", \"torch_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_origin\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/__init__.py\", \"path_id\": \"33c32045e808a8e7\", \"within_prefix\": true}}\n{\"stage\": \"导入成功\", \"torch_version\": \"2.5.1+cu121\", \"torch_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torch/__init__.py\", \"path_id\": \"be1c751c9baf3b83\", \"within_prefix\": true}, \"torchgen_file\": {\"path\": \"<已屏蔽绝对路径>\", \"tail\": \"site-packages/torchgen/model.py\", \"path_id\": \"eb770392b06d4c38\", \"within_prefix\": true}, \"compiled_cuda_version\": \"12.1\"}\n",
+      "stderr": "",
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    }
+  ],
+  "all_normal_imports_ok": true,
+  "all_isolated_imports_ok": true,
+  "training_executed": false,
+  "model_loaded": false,
+  "packages_changed": false,
+  "note": "-I仅作用于子进程，忽略PYTHONPATH/用户site/当前目录搜索；不禁用所有site定制。退出0表示收集完成，不等于PyTorch已修复。CUDA字符串不是GPU实测。"
+}
