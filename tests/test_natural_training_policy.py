@@ -21,11 +21,12 @@ class NaturalTrainingPolicyTests(unittest.TestCase):
             run_fold(SimpleNamespace(no_balance=False), 1)
 
     def test_grid_preserves_unique_sources_and_endpoints(self):
-        ids = source_grid_indices(400, 16)
-        self.assertEqual(len(ids), 16)
-        self.assertEqual(len(set(ids)), 16)
-        self.assertEqual((ids[0], ids[-1]), (0, 399))
-        self.assertEqual(ids, sorted(ids))
+        for samples in (15, 16):
+            ids = source_grid_indices(400, samples)
+            self.assertEqual(len(ids), samples)
+            self.assertEqual(len(set(ids)), samples)
+            self.assertEqual((ids[0], ids[-1]), (0, 399))
+            self.assertEqual(ids, sorted(ids))
 
     def test_grid_does_not_balance_class_counts(self):
         # 来源前100窗为0、后300窗为1，选择结果保留不平衡，而非强行每类8窗。

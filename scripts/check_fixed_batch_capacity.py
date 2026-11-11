@@ -85,8 +85,8 @@ def main() -> None:
     parser.add_argument('--seed', type=int, choices=[42], default=42, help='固定初始化/训练随机种子')
     parser.add_argument('--device', choices=['cpu'], default='cpu', help='仅CPU小批诊断，不启动GPU/LOSO')
     args = parser.parse_args()
-    if not 4 <= args.samples <= 32 or args.samples % 2 or not 50 <= args.steps <= 300 or args.check_every < 1 or args.steps % args.check_every:
-        parser.error('samples为4–32偶数，steps为50–300，check_every为steps的正整数因子')
+    if not 4 <= args.samples <= 32 or not 50 <= args.steps <= 300 or args.check_every < 1 or args.steps % args.check_every:
+        parser.error('samples为4–32，steps为50–300，check_every为steps的正整数因子')
     import torch
     from Datasets import PhysiologicalWindows
     from NeuroFDAN import NeuroFDAN
