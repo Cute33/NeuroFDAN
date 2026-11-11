@@ -373,6 +373,9 @@ def frontdoor_config(args):
 
 def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, optimizer=None):
     """额外对象仅供轻量级接口测试和兼容调用注入，不提供替代真实实验模式。"""
+    if getattr(args, 'no_balance', True) is not True:
+        raise ValueError('当前训练协议保留自然总体，不再执行类别平衡；旧平衡实验请使用受保护历史版本')
+    args.no_balance = True
     seed_everything(args.seed)
     optimizer_weight_decay(args)
     dataset, label = canonical_dataset(args.dataset), canonical_label(args.label)
@@ -385,7 +388,7 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     _assert_reference_sources(population.source_ids, train_subjects, held_out)
     if set(test_dataset.source_ids[:, 0].tolist()) != {held_out}:
         raise ValueError('测试数据来源并非当前held-out被试')
-    selected = population.balanced_indices(args.seed) if not args.no_balance else torch.arange(len(population))
+    selected = torch.arange(len(population))
     train_dataset = WindowSelection(population, selected)
     sampling_mode = getattr(args, 'sampling_mode', 'grouped')
     eval_batch_size = getattr(args, 'eval_batch_size', None)
