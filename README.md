@@ -24,6 +24,8 @@ E3/E4现已回传：B组输入路径存在，但局部输入影响远弱于采�
 
 四组大batch结果现已回传，工程运行成功但前门判别仍弱。见[结果复盘与固定小批记忆能力检查](docs/large_batch_results_and_capacity_check.md)。独立分支 `feat/neurofdan-fixed-batch-capacity` 只对临时内存模型作有界诊断更新，复用原训练函数，不保存权重、不覆盖正式配置，不将小批记忆等同于因果识别或正式分类效果。
 
+容量检查本次在import torch阶段失败，尚无模型拟合结论。参见[导入错误与不改环境的诊断命令](docs/capacity_import_failure.md)，以及[事实监督、前门推断与正式ACC汇报口径](docs/factual_frontdoor_metrics.md)。分支 `feat/neurofdan-metrics-and-import-audit` 只新增说明与标准库诊断，不改变训练/模型或主指标。
+
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
 - [第五阶段：日志分层、GitHub结果回传与认证说明](docs/phase5_server_upload_guide.md)
