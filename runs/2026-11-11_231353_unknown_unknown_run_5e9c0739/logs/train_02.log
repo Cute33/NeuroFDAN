@@ -1,0 +1,9 @@
+test_heldout_reference_is_rejected_before_reading_data (test_capacity_path_diagnostics.CapacityPathTests) ... ok
+test_invalid_shapes_and_non_normalized_probability_are_rejected (test_capacity_path_diagnostics.CapacityPathTests) ... ok
+test_mediator_only_dependence_survives_reference_integration (test_capacity_path_diagnostics.CapacityPathTests) ... ok
+test_reference_only_shortcut_is_detected_and_inputs_unchanged (test_capacity_path_diagnostics.CapacityPathTests) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.049s
+
+OK
