@@ -1,0 +1,145 @@
+{
+  "format_version": 1,
+  "generated_at": "2026-11-11T10:59:45.320055+08:00",
+  "folds": [
+    {
+      "fold": 1,
+      "dataset": "DEAP",
+      "task": "arousal",
+      "seed": 42,
+      "source_version": {
+        "commit": "cb485dfb181cf1e1a66cba87f5804c8598ca85c9",
+        "branch": "",
+        "tracked_changes": false
+      },
+      "planned_epochs": 20,
+      "last_recorded_epoch": 20,
+      "diagnostic_records": 20,
+      "single_class_test_records": 9,
+      "smoke": false,
+      "status": "正常收尾",
+      "best": {
+        "acc": 0.6025,
+        "f1": 0.7464114832535885,
+        "epoch": 12
+      },
+      "has_eligible_best": true,
+      "last_test": {
+        "acc": 0.4025,
+        "selection_f1": 0.008298755186721992,
+        "count": 400,
+        "complete_test": true
+      },
+      "last_train": {
+        "acc": 0.5002884615384615,
+        "selection_f1": 0.023670862295697915,
+        "count": 10400
+      },
+      "last_train_statistics_type": "epoch末训练集评估",
+      "prediction": {
+        "primary": {
+          "confusion_matrix": [
+            [
+              160,
+              0
+            ],
+            [
+              239,
+              1
+            ]
+          ],
+          "true_counts": [
+            160,
+            240
+          ],
+          "predicted_counts": [
+            399,
+            1
+          ],
+          "probability_mean": [
+            0.5114115838706493,
+            0.4885884162038565
+          ],
+          "probability_std": [
+            0.00430919308864395,
+            0.004309192440097994
+          ],
+          "mean_entropy": 0.6928495509074264,
+          "single_class": false,
+          "extreme_imbalance": true,
+          "imbalance_threshold": 0.01,
+          "metrics": {
+            "f1_class0": 0.5724508050089445,
+            "f1_class1": 0.008298755186721992,
+            "acc": 0.4025,
+            "count": 400,
+            "correct": 161,
+            "selection_f1": 0.008298755186721992,
+            "selection_positive_class": 1,
+            "precision": 1.0,
+            "recall": 0.004166666666666667,
+            "sensitivity": 0.004166666666666667,
+            "specificity": 1.0
+          }
+        },
+        "factual": {
+          "confusion_matrix": [
+            [
+              118,
+              42
+            ],
+            [
+              186,
+              54
+            ]
+          ],
+          "true_counts": [
+            160,
+            240
+          ],
+          "predicted_counts": [
+            304,
+            96
+          ],
+          "probability_mean": [
+            0.5132722810655833,
+            0.4867277159541845
+          ],
+          "probability_std": [
+            0.03287370807997909,
+            0.03287370801272404
+          ],
+          "mean_entropy": 0.6906238229946507,
+          "single_class": false,
+          "extreme_imbalance": false,
+          "imbalance_threshold": 0.01,
+          "metrics": {
+            "f1_class0": 0.5086206896551724,
+            "f1_class1": 0.32142857142857145,
+            "acc": 0.43,
+            "count": 400,
+            "correct": 172,
+            "selection_f1": 0.32142857142857145,
+            "selection_positive_class": 1,
+            "precision": 0.5625,
+            "recall": 0.225,
+            "sensitivity": 0.225,
+            "specificity": 0.7375
+          }
+        },
+        "factual_primary_disagreement": 0.2425,
+        "factual_primary_probability_l1": 0.048740285709500314,
+        "single_class_streak": 0,
+        "mean_probability_change_from_previous_epoch": [
+          0.03081647217273714,
+          -0.03081647194921966
+        ]
+      },
+      "issues": []
+    }
+  ],
+  "observed_fold_count": 1,
+  "formal_loso_verified": false,
+  "note": "本摘要不加载权重、不重新选模；正式统计需CalculateResult.py --require_complete。旧Phase4未记录训练源码SHA时不能用上传时SHA代替。",
+  "selection_bias": "held-out测试集参与checkpoint选择，存在测试集选模偏差"
+}
