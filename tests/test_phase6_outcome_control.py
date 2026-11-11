@@ -6,7 +6,8 @@ import numpy as np
 import torch
 from scipy.special import expit
 
-from scripts.phase6_outcome_control import LinearOutcomeControl, fit_head, logistic_objective
+from scripts.phase6_outcome_control import LinearOutcomeControl, fit_head, head_training_view, logistic_objective
+from synthetic_scm import SCMConfig, SyntheticSCM
 
 
 class OutcomeControlTests(unittest.TestCase):
@@ -57,6 +58,35 @@ class OutcomeControlTests(unittest.TestCase):
         head = LinearOutcomeControl(2, 3, np.ones(5), 0.)
         with self.assertRaises(ValueError):
             head(torch.ones(2, 4, 2), torch.ones(2, 3))
+
+
+class HeadSampleSizeTests(unittest.TestCase):
+    def setUp(self):
+        self.scm = SyntheticSCM(SCMConfig(d_u=2, d_xc=3, d_xa=2, d_mc=4, d_ma=4))
+        raw = self.scm.sample(8, 0., 1042)
+        self.base = {key: raw[key].copy() for key in ('m_a', 'x_c', 'x_a', 'y')}
+
+    def test_default_size_preserves_original_training_bytes(self):
+        view, info = head_training_view(self.scm, 0., self.base, 8, 42)
+        for key in self.base:
+            np.testing.assert_array_equal(view[key], self.base[key])
+        self.assertEqual(info['augmentation_seeds'], [])
+        self.assertEqual(set(view), {'m_a', 'x_c', 'x_a', 'y'})
+
+    def test_larger_sample_contains_smaller_sample_as_exact_prefix(self):
+        small, _ = head_training_view(self.scm, 0., self.base, 16, 42)
+        large, info = head_training_view(self.scm, 0., self.base, 32, 42)
+        for key in small:
+            np.testing.assert_array_equal(small[key], large[key][:16])
+            np.testing.assert_array_equal(self.base[key], large[key][:8])
+        self.assertEqual(info['augmentation_seeds'], [10042, 10043, 10044])
+        self.assertTrue(info['reference_population_unchanged'])
+
+    def test_disallowed_fields_and_smaller_size_are_rejected(self):
+        with self.assertRaises(ValueError):
+            head_training_view(self.scm, 0., self.base | {'u': np.zeros((8, 2))}, 16, 42)
+        with self.assertRaises(ValueError):
+            head_training_view(self.scm, 0., self.base, 4, 42)
 
 
 if __name__ == '__main__':
