@@ -1,0 +1,11 @@
+test_cli_defaults_to_natural_population (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+test_direct_api_rejects_balancing_before_loading_data (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+test_grid_does_not_balance_class_counts (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+test_grid_preserves_unique_sources_and_endpoints (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+test_invalid_grid_size_is_rejected (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+test_old_explicit_flag_remains_compatible (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.002s
+
+OK
