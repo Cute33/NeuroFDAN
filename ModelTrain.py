@@ -75,6 +75,15 @@ def validate_resume_sampling_mode(state, mode):
         raise ValueError('checkpoint采样模式不匹配；顺序对照请新run从头训练')
 
 
+def validate_resume_batch_settings(state, batch_size, eval_batch_size):
+    """旧配置的评估batch沿用训练batch；拒绝续训时静默改变更新预算或评价分批。"""
+    old = state['arguments']
+    old_eval = old.get('eval_batch_size')
+    old_eval = old['batch_size'] if old_eval is None else old_eval
+    if old['batch_size'] != batch_size or old_eval != eval_batch_size:
+        raise ValueError('checkpoint训练/评估batch不匹配；大batch实验请使用独立新run从头训练')
+
+
 def parameter_rms(model):
     """只读各参数RMS；full诊断保留逐参数尺度，避免模块范数掩盖卷积核收缩。"""
     result = {}
@@ -379,9 +388,11 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     selected = population.balanced_indices(args.seed) if not args.no_balance else torch.arange(len(population))
     train_dataset = WindowSelection(population, selected)
     sampling_mode = getattr(args, 'sampling_mode', 'grouped')
+    eval_batch_size = getattr(args, 'eval_batch_size', None)
+    eval_batch_size = args.batch_size if eval_batch_size is None else eval_batch_size
     train_loader, test_loader = make_loaders(train_dataset, test_dataset, args.batch_size, args.workers,
-                                           args.seed, sampling_mode=sampling_mode)
-    train_eval_loader = make_train_evaluation_loader(train_dataset, args.batch_size, args.workers)
+                                           args.seed, sampling_mode=sampling_mode, eval_batch_size=eval_batch_size)
+    train_eval_loader = make_train_evaluation_loader(train_dataset, eval_batch_size, args.workers)
     diagnostic_level = getattr(args, 'diagnostic_level', 'basic')
     raw_bank = build_reference_bank(population, train_subjects, held_out, args.N_ref, args.seed)
     device = resolve_device(args.device)
@@ -406,12 +417,16 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
                        arguments=vars(args), model=asdict(model.frontdoor_config),
                        source_version=source_version(Path(__file__).resolve().parent),
                        sampling_mode=sampling_mode,
-                       optimization_group_size=train_loader.sampler.group_size)
+                       optimization_group_size=train_loader.sampler.group_size,
+                       optimization_batch_size=args.batch_size, evaluation_batch_size=eval_batch_size,
+                       full_epoch_optimizer_steps=len(train_loader),
+                       planned_fresh_full_run_optimizer_steps=args.epochs * len(train_loader))
     best, first_epoch = BestCheckpoint(), 1
     if args.resume:
         state = load_checkpoint(args.resume, model, optimizer, device)
         validate_resume_weight_decay(state, args)
         validate_resume_sampling_mode(state, sampling_mode)
+        validate_resume_batch_settings(state, args.batch_size, eval_batch_size)
         old = state['reference_report']
         if old['held_out_subject'] != held_out or old['dataset'] != dataset or state['arguments']['label'] != label:
             raise ValueError('checkpoint数据集、任务或held-out不匹配')
@@ -433,6 +448,8 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
                 type(optimizer).__name__, [group.get('weight_decay') for group in optimizer.param_groups])
     logger.info('优化窗口排列=%s；打乱组大小=%s；样本选择与未平衡参考总体不变',
                 sampling_mode, train_loader.sampler.group_size)
+    logger.info('训练batch=%s；评估batch=%s；完整epoch更新次数=%s；丢弃尾窗=%s（smoke上限另计）',
+                args.batch_size, eval_batch_size, len(train_loader), len(train_dataset) % args.batch_size)
     (fold_dir / 'fold.json').write_text(json.dumps(fold_config, ensure_ascii=False, indent=2), encoding='utf-8')
     _record_sources(fold_dir / 'reference_sources.json', raw_bank)
     logger.info('当前fold=%s；训练被试=%s；测试被试=%s；参考库=%s/%s；来源检查通过',

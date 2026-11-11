@@ -20,7 +20,9 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--weight_decay', type=float, default=.01,
                         help='Adam耦合L2系数；默认沿用0.01，零仅用于显式单变量对照，不切换AdamW')
     parser.add_argument('--epochs', type=int, default=100, help='每个fold的训练轮数')
-    parser.add_argument('--batch_size', type=int, default=40, help='训练/测试batch大小，训练末尾不足batch明确丢弃')
+    parser.add_argument('--batch_size', type=int, default=40, help='训练batch；评估默认同值，可用eval_batch_size独立指定；训练尾批明确丢弃')
+    parser.add_argument('--eval_batch_size', type=int, default=None,
+                        help='测试及epoch末训练集评估batch；未指定沿用batch_size，大训练batch时可显式保持40')
     parser.add_argument('--workers', type=int, default=0, help='DataLoader进程数，内存有限时保持零')
     parser.add_argument('--sampling_mode', choices=['grouped', 'window'], default='grouped',
                         help='优化窗口排列：默认按trial整组打乱；window逐窗口打乱，不改变样本选择或参考库')
@@ -56,6 +58,8 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--log_detail_interval', type=int, default=10,
                         help='终端简洁诊断摘要间隔；每轮仍打印两组紧凑矩阵，零关闭周期摘要；不影响逐轮诊断保存')
     args = parser.parse_args(argv)
+    if args.eval_batch_size is not None and args.eval_batch_size < 1:
+        parser.error('eval_batch_size必须至少为1')
     if not math.isfinite(args.weight_decay) or args.weight_decay < 0:
         parser.error('weight_decay必须为有限非负数')
     if args.batch_size < 2 or args.epochs < 1 or args.workers < 0 or args.cpu_threads < 0 or args.lr <= 0:

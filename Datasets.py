@@ -178,10 +178,13 @@ def seed_worker(worker_id):
 
 
 def make_loaders(train_dataset, test_dataset, batch_size=40, workers=0, seed=42,
-                 sampling_mode='grouped'):
+                 sampling_mode='grouped', eval_batch_size=None):
     """默认沿用trial窗口整组顺序；window只改变优化窗口排列，不改变样本或参考总体。"""
     if sampling_mode not in ('grouped', 'window'):
         raise ValueError('sampling_mode只能是grouped或window')
+    eval_batch_size = batch_size if eval_batch_size is None else eval_batch_size
+    if eval_batch_size < 1:
+        raise ValueError('评估batch必须至少为1')
     if batch_size < 2 or len(train_dataset) < 2:
         raise ValueError('训练batch及训练集至少包含两个窗口，以便排除自身参考')
     common = {'num_workers': workers, 'worker_init_fn': seed_worker,
@@ -191,7 +194,7 @@ def make_loaders(train_dataset, test_dataset, batch_size=40, workers=0, seed=42,
     train = DataLoader(train_dataset, batch_size=batch_size, sampler=sampler, drop_last=True, **common)
     if len(train) == 0:
         raise ValueError('训练数据少于batch_size；请显式减小batch_size')
-    test = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, drop_last=False, **common)
+    test = DataLoader(test_dataset, batch_size=eval_batch_size, shuffle=False, drop_last=False, **common)
     return train, test
 
 
