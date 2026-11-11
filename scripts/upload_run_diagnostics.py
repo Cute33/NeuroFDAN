@@ -10,6 +10,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import uuid
 import zipfile
 from datetime import datetime, timezone, timedelta
@@ -20,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from run_reporting import build_run_summary, report_text
 
 BRANCH = 'server-diagnostics'
+GIT_NETWORK_TIMEOUT = 300
 WHITE = ('fold.json', 'summary.json', 'history.jsonl', 'reference_sources.json',
          'epoch_metrics.jsonl', 'mediator_diagnostics.jsonl', 'collapse_diagnostics.jsonl',
          'epoch_confusion_matrices.npz', 'run_summary.json', 'run_report.txt', 'config.json',
@@ -118,17 +120,44 @@ def clean_bytes(name: str, raw: bytes, limit: int) -> tuple[bytes, bool]:
 
 
 def git(cwd: Path, *args: str, check=True):
-    """不使用shell拼接、不交互索取Token；错误消息先脱敏。"""
+    """按操作报告耗时；网络超时可配置，局部操作仍限60秒，错误先脱敏。"""
     env = dict(os.environ, GIT_TERMINAL_PROMPT='0')
-    env.setdefault('GIT_SSH_COMMAND', 'ssh -o BatchMode=yes')
+    env.setdefault('GIT_SSH_COMMAND', 'ssh -o BatchMode=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=2')
+    command = args[0]
+    timeout = GIT_NETWORK_TIMEOUT if command in ('ls-remote', 'fetch', 'push') else 60
+    # 不打印完整参数/环境，避免URL或自定义配置中可能的凭证泄漏。
+    print(f'[Git] 开始 {command}，超时上限={timeout}秒', flush=True)
+    started = time.monotonic()
     try:
         result = subprocess.run(['git', '-C', str(cwd), *args], capture_output=True,
-                                text=True, timeout=60, env=env)
+                                text=True, timeout=timeout, env=env)
     except subprocess.TimeoutExpired as error:
-        raise RuntimeError('Git操作超时；请检查网络/认证后重试') from error
+        partial = error.stderr or ''
+        if isinstance(partial, bytes):
+            partial = partial.decode('utf-8', errors='replace')
+        detail = sanitize_text(partial[-2000:].strip())
+        message = f'Git {command} 超时（上限{timeout}秒）；不是训练失败。'
+        if command == 'push':
+            message += '推送结果不确定，先用upload_state.json中的候选SHA/目录核验远端，不要立即重复上传。'
+        elif command in ('fetch', 'ls-remote'):
+            message += '若已开始过push，远端可能已经接收；请查看本地upload_state.json。'
+        if detail:
+            message += '\nGit部分错误输出：' + detail
+        raise RuntimeError(message) from error
+    print(f'[Git] 完成 {command}，退出码={result.returncode}，耗时={time.monotonic()-started:.1f}秒', flush=True)
     if check and result.returncode:
-        raise RuntimeError('Git操作失败：' + sanitize_text(result.stderr.strip()))
+        raise RuntimeError(f'Git {command} 失败：' + sanitize_text(result.stderr.strip()))
     return result
+
+
+def write_upload_state(bundle: Path, run_id: str, **fields) -> None:
+    """仅在本地快照保留推送收据；不加入上传白名单，不记录凭证。"""
+    path = bundle / 'upload_state.json'
+    state = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
+    state.update(run_id=run_id, branch=BRANCH, **fields)
+    temporary = path.with_suffix('.tmp')
+    temporary.write_text(json.dumps(state, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+    temporary.replace(path)
 
 
 def origin_url(repository: Path) -> str:
@@ -243,6 +272,7 @@ def collect(repository: Path, run: Path, bundle: Path, args, source: dict) -> di
 
 
 def publish(repository: Path, url: str, bundle: Path, run_id: str) -> tuple[str, str]:
+    write_upload_state(bundle, run_id, phase='准备临时Git工作区', candidate_sha=None)
     identity = [git(repository,'config','user.'+key,check=False).stdout.strip() for key in ('name','email')]
     if not all(identity):
         raise ValueError('缺少Git作者信息；先配置git config user.name与user.email，可使用GitHub noreply邮箱')
@@ -252,6 +282,7 @@ def publish(repository: Path, url: str, bundle: Path, run_id: str) -> tuple[str,
         git(workspace,'remote','add','origin',url)
         git(workspace,'config','user.name',identity[0]); git(workspace,'config','user.email',identity[1])
         for attempt in range(3):
+            write_upload_state(bundle, run_id, phase='查询/获取远端分支', attempt=attempt+1)
             remote=git(workspace,'ls-remote','--heads','origin',f'refs/heads/{BRANCH}').stdout.strip()
             if remote:
                 git(workspace,'fetch','--depth=1','origin',f'refs/heads/{BRANCH}')
@@ -288,25 +319,33 @@ def publish(repository: Path, url: str, bundle: Path, run_id: str) -> tuple[str,
             git(workspace,'add','-f','--',*files)
             git(workspace,'commit','-m',f'新增服务器诊断快照：{run_id}')
             sha=git(workspace,'rev-parse','HEAD').stdout.strip()
+            write_upload_state(bundle, run_id, phase='即将push，结果尚未核验', candidate_sha=sha)
+            print(f'候选提交SHA={sha}；目标=runs/{run_id}；本地收据={bundle/"upload_state.json"}', flush=True)
             pushed=git(workspace,'push','origin',f'HEAD:refs/heads/{BRANCH}',check=False)
             if pushed.returncode==0:
+                write_upload_state(bundle, run_id, phase='push返回成功，正在核验远端')
                 observed=git(workspace,'ls-remote','--heads','origin',f'refs/heads/{BRANCH}').stdout.split()
                 if observed and observed[0]==sha:
+                    write_upload_state(bundle, run_id, phase='远端核验成功', remote_sha=observed[0])
                     return sha,observed[0]
                 # 并发上传者可能已继续提交；再次取远端并验证本提交仍为其祖先。
                 git(workspace,'fetch','origin',f'refs/heads/{BRANCH}')
                 ancestor=git(workspace,'merge-base','--is-ancestor',sha,'FETCH_HEAD',check=False)
                 if ancestor.returncode==0:
                     print('远端随后有并发提交；已验证本上传提交仍在远端历史中。')
-                    return sha,git(workspace,'rev-parse','FETCH_HEAD').stdout.strip()
+                    observed_sha=git(workspace,'rev-parse','FETCH_HEAD').stdout.strip()
+                    write_upload_state(bundle, run_id, phase='远端祖先核验成功', remote_sha=observed_sha)
+                    return sha,observed_sha
                 raise RuntimeError('push返回成功，但远端历史核验失败；请保留快照核查')
             if attempt==2 or not re.search(r'non-fast-forward|fetch first',pushed.stderr,re.I):
+                write_upload_state(bundle, run_id, phase='push返回非零，尚未核验', returncode=pushed.returncode)
                 raise RuntimeError('上传push失败：'+sanitize_text(pushed.stderr.strip()))
             print('远端有并发新提交；从最新远端重新追加本快照，不强推。')
     raise RuntimeError('上传未完成')
 
 
 def main() -> None:
+    global GIT_NETWORK_TIMEOUT
     parser=argparse.ArgumentParser(description='白名单诊断快照上传到server-diagnostics，不切换实验分支',add_help=False)
     parser.add_argument('-h','--help',action='help',help='显示中文参数说明并退出')
     parser.add_argument('run_dir',help='已有实验run目录或单fold目录')
@@ -316,7 +355,11 @@ def main() -> None:
     parser.add_argument('--keep_bundle',action='store_true',help='成功上传后也保留自动生成的本地快照')
     parser.add_argument('--max_file_mib',type=int,default=8,help='单文件及NPZ解压大小上限MiB，超过则跳过')
     parser.add_argument('--max_total_mib',type=int,default=32,help='累计载荷大小上限MiB，超过文件明确跳过')
+    parser.add_argument('--git_timeout',type=int,default=300,help='每条Git网络命令超时秒数，限30–3600；本地命令仍限60秒')
     args=parser.parse_args()
+    if not 30<=args.git_timeout<=3600:
+        parser.error('Git网络超时须在30–3600秒之间')
+    GIT_NETWORK_TIMEOUT=args.git_timeout
     if not 1<=args.max_file_mib<=16 or not args.max_file_mib<=args.max_total_mib<=64:
         parser.error('单文件限1–16MiB，总量不得小于单文件且不超过64MiB')
     repository=Path(__file__).resolve().parents[1]
