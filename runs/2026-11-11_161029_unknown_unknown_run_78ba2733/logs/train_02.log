@@ -1,0 +1,11 @@
+test_gradient_components_separate_branches_and_conflicting_terms (test_phase6_learning.Phase6LearningTests) ... ok
+test_nonidentification_has_equal_observations_and_distinct_effects (test_phase6_learning.Phase6LearningTests) ... ok
+test_observation_view_never_reads_hidden_mediators_or_u (test_phase6_learning.Phase6LearningTests) ... ok
+test_permission_guard_rejects_hidden_fields (test_phase6_learning.Phase6LearningTests) ... ok
+test_reconstruction_uses_samples_and_conditional_ans_path (test_phase6_learning.Phase6LearningTests) ... ok
+test_zero_fidelity_weight_recovers_baseline_total_for_paired_noise (test_phase6_learning.Phase6LearningTests) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.041s
+
+OK
