@@ -30,7 +30,8 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--start_subject', type=int, default=1, help='完整LOSO起始被试，包含该编号')
     parser.add_argument('--end_subject', type=int, default=None, help='LOSO末尾被试，默认数据集最后一名')
     parser.add_argument('--held_out_subjects', '--held_out_subject', type=int, nargs='+', default=None, help='显式指定一个或多个held-out被试，覆盖起止范围')
-    parser.add_argument('--no_balance', action='store_true', help='显式关闭既有trial标签平衡；参考总体始终不做标签平衡')
+    parser.add_argument('--no_balance', action='store_true', default=True,
+                        help='兼容旧命令；当前默认保留全部自然训练窗口，不做类别下采样或平衡')
     parser.add_argument('--fd_mode', choices=['full', 'none'], default='full', help='完整前门概率或Phase 1事实路径对照')
     parser.add_argument('--no_cns2ans', action='store_true', help='估计器消融：切断CNS中介到ANS电流的路径')
     parser.add_argument('--mediator_dim', type=int, default=64, help='CNS和ANS潜在中介维度')

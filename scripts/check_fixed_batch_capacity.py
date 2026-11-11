@@ -10,6 +10,13 @@ sys.path[:0] = [str(PROJECT), str(PROJECT / 'scripts')]
 from probe_backbone_checkpoint import activation_summary, file_hash
 
 
+def source_grid_indices(population_size: int, samples: int) -> list[int]:
+    """按来源顺序等间距取固定诊断窗口，不读取标签、不进行类别平衡。"""
+    if samples < 2 or population_size < samples:
+        raise ValueError('诊断窗口至少2个，且不能超过训练被试窗口总数')
+    return [i*(population_size-1)//(samples-1) for i in range(samples)]
+
+
 class FixedBatchLoader:
     """每次迭代重复所选窗口；次数是诊断步数，不是假装新增样本或epoch。"""
     def __init__(self, batch: dict, repeats: int):
@@ -69,17 +76,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(description='固定小批记忆能力诊断；临时模型会执行优化更新，原权重只读', add_help=False)
     parser.add_argument('-h', '--help', action='help', help='显示中文帮助')
     parser.add_argument('--root_dir', type=Path, default=Path('/home/fss'), help='原数据根目录')
-    parser.add_argument('--fold_dir', type=Path, required=True, help='DEAP大batch400的epoch20原fold目录')
+    parser.add_argument('--fold_dir', type=Path, required=True, help='DEAP自然训练总体、batch400的epoch20原fold目录')
     parser.add_argument('--output_dir', type=Path, required=True, help='独立诊断目录，不写入原run')
     parser.add_argument('--probe_subject', type=int, default=2, help='原训练被试，仅作固定小批诊断')
-    parser.add_argument('--samples', type=int, default=16, help='固定窗口数，每类一半；仅诊断，不改正式batch400')
+    parser.add_argument('--samples', type=int, default=16, help='按来源顺序等间距取固定窗口，不按类别选择；仅诊断')
     parser.add_argument('--steps', type=int, default=300, help='每个临时模型最多更新次数，范围50–300')
     parser.add_argument('--check_every', type=int, default=50, help='检查间隔，需整除steps')
     parser.add_argument('--seed', type=int, choices=[42], default=42, help='固定初始化/训练随机种子')
     parser.add_argument('--device', choices=['cpu'], default='cpu', help='仅CPU小批诊断，不启动GPU/LOSO')
     args = parser.parse_args()
-    if not 4 <= args.samples <= 32 or args.samples % 2 or not 50 <= args.steps <= 300 or args.check_every < 1 or args.steps % args.check_every:
-        parser.error('samples为4–32偶数，steps为50–300，check_every为steps的正整数因子')
+    if not 4 <= args.samples <= 32 or not 50 <= args.steps <= 300 or args.check_every < 1 or args.steps % args.check_every:
+        parser.error('samples为4–32，steps为50–300，check_every为steps的正整数因子')
     import torch
     from Datasets import PhysiologicalWindows
     from NeuroFDAN import NeuroFDAN
@@ -105,6 +112,8 @@ def main() -> None:
         raise ValueError('原checkpoint身份/配置不匹配')
     if cfg['arguments'] != old or cfg['smoke'] or old['max_train_batches'] or old['max_test_batches']:
         raise ValueError('需要配置一致的完整20轮实验，而非smoke')
+    if old.get('no_balance') is not True or cfg['optimization_windows'] != cfg['population_windows']:
+        raise ValueError('本次只接受已完成的自然训练总体模型，不复用旧平衡模型')
     report = payload['reference_report']
     if report['held_out_subject'] != 1 or args.probe_subject == 1 or args.probe_subject not in report['train_subjects']:
         raise ValueError('只允许使用原训练被试，不读held-out输入或标签')
@@ -117,14 +126,10 @@ def main() -> None:
         raise ValueError('原DEAP观察CE/发放率权重与本次诊断预期不符')
     seed_everything(42)
     data = PhysiologicalWindows(args.root_dir, 'DEAP', [args.probe_subject], 'arousal')
-    chosen = []
-    for label in (0, 1):
-        candidates = (data.Label == label).nonzero(as_tuple=True)[0]
-        if len(candidates) < args.samples // 2:
-            raise ValueError('固定被试两类窗口不足，不自动换被试或标签')
-        chosen.append(candidates[torch.linspace(0, len(candidates)-1, args.samples//2).long()])
-    indices = torch.stack(chosen, 1).flatten()
+    indices = torch.tensor(source_grid_indices(len(data), args.samples), dtype=torch.long)
     batch = dict(x_c=data.x_c[indices], x_a=data.x_a[indices], Labels=data.Label[indices], source_ids=data.source_ids[indices])
+    if len(torch.unique(batch['Labels'])) != 2:
+        raise ValueError('来源固定的诊断窗口只有一个类别；停止，不自动重采样或更换被试')
     del data
     signatures = {}
     for i, label in enumerate(batch['Labels'].tolist()):
@@ -141,10 +146,11 @@ def main() -> None:
         original_training_source=cfg.get('source_version'), sample_sources=batch['source_ids'].tolist(),
         source_optimizer_step_values=saved_steps,
         true_counts=torch.bincount(batch['Labels'], minlength=2).tolist(),
+        selection_policy='固定训练被试的来源索引等间距窗口，不按标签选择或平衡；不是正式训练子集规则',
         duplicate_input_count=args.samples-len(signatures), contradictory_duplicate_inputs=False,
         input_statistics=dict(cns=activation_summary(batch['x_c']), ans=activation_summary(batch['x_a'])),
         loss_epoch=20, steps_per_model=args.steps, models={}, optimizer_moments_reset=True,
-        note='临时模型实际更新；原数据、训练器和模型结构不变。仅事实CE+原KL/fire，不算do或oracle监督。诊断窗口来自训练总体，不保证全在旧下采样子集。')
+        note='临时模型实际更新；原数据、训练器和模型结构不变。仅事实CE+原KL/fire，不算do或oracle监督。诊断窗口均来自本次自然训练总体，不修改正式训练集。')
     for initialization in ('initial_seed42', 'epoch20_weights'):
         seed_everything(42)
         model = NeuroFDAN(ecg_channels=2, frontdoor_config=FrontDoorConfig(**payload['frontdoor_config'])).cpu()
@@ -177,7 +183,8 @@ def main() -> None:
         del model, optimizer
     if file_hash(path) != fingerprint:
         raise RuntimeError('原checkpoint读取期间发生变化')
-    result.update(original_checkpoint_unchanged=True, weights_saved=False)
+    result.update(completed=True, temporary_training_executed=True, formal_loso_training=False,
+                  original_checkpoint_unchanged=True, weights_saved=False)
     content = json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False)
     destination.mkdir(parents=True, exist_ok=True)
     with (destination / 'probe_summary.json').open('x', encoding='utf-8') as stream:

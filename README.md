@@ -66,3 +66,5 @@ python CalculateResult.py --help
 默认完整LOSO。用 `--held_out_subjects 1` 运行单折；用 `--max_train_batches 1 --max_test_batches 1` 执行有限batch接口检查，不能当作正式结果。输出默认在 `outputs/phase2`，用独立 `--run_name` 避免覆盖已有fold。
 
 没有独立validation，保留 held-out test performance 选择 best checkpoint 的旧协议并明确其选择偏差。参考库只来自当前fold未平衡的训练窗口。真实训练使用事实CE、KL及明确的发放率约束，不使用合成oracle监督，也不把公式实现解释为真实潜在中介已获无条件识别。
+
+当前训练协议默认保留全部自然训练窗口，不做类别下采样、过采样或平衡；`--no_balance`仅保留旧命令兼容。窗口shuffle和前门Monte Carlo抽样继续保留。旧平衡实验使用受保护历史版本回放，最新结果及下一步诊断见[自然训练协议与容量检查](docs/phase6_natural_population_results_and_capacity.md)。
