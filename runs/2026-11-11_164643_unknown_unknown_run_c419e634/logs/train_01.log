@@ -1,0 +1,11 @@
+normal_minimal 第1次：通过=True 退出码=0 耗时=1.2秒
+normal_minimal 第2次：通过=True 退出码=0 耗时=1.2秒
+isolated_minimal 第1次：通过=True 退出码=0 耗时=1.1秒
+isolated_minimal 第2次：通过=True 退出码=0 耗时=1.1秒
+normal_project 第1次：通过=True 退出码=0 耗时=1.2秒
+normal_project 第2次：通过=True 退出码=0 耗时=1.2秒
+isolated_project 第1次：通过=True 退出码=0 耗时=1.2秒
+isolated_project 第2次：通过=True 退出码=0 耗时=1.2秒
+preload_project 第1次：通过=True 退出码=0 耗时=1.2秒
+preload_project 第2次：通过=True 退出码=0 耗时=1.2秒
+收集完成：<已屏蔽绝对路径>

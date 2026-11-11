@@ -1,0 +1,1525 @@
+{
+  "operation": "Phase6 Adam启动与延迟导入隔离诊断",
+  "source_version": {
+    "commit": "0843169455c1ecf19ef5f3edac6035ae0e4d9d97",
+    "branch": ""
+  },
+  "project_commit": "15b79769535027f4dfb7de0cb5ab1c11252dec49",
+  "attempts": [
+    {
+      "mode": "normal_minimal",
+      "repeat": 1,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"mode\": \"minimal\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 0, \"versions\": {\"torch\": \"2.5.1+cu121\", \"numpy\": \"2.2.6\", \"scipy\": \"1.15.2\", \"sympy\": \"1.13.1\"}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"torch导入成功\", \"torch_version\": \"2.5.1+cu121\", \"compiled_cuda_version\": \"12.1\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"Adam初始化成功\", \"dynamo\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"检查通过\", \"device\": \"cpu\", \"dummy_cpu_optimizer_step\": true, \"model_loaded\": false, \"real_or_synthetic_training\": false, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}, \"parameter_update_norm\": 0.0014141954015940428}\n",
+      "stderr": "",
+      "seconds": 1.1925676020327955,
+      "events": [
+        {
+          "stage": "导入前",
+          "mode": "minimal",
+          "python": "3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]",
+          "executable": "<已屏蔽绝对路径>",
+          "isolated": 0,
+          "versions": {
+            "torch": "2.5.1+cu121",
+            "numpy": "2.2.6",
+            "scipy": "1.15.2",
+            "sympy": "1.13.1"
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "torch导入成功",
+          "torch_version": "2.5.1+cu121",
+          "compiled_cuda_version": "12.1",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "Adam初始化成功",
+          "dynamo": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "检查通过",
+          "device": "cpu",
+          "dummy_cpu_optimizer_step": true,
+          "model_loaded": false,
+          "real_or_synthetic_training": false,
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          },
+          "parameter_update_norm": 0.0014141954015940428
+        }
+      ],
+      "optimizer_check_passed": true,
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "normal_minimal",
+      "repeat": 2,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"mode\": \"minimal\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 0, \"versions\": {\"torch\": \"2.5.1+cu121\", \"numpy\": \"2.2.6\", \"scipy\": \"1.15.2\", \"sympy\": \"1.13.1\"}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"torch导入成功\", \"torch_version\": \"2.5.1+cu121\", \"compiled_cuda_version\": \"12.1\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"Adam初始化成功\", \"dynamo\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"检查通过\", \"device\": \"cpu\", \"dummy_cpu_optimizer_step\": true, \"model_loaded\": false, \"real_or_synthetic_training\": false, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}, \"parameter_update_norm\": 0.0014141954015940428}\n",
+      "stderr": "",
+      "seconds": 1.1520747359609231,
+      "events": [
+        {
+          "stage": "导入前",
+          "mode": "minimal",
+          "python": "3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]",
+          "executable": "<已屏蔽绝对路径>",
+          "isolated": 0,
+          "versions": {
+            "torch": "2.5.1+cu121",
+            "numpy": "2.2.6",
+            "scipy": "1.15.2",
+            "sympy": "1.13.1"
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "torch导入成功",
+          "torch_version": "2.5.1+cu121",
+          "compiled_cuda_version": "12.1",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "Adam初始化成功",
+          "dynamo": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "检查通过",
+          "device": "cpu",
+          "dummy_cpu_optimizer_step": true,
+          "model_loaded": false,
+          "real_or_synthetic_training": false,
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          },
+          "parameter_update_norm": 0.0014141954015940428
+        }
+      ],
+      "optimizer_check_passed": true,
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "isolated_minimal",
+      "repeat": 1,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"mode\": \"minimal\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 1, \"versions\": {\"torch\": \"2.5.1+cu121\", \"numpy\": \"2.2.6\", \"scipy\": \"1.15.2\", \"sympy\": \"1.13.1\"}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"torch导入成功\", \"torch_version\": \"2.5.1+cu121\", \"compiled_cuda_version\": \"12.1\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"Adam初始化成功\", \"dynamo\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"检查通过\", \"device\": \"cpu\", \"dummy_cpu_optimizer_step\": true, \"model_loaded\": false, \"real_or_synthetic_training\": false, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}, \"parameter_update_norm\": 0.0014141954015940428}\n",
+      "stderr": "",
+      "seconds": 1.1393892989726737,
+      "events": [
+        {
+          "stage": "导入前",
+          "mode": "minimal",
+          "python": "3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]",
+          "executable": "<已屏蔽绝对路径>",
+          "isolated": 1,
+          "versions": {
+            "torch": "2.5.1+cu121",
+            "numpy": "2.2.6",
+            "scipy": "1.15.2",
+            "sympy": "1.13.1"
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "torch导入成功",
+          "torch_version": "2.5.1+cu121",
+          "compiled_cuda_version": "12.1",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "Adam初始化成功",
+          "dynamo": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "检查通过",
+          "device": "cpu",
+          "dummy_cpu_optimizer_step": true,
+          "model_loaded": false,
+          "real_or_synthetic_training": false,
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          },
+          "parameter_update_norm": 0.0014141954015940428
+        }
+      ],
+      "optimizer_check_passed": true,
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "isolated_minimal",
+      "repeat": 2,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"mode\": \"minimal\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 1, \"versions\": {\"torch\": \"2.5.1+cu121\", \"numpy\": \"2.2.6\", \"scipy\": \"1.15.2\", \"sympy\": \"1.13.1\"}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"torch导入成功\", \"torch_version\": \"2.5.1+cu121\", \"compiled_cuda_version\": \"12.1\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"Adam初始化成功\", \"dynamo\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"检查通过\", \"device\": \"cpu\", \"dummy_cpu_optimizer_step\": true, \"model_loaded\": false, \"real_or_synthetic_training\": false, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}, \"parameter_update_norm\": 0.0014141954015940428}\n",
+      "stderr": "",
+      "seconds": 1.148436004994437,
+      "events": [
+        {
+          "stage": "导入前",
+          "mode": "minimal",
+          "python": "3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]",
+          "executable": "<已屏蔽绝对路径>",
+          "isolated": 1,
+          "versions": {
+            "torch": "2.5.1+cu121",
+            "numpy": "2.2.6",
+            "scipy": "1.15.2",
+            "sympy": "1.13.1"
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "torch导入成功",
+          "torch_version": "2.5.1+cu121",
+          "compiled_cuda_version": "12.1",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "Adam初始化成功",
+          "dynamo": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "检查通过",
+          "device": "cpu",
+          "dummy_cpu_optimizer_step": true,
+          "model_loaded": false,
+          "real_or_synthetic_training": false,
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          },
+          "parameter_update_norm": 0.0014141954015940428
+        }
+      ],
+      "optimizer_check_passed": true,
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "normal_project",
+      "repeat": 1,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"mode\": \"project\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 0, \"versions\": {\"torch\": \"2.5.1+cu121\", \"numpy\": \"2.2.6\", \"scipy\": \"1.15.2\", \"sympy\": \"1.13.1\"}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"torch导入成功\", \"torch_version\": \"2.5.1+cu121\", \"compiled_cuda_version\": \"12.1\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"项目模块导入成功\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"Adam初始化成功\", \"dynamo\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"检查通过\", \"device\": \"cpu\", \"dummy_cpu_optimizer_step\": true, \"model_loaded\": false, \"real_or_synthetic_training\": false, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}, \"parameter_update_norm\": 0.0014141954015940428}\n",
+      "stderr": "",
+      "seconds": 1.196433554054238,
+      "events": [
+        {
+          "stage": "导入前",
+          "mode": "project",
+          "python": "3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]",
+          "executable": "<已屏蔽绝对路径>",
+          "isolated": 0,
+          "versions": {
+            "torch": "2.5.1+cu121",
+            "numpy": "2.2.6",
+            "scipy": "1.15.2",
+            "sympy": "1.13.1"
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "torch导入成功",
+          "torch_version": "2.5.1+cu121",
+          "compiled_cuda_version": "12.1",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "项目模块导入成功",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "Adam初始化成功",
+          "dynamo": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "检查通过",
+          "device": "cpu",
+          "dummy_cpu_optimizer_step": true,
+          "model_loaded": false,
+          "real_or_synthetic_training": false,
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          },
+          "parameter_update_norm": 0.0014141954015940428
+        }
+      ],
+      "optimizer_check_passed": true,
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "normal_project",
+      "repeat": 2,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"mode\": \"project\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 0, \"versions\": {\"torch\": \"2.5.1+cu121\", \"numpy\": \"2.2.6\", \"scipy\": \"1.15.2\", \"sympy\": \"1.13.1\"}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"torch导入成功\", \"torch_version\": \"2.5.1+cu121\", \"compiled_cuda_version\": \"12.1\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"项目模块导入成功\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"Adam初始化成功\", \"dynamo\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"检查通过\", \"device\": \"cpu\", \"dummy_cpu_optimizer_step\": true, \"model_loaded\": false, \"real_or_synthetic_training\": false, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}, \"parameter_update_norm\": 0.0014141954015940428}\n",
+      "stderr": "",
+      "seconds": 1.22720298205968,
+      "events": [
+        {
+          "stage": "导入前",
+          "mode": "project",
+          "python": "3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]",
+          "executable": "<已屏蔽绝对路径>",
+          "isolated": 0,
+          "versions": {
+            "torch": "2.5.1+cu121",
+            "numpy": "2.2.6",
+            "scipy": "1.15.2",
+            "sympy": "1.13.1"
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "torch导入成功",
+          "torch_version": "2.5.1+cu121",
+          "compiled_cuda_version": "12.1",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "项目模块导入成功",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "Adam初始化成功",
+          "dynamo": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "检查通过",
+          "device": "cpu",
+          "dummy_cpu_optimizer_step": true,
+          "model_loaded": false,
+          "real_or_synthetic_training": false,
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          },
+          "parameter_update_norm": 0.0014141954015940428
+        }
+      ],
+      "optimizer_check_passed": true,
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "isolated_project",
+      "repeat": 1,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"mode\": \"project\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 1, \"versions\": {\"torch\": \"2.5.1+cu121\", \"numpy\": \"2.2.6\", \"scipy\": \"1.15.2\", \"sympy\": \"1.13.1\"}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"torch导入成功\", \"torch_version\": \"2.5.1+cu121\", \"compiled_cuda_version\": \"12.1\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"项目模块导入成功\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"Adam初始化成功\", \"dynamo\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"检查通过\", \"device\": \"cpu\", \"dummy_cpu_optimizer_step\": true, \"model_loaded\": false, \"real_or_synthetic_training\": false, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}, \"parameter_update_norm\": 0.0014141954015940428}\n",
+      "stderr": "",
+      "seconds": 1.2058289890410379,
+      "events": [
+        {
+          "stage": "导入前",
+          "mode": "project",
+          "python": "3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]",
+          "executable": "<已屏蔽绝对路径>",
+          "isolated": 1,
+          "versions": {
+            "torch": "2.5.1+cu121",
+            "numpy": "2.2.6",
+            "scipy": "1.15.2",
+            "sympy": "1.13.1"
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "torch导入成功",
+          "torch_version": "2.5.1+cu121",
+          "compiled_cuda_version": "12.1",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "项目模块导入成功",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "Adam初始化成功",
+          "dynamo": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "检查通过",
+          "device": "cpu",
+          "dummy_cpu_optimizer_step": true,
+          "model_loaded": false,
+          "real_or_synthetic_training": false,
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          },
+          "parameter_update_norm": 0.0014141954015940428
+        }
+      ],
+      "optimizer_check_passed": true,
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "isolated_project",
+      "repeat": 2,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"mode\": \"project\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 1, \"versions\": {\"torch\": \"2.5.1+cu121\", \"numpy\": \"2.2.6\", \"scipy\": \"1.15.2\", \"sympy\": \"1.13.1\"}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"torch导入成功\", \"torch_version\": \"2.5.1+cu121\", \"compiled_cuda_version\": \"12.1\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"项目模块导入成功\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"Adam初始化成功\", \"dynamo\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"检查通过\", \"device\": \"cpu\", \"dummy_cpu_optimizer_step\": true, \"model_loaded\": false, \"real_or_synthetic_training\": false, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}, \"parameter_update_norm\": 0.0014141954015940428}\n",
+      "stderr": "",
+      "seconds": 1.2204779899911955,
+      "events": [
+        {
+          "stage": "导入前",
+          "mode": "project",
+          "python": "3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]",
+          "executable": "<已屏蔽绝对路径>",
+          "isolated": 1,
+          "versions": {
+            "torch": "2.5.1+cu121",
+            "numpy": "2.2.6",
+            "scipy": "1.15.2",
+            "sympy": "1.13.1"
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "torch导入成功",
+          "torch_version": "2.5.1+cu121",
+          "compiled_cuda_version": "12.1",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "项目模块导入成功",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "Adam初始化成功",
+          "dynamo": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "检查通过",
+          "device": "cpu",
+          "dummy_cpu_optimizer_step": true,
+          "model_loaded": false,
+          "real_or_synthetic_training": false,
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          },
+          "parameter_update_norm": 0.0014141954015940428
+        }
+      ],
+      "optimizer_check_passed": true,
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "preload_project",
+      "repeat": 1,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"mode\": \"preload_project\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 0, \"versions\": {\"torch\": \"2.5.1+cu121\", \"numpy\": \"2.2.6\", \"scipy\": \"1.15.2\", \"sympy\": \"1.13.1\"}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"torch导入成功\", \"torch_version\": \"2.5.1+cu121\", \"compiled_cuda_version\": \"12.1\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"预加载完成\", \"module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}}\n{\"stage\": \"项目模块导入成功\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"Adam初始化成功\", \"dynamo\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"检查通过\", \"device\": \"cpu\", \"dummy_cpu_optimizer_step\": true, \"model_loaded\": false, \"real_or_synthetic_training\": false, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}, \"parameter_update_norm\": 0.0014141954015940428}\n",
+      "stderr": "",
+      "seconds": 1.1630628899438307,
+      "events": [
+        {
+          "stage": "导入前",
+          "mode": "preload_project",
+          "python": "3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]",
+          "executable": "<已屏蔽绝对路径>",
+          "isolated": 0,
+          "versions": {
+            "torch": "2.5.1+cu121",
+            "numpy": "2.2.6",
+            "scipy": "1.15.2",
+            "sympy": "1.13.1"
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "torch导入成功",
+          "torch_version": "2.5.1+cu121",
+          "compiled_cuda_version": "12.1",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "预加载完成",
+          "module": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          }
+        },
+        {
+          "stage": "项目模块导入成功",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "Adam初始化成功",
+          "dynamo": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "检查通过",
+          "device": "cpu",
+          "dummy_cpu_optimizer_step": true,
+          "model_loaded": false,
+          "real_or_synthetic_training": false,
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          },
+          "parameter_update_norm": 0.0014141954015940428
+        }
+      ],
+      "optimizer_check_passed": true,
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    },
+    {
+      "mode": "preload_project",
+      "repeat": 2,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout": "{\"stage\": \"导入前\", \"mode\": \"preload_project\", \"python\": \"3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]\", \"executable\": \"<已屏蔽绝对路径>\", \"isolated\": 0, \"versions\": {\"torch\": \"2.5.1+cu121\", \"numpy\": \"2.2.6\", \"scipy\": \"1.15.2\", \"sympy\": \"1.13.1\"}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"torch导入成功\", \"torch_version\": \"2.5.1+cu121\", \"compiled_cuda_version\": \"12.1\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"预加载完成\", \"module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}}\n{\"stage\": \"项目模块导入成功\", \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"Adam初始化成功\", \"dynamo\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"torch/_dynamo/trace_rules.py\", \"sha256\": \"ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5\", \"within_prefix\": true}, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}}\n{\"stage\": \"检查通过\", \"device\": \"cpu\", \"dummy_cpu_optimizer_step\": true, \"model_loaded\": false, \"real_or_synthetic_training\": false, \"regex\": {\"re_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/re.py\", \"sha256\": \"018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7\", \"within_prefix\": true}, \"parser_module\": {\"loaded\": true, \"file\": \"<已屏蔽绝对路径>\", \"tail\": \"lib/python3.10/sre_parse.py\", \"sha256\": \"dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f\", \"within_prefix\": true}, \"compile_module\": \"re\", \"compile_code_sha256\": \"71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6\", \"ascii_letters_count\": 52, \"slash_in_ascii_letters\": false, \"escaped_probe\": \"固定目录/a\\\\-b\\\\.c\"}, \"parameter_update_norm\": 0.0014141954015940428}\n",
+      "stderr": "",
+      "seconds": 1.1784151800675318,
+      "events": [
+        {
+          "stage": "导入前",
+          "mode": "preload_project",
+          "python": "3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]",
+          "executable": "<已屏蔽绝对路径>",
+          "isolated": 0,
+          "versions": {
+            "torch": "2.5.1+cu121",
+            "numpy": "2.2.6",
+            "scipy": "1.15.2",
+            "sympy": "1.13.1"
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "torch导入成功",
+          "torch_version": "2.5.1+cu121",
+          "compiled_cuda_version": "12.1",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "预加载完成",
+          "module": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          }
+        },
+        {
+          "stage": "项目模块导入成功",
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "Adam初始化成功",
+          "dynamo": {
+            "loaded": true,
+            "file": "<已屏蔽绝对路径>",
+            "tail": "torch/_dynamo/trace_rules.py",
+            "sha256": "ba438afd2b574d5d733532e7995ed04c29306f32b75df87657978288375bced5",
+            "within_prefix": true
+          },
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          }
+        },
+        {
+          "stage": "检查通过",
+          "device": "cpu",
+          "dummy_cpu_optimizer_step": true,
+          "model_loaded": false,
+          "real_or_synthetic_training": false,
+          "regex": {
+            "re_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/re.py",
+              "sha256": "018b1a2c70e8ef537cc328d1026afdeca5839392ce47235a7b8d22e1b788cdc7",
+              "within_prefix": true
+            },
+            "parser_module": {
+              "loaded": true,
+              "file": "<已屏蔽绝对路径>",
+              "tail": "lib/python3.10/sre_parse.py",
+              "sha256": "dad10892e970f3b9d0ad874d893edde31c0303e39ea5e2678935129e29128c2f",
+              "within_prefix": true
+            },
+            "compile_module": "re",
+            "compile_code_sha256": "71c86c5c714630228a5da5042337be5008c2400b3f2a7074955d093f59aac1a6",
+            "ascii_letters_count": 52,
+            "slash_in_ascii_letters": false,
+            "escaped_probe": "固定目录/a\\-b\\.c"
+          },
+          "parameter_update_norm": 0.0014141954015940428
+        }
+      ],
+      "optimizer_check_passed": true,
+      "stdout_truncated": false,
+      "stderr_truncated": false
+    }
+  ],
+  "all_optimizer_checks_ok": true,
+  "settings": {
+    "repeats": 2,
+    "timeout": 60,
+    "project_dir": "<已屏蔽绝对路径>"
+  },
+  "model_loaded": false,
+  "real_or_synthetic_training": false,
+  "packages_changed": false,
+  "dummy_cpu_optimizer_step_only": true,
+  "note": "主程序退出0表示收集完成，不能代替all_optimizer_checks_ok。-I不禁用所有site定制；预加载仅诊断，不修改训练入口。只输出失败regex的两个字符码及指纹，不输出完整pattern。CUDA版本非GPU实测。"
+}
