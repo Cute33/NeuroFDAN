@@ -28,6 +28,8 @@ E3/E4现已回传：B组输入路径存在，但局部输入影响远弱于采�
 
 导入诊断现已6次成功，原错误尚未定位。按用户优先级转向[事实/交叉联合支持与CNS/ANS均值及方差依赖审计](docs/outcome_support_and_posterior_audit.md)，分支 `feat/neurofdan-outcome-support-audit` 不训练或改模型，记录选择机制、模型条件密度、联合距离和Head局部敏感度；任何检查正常都不等于真实识别已被证明。
 
+两份支持审计均已回传并通过完整性复核，参见[支持审计结果与潜在中介识别缺口](docs/support_audit_results_review.md)。Head对Ma局部敏感度非零，不能称为完全忽略；跨输入后验变化较弱，积分输出接近平坦。下一步先补足无中介标签的学习识别依据，不重复相同配置训练。结果整理脚本只读取Git快照，不运行模型。
+
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
 - [第五阶段：日志分层、GitHub结果回传与认证说明](docs/phase5_server_upload_guide.md)
