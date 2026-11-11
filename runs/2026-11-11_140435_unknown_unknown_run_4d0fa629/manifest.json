@@ -1,0 +1,56 @@
+{
+  "format_version": 1,
+  "created_at": "2026-11-11T14:04:35.491497+08:00",
+  "upload_checkout": {
+    "tool_checkout": {
+      "commit": "c6fbb61f41bb956a64ae2a8d8a4152cbfa420e49",
+      "branch": "",
+      "tracked_changes": false
+    },
+    "experiment_checkout_at_upload": {
+      "commit": "6bf69e31ed7d19a2bf924e661298d3f66c533d44",
+      "branch": "feat/neurofdan-phase3",
+      "tracked_changes": false
+    }
+  },
+  "recorded_run_sources": [],
+  "metadata": [],
+  "uploaded": [
+    {
+      "file": "probe_summary.json",
+      "bytes": 52450,
+      "sha256": "8ab484bce1c117deca1cffd89140520dc5b36ead681fc231e40cef6c2c9f0d17",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_01.log",
+      "bytes": 934,
+      "sha256": "eda867b62fb1260df0fb5d5ab0d8b29526c9aaa6e74822cc8dc1219ef97f5e0c",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "upload_summary.json",
+      "bytes": 428,
+      "sha256": "a9e8c5edd88d01bc5bf26c7486eb53d512af922d7eb1ee53a1b0b16fda63bbd4"
+    },
+    {
+      "file": "upload_report.txt",
+      "bytes": 284,
+      "sha256": "3e22ff394b14196134ffaf2b17e1093c7a7a262ea4b0bce93bf097a8c5491eea"
+    }
+  ],
+  "missing": [
+    "run_summary.json",
+    "run_report.txt",
+    "config.json"
+  ],
+  "skipped": [],
+  "total_bytes": 54096,
+  "limits": {
+    "max_file_mib": 8,
+    "max_total_mib": 32
+  },
+  "snapshot_atomic": false,
+  "note": "运行中的多个文件不是事务快照；上传源码SHA不等于旧运行源码SHA。未上传模型权重/原始信号。",
+  "sanitization": "白名单；拒绝链接；文本常见凭证/绝对路径屏蔽；数值NPZ重新编码。自动脱敏不能保证发现任意自由文本中的自定义秘密，首次建议dry-run人工检查。"
+}
