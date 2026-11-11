@@ -84,9 +84,14 @@ def main() -> None:
     parser.add_argument('--check_every', type=int, default=50, help='检查间隔，需整除steps')
     parser.add_argument('--seed', type=int, choices=[42], default=42, help='固定初始化/训练随机种子')
     parser.add_argument('--device', choices=['cpu'], default='cpu', help='仅CPU小批诊断，不启动GPU/LOSO')
+    parser.add_argument('--mechanism_check', action='store_true', help='拟合后附加中介/自身参考路径检查，不改变优化目标')
+    parser.add_argument('--mechanism_repeats', type=int, default=4, help='末端路径检查的MC重复次数，范围2–8')
+    parser.add_argument('--previous_summary', type=Path, default=None, help='已成功的小批摘要；机制检查要求复核相同来源和末端CE/ACC')
     args = parser.parse_args()
     if not 4 <= args.samples <= 32 or not 50 <= args.steps <= 300 or args.check_every < 1 or args.steps % args.check_every:
         parser.error('samples为4–32，steps为50–300，check_every为steps的正整数因子')
+    if not 2 <= args.mechanism_repeats <= 8 or (args.mechanism_check and args.previous_summary is None):
+        parser.error('机制检查需提供原成功摘要，MC重复范围2–8')
     import torch
     from Datasets import PhysiologicalWindows
     from NeuroFDAN import NeuroFDAN
@@ -151,6 +156,18 @@ def main() -> None:
         input_statistics=dict(cns=activation_summary(batch['x_c']), ans=activation_summary(batch['x_a'])),
         loss_epoch=20, steps_per_model=args.steps, models={}, optimizer_moments_reset=True,
         note='临时模型实际更新；原数据、训练器和模型结构不变。仅事实CE+原KL/fire，不算do或oracle监督。诊断窗口均来自本次自然训练总体，不修改正式训练集。')
+    previous, raw_bank = None, None
+    if args.mechanism_check:
+        previous = json.loads(args.previous_summary.read_text(encoding='utf-8'))
+        if not previous.get('completed') or not previous.get('original_checkpoint_unchanged') or previous['checkpoint_sha256'] != fingerprint:
+            raise ValueError('不是原checkpoint对应的成功小批摘要')
+        if previous['sample_sources'] != result['sample_sources'] or previous['steps_per_model'] != args.steps or previous['true_counts'] != result['true_counts']:
+            raise ValueError('本次诊断窗口、步数或类别计数与成功记录不一致')
+        from scripts.capacity_path_diagnostics import original_reference_bank
+        raw_bank = original_reference_bank(args.root_dir, payload)
+        result.update(operation='已拟合固定小批模型的中介/参考路径检查，含私有拟合重现',
+                      mechanism_check=True, previous_summary_sha256=file_hash(args.previous_summary),
+                      mechanism_note='重现私有拟合后仅追加无梯度末端检查；旧探针未保存临时权重，故需重现相同优化。')
     for initialization in ('initial_seed42', 'epoch20_weights'):
         seed_everything(42)
         model = NeuroFDAN(ecg_channels=2, frontdoor_config=FrontDoorConfig(**payload['frontdoor_config'])).cpu()
@@ -180,6 +197,14 @@ def main() -> None:
                          for key in ('training_mode_without_step', 'eval_mode'))
         result['models'][initialization] = dict(records=records, private_parameters_updated=changed,
             final_memory_threshold_met=robust_fit, steps_executed=args.steps)
+        if args.mechanism_check:
+            old = previous['models'][initialization]['records'][-1]['diagnostic']
+            for mode in ('training_mode_without_step', 'eval_mode'):
+                if abs(last[mode]['ce_mean']-old[mode]['ce_mean']) > 1e-6 or last[mode]['single_draw_accuracy'] != old[mode]['single_draw_accuracy']:
+                    raise RuntimeError('私有模型末端CE/ACC未重现原记录，停止解释路径比较')
+            from scripts.capacity_path_diagnostics import fitted_path_check
+            result['models'][initialization]['mechanism'] = fitted_path_check(model, batch, raw_bank, args.mechanism_repeats)
+            result['models'][initialization]['previous_end_metrics_reproduced'] = True
         del model, optimizer
     if file_hash(path) != fingerprint:
         raise RuntimeError('原checkpoint读取期间发生变化')
