@@ -1,0 +1,9 @@
+test_known_cross_grid_equals_existing_pointwise_conditional (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+test_pairing_is_reproducible_and_model_state_unchanged (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+test_unbounded_coordinate_substitution_is_rejected (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+test_zero_confounding_removes_known_reference_dependence (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.040s
+
+OK

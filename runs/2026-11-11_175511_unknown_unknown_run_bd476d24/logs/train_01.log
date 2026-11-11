@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<已屏蔽绝对路径>", line 237, in <module>
+    main()
+  File "<已屏蔽绝对路径>", line 175, in main
+    raise FileExistsError('评价目录已有产物，请使用新的运行名')
+FileExistsError: 评价目录已有产物，请使用新的运行名
