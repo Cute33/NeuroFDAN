@@ -1,0 +1,62 @@
+{
+  "source_version": {
+    "commit": "dd1f70b16588029eff712ab737faf36828560cae",
+    "branch": "",
+    "tracked_changes": false
+  },
+  "arguments": {
+    "run_dir": "<已屏蔽绝对路径>",
+    "component_dir": "<已屏蔽绝对路径>",
+    "output_dir": "<已屏蔽绝对路径>",
+    "seed": 42,
+    "device": "cpu",
+    "workers": 0,
+    "diagnostic_level": "full",
+    "head_train_size": 8192,
+    "S": 256,
+    "K": 128,
+    "repeats": 4
+  },
+  "original_arguments": {
+    "output_dir": "<已屏蔽绝对路径>",
+    "run_name": "paired_tanh_normal_20ep_001",
+    "seed": 42,
+    "device": "cpu",
+    "epochs": 20,
+    "batch_size": 128,
+    "workers": 0,
+    "diagnostic_level": "full",
+    "train_size": 2048,
+    "test_size": 512,
+    "points": 16,
+    "gammas": [
+      0.0,
+      1.0
+    ],
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "fidelity_weight": 1.0,
+    "fire_weight": 0.0,
+    "no_cns2ans": false,
+    "mediator_family": "tanh_normal",
+    "mc_repeats": 3,
+    "direct_n": 32768,
+    "oracle_s": 1024,
+    "oracle_k": 512,
+    "smoke": false
+  },
+  "scm": {
+    "d_u": 8,
+    "d_xc": 16,
+    "d_xa": 8,
+    "d_mc": 64,
+    "d_ma": 64,
+    "matrix_scale": 0.7,
+    "cns_ans_scale": 0.7,
+    "outcome_scale": 1.0,
+    "bias": 0.2,
+    "seed": 2026
+  },
+  "assumptions": "线性logit为gamma0正确设定对照；gamma1因logistic-normal混合而非精确条件族。未用于真实数据。",
+  "selection": "固定无惩罚MLE，无验证/真值调参；只用中介真值监督锚定的坐标。"
+}

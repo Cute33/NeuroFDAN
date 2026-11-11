@@ -1,0 +1,12 @@
+test_default_size_preserves_original_training_bytes (test_phase6_outcome_control.HeadSampleSizeTests) ... ok
+test_disallowed_fields_and_smaller_size_are_rejected (test_phase6_outcome_control.HeadSampleSizeTests) ... ok
+test_larger_sample_contains_smaller_sample_as_exact_prefix (test_phase6_outcome_control.HeadSampleSizeTests) ... ok
+test_analytic_gradient_matches_finite_difference (test_phase6_outcome_control.OutcomeControlTests) ... ok
+test_fit_improves_training_nll_with_finite_two_class_probabilities (test_phase6_outcome_control.OutcomeControlTests) ... ok
+test_head_interface_has_no_mc_and_rejects_misaligned_axes (test_phase6_outcome_control.OutcomeControlTests) ... ok
+test_training_view_rejects_hidden_or_test_fields (test_phase6_outcome_control.OutcomeControlTests) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.004s
+
+OK
