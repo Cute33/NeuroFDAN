@@ -1,0 +1,9 @@
+{
+  "operation": "独立副本续训；继承前5轮，新增6–20轮",
+  "source_run": "deap_arousal_fold01_wd0_5ep_001",
+  "source_last_sha256": "2b31c2034a11e34e2860b0d6ba144fd0d431cc6240c23a3a8126bab1bedd3fe7",
+  "original_epochs": 5,
+  "target_epochs": 20,
+  "original_run_preserved": true,
+  "note": "不是20轮全新训练；续训不保证逐位等同连续运行"
+}
