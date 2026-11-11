@@ -1,0 +1,129 @@
+{
+  "format_version": 1,
+  "created_at": "2026-11-11T22:04:47.169540+08:00",
+  "upload_checkout": {
+    "tool_checkout": {
+      "commit": "6681381298b74e9b69dc0df0594d5d9c7274acbc",
+      "branch": "",
+      "tracked_changes": false
+    },
+    "experiment_checkout_at_upload": {
+      "commit": "375d8f8527ce8f409dfc65795bc452df3c181b70",
+      "branch": "feat/neurofdan-phase3",
+      "tracked_changes": false
+    }
+  },
+  "recorded_run_sources": [
+    {
+      "fold": 1,
+      "source_version": {
+        "commit": "446b0b591a216a5718baaca69a76f9af63bcb08d",
+        "branch": "",
+        "tracked_changes": false
+      }
+    }
+  ],
+  "metadata": [
+    {
+      "fold": 1,
+      "dataset": "HCI",
+      "task": "arousal",
+      "seed": 42,
+      "smoke": false
+    }
+  ],
+  "uploaded": [
+    {
+      "file": "run_summary.json",
+      "bytes": 3891,
+      "sha256": "e90dcc34d33b5cd42d7b1665004a9660d4dbd03d8502744c65c96c3915272ea9",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "run_report.txt",
+      "bytes": 522,
+      "sha256": "e1c8c7ddfaa1044d26556d4cb52d440940a56d0043d7949181006d0798d3606c",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold01/fold.json",
+      "bytes": 5681,
+      "sha256": "7b06c17c5a21699f9b6aa1940d4560c441575756d92317ba3a098c222ddbb414",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold01/summary.json",
+      "bytes": 3128,
+      "sha256": "13b8ecac2ad85109bf38d735f14d7fe24dbc8ed4dc6a2cca5c1ef3d8edb2873b",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold01/history.jsonl",
+      "bytes": 163847,
+      "sha256": "aca2b214228ae73be006b3f6d65e2455c04bc4f16f6e2f99d24e5deb6990bd96",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold01/reference_sources.json",
+      "bytes": 186678,
+      "sha256": "c19916880450654c9459720a40d03839b0043f339e97f745ea503a4048753564",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold01/epoch_metrics.jsonl",
+      "bytes": 247846,
+      "sha256": "eae3d561335e6a1a89a4f897447bb60dbe31aa335248339ecf901044a1c77420",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold01/mediator_diagnostics.jsonl",
+      "bytes": 608339,
+      "sha256": "3146c320ad0aefc17bded9faaa1d468cf5bf2e9af869f5507cab24047eb8274a",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold01/collapse_diagnostics.jsonl",
+      "bytes": 62971,
+      "sha256": "dfb41b55a0e304d7a462c3453a0d8f5e0de6452dc02833044fded0b1de597c8d",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold01/epoch_confusion_matrices.npz",
+      "bytes": 853,
+      "sha256": "fa43a8bd9b6f70d5dbd3d2621e25be28f47f9d9780566c1e1583a620eaac54c2",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_01.log",
+      "bytes": 14619,
+      "sha256": "d76f36fcd69123d4ef34710314d0d975b2115856f9ba723b1c038c8dd047f530",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "upload_summary.json",
+      "bytes": 3891,
+      "sha256": "422b06c012b6dc629fc84821796b9947942bfc0e29c7e57fc8e96c6228d9e5d9"
+    },
+    {
+      "file": "upload_report.txt",
+      "bytes": 522,
+      "sha256": "e1c8c7ddfaa1044d26556d4cb52d440940a56d0043d7949181006d0798d3606c"
+    }
+  ],
+  "missing": [
+    "config.json",
+    "fold01/run_summary.json",
+    "fold01/run_report.txt",
+    "fold01/config.json",
+    "fold01/probe_summary.json"
+  ],
+  "skipped": [],
+  "total_bytes": 1302788,
+  "limits": {
+    "max_file_mib": 8,
+    "max_total_mib": 32
+  },
+  "snapshot_atomic": false,
+  "note": "运行中的多个文件不是事务快照；上传源码SHA不等于旧运行源码SHA。未上传模型权重/原始信号。",
+  "sanitization": "白名单；拒绝链接；文本常见凭证/绝对路径屏蔽；数值NPZ重新编码。自动脱敏不能保证发现任意自由文本中的自定义秘密，首次建议dry-run人工检查。"
+}
