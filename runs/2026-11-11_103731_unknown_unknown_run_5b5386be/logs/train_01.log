@@ -1,0 +1,21 @@
+epoch=01 原分组: 单类batch=33/260 正类比例std=0.250 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.085
+epoch=02 原分组: 单类batch=45/260 正类比例std=0.269 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.082
+epoch=03 原分组: 单类batch=40/260 正类比例std=0.259 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.078
+epoch=04 原分组: 单类batch=37/260 正类比例std=0.259 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.079
+epoch=05 原分组: 单类batch=34/260 正类比例std=0.249 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.084
+epoch=06 原分组: 单类batch=33/260 正类比例std=0.250 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.085
+epoch=07 原分组: 单类batch=45/260 正类比例std=0.269 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.082
+epoch=08 原分组: 单类batch=40/260 正类比例std=0.259 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.078
+epoch=09 原分组: 单类batch=37/260 正类比例std=0.259 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.079
+epoch=10 原分组: 单类batch=34/260 正类比例std=0.249 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.084
+epoch=11 原分组: 单类batch=35/260 正类比例std=0.262 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.076
+epoch=12 原分组: 单类batch=24/260 正类比例std=0.232 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.079
+epoch=13 原分组: 单类batch=37/260 正类比例std=0.258 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.079
+epoch=14 原分组: 单类batch=37/260 正类比例std=0.253 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.067
+epoch=15 原分组: 单类batch=21/260 正类比例std=0.228 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.073
+epoch=16 原分组: 单类batch=32/260 正类比例std=0.244 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.081
+epoch=17 原分组: 单类batch=31/260 正类比例std=0.243 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.078
+epoch=18 原分组: 单类batch=29/260 正类比例std=0.250 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.083
+epoch=19 原分组: 单类batch=32/260 正类比例std=0.252 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.082
+epoch=20 原分组: 单类batch=34/260 正类比例std=0.252 平均trial=4.00；虚拟窗口打乱: 单类batch=0 比例std=0.073
+审计完成：<已屏蔽绝对路径>
