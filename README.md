@@ -26,6 +26,8 @@ E3/E4现已回传：B组输入路径存在，但局部输入影响远弱于采�
 
 容量检查本次在import torch阶段失败，尚无模型拟合结论。参见[导入错误与不改环境的诊断命令](docs/capacity_import_failure.md)，以及[事实监督、前门推断与正式ACC汇报口径](docs/factual_frontdoor_metrics.md)。分支 `feat/neurofdan-metrics-and-import-audit` 只新增说明与标准库诊断，不改变训练/模型或主指标。
 
+导入诊断现已6次成功，原错误尚未定位。按用户优先级转向[事实/交叉联合支持与CNS/ANS均值及方差依赖审计](docs/outcome_support_and_posterior_audit.md)，分支 `feat/neurofdan-outcome-support-audit` 不训练或改模型，记录选择机制、模型条件密度、联合距离和Head局部敏感度；任何检查正常都不等于真实识别已被证明。
+
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
 - [第五阶段：日志分层、GitHub结果回传与认证说明](docs/phase5_server_upload_guide.md)
