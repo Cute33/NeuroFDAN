@@ -18,6 +18,8 @@ E3/E4现已回传：B组输入路径存在，但局部输入影响远弱于采�
 
 20轮已复盘，尚未达到正式实验推进条件。参见[20轮结果、重复续训报错及训练批次组成审计](docs/epoch20_review_and_batch_audit.md)。独立分支 `feat/neurofdan-batch-composition-audit` 只读标签与原采样器，不运行模型或改变正式训练；优先量化batch40实际只有4个trial的优化影响候选。
 
+批次审计确认分组下690/5200个批次为单类，尚未证明其导致学习失败。独立分支 `feat/neurofdan-sampling-order-control` 提供[采样顺序单变量对照](docs/sampling_order_control.md)：新增 `--sampling_mode`，默认仍grouped，window仅显式改变优化窗口排列；SCM、模型、损失和参考总体不变。两组连续20轮从头对照待服务器运行。
+
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
 - [第五阶段：日志分层、GitHub结果回传与认证说明](docs/phase5_server_upload_guide.md)

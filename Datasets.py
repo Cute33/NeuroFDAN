@@ -177,12 +177,17 @@ def seed_worker(worker_id):
     random.seed(seed)
 
 
-def make_loaders(train_dataset, test_dataset, batch_size=40, workers=0, seed=42):
+def make_loaders(train_dataset, test_dataset, batch_size=40, workers=0, seed=42,
+                 sampling_mode='grouped'):
+    """默认沿用trial窗口整组顺序；window只改变优化窗口排列，不改变样本或参考总体。"""
+    if sampling_mode not in ('grouped', 'window'):
+        raise ValueError('sampling_mode只能是grouped或window')
     if batch_size < 2 or len(train_dataset) < 2:
         raise ValueError('训练batch及训练集至少包含两个窗口，以便排除自身参考')
     common = {'num_workers': workers, 'worker_init_fn': seed_worker,
               'generator': torch.Generator().manual_seed(seed)}
-    sampler = GroupedSampler(train_dataset, train_dataset.windows_per_trial, seed=seed)
+    group_size = train_dataset.windows_per_trial if sampling_mode == 'grouped' else 1
+    sampler = GroupedSampler(train_dataset, group_size, seed=seed)
     train = DataLoader(train_dataset, batch_size=batch_size, sampler=sampler, drop_last=True, **common)
     if len(train) == 0:
         raise ValueError('训练数据少于batch_size；请显式减小batch_size')

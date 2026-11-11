@@ -22,6 +22,8 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--epochs', type=int, default=100, help='每个fold的训练轮数')
     parser.add_argument('--batch_size', type=int, default=40, help='训练/测试batch大小，训练末尾不足batch明确丢弃')
     parser.add_argument('--workers', type=int, default=0, help='DataLoader进程数，内存有限时保持零')
+    parser.add_argument('--sampling_mode', choices=['grouped', 'window'], default='grouped',
+                        help='优化窗口排列：默认按trial整组打乱；window逐窗口打乱，不改变样本选择或参考库')
     parser.add_argument('--cpu_threads', type=int, default=0, help='CPU计算线程数；零保留PyTorch默认，接口检查可设1')
     parser.add_argument('--start_subject', type=int, default=1, help='完整LOSO起始被试，包含该编号')
     parser.add_argument('--end_subject', type=int, default=None, help='LOSO末尾被试，默认数据集最后一名')
