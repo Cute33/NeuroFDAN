@@ -1,0 +1,19 @@
+Phase6本轮仅静态检查，无云端模型/CLI/单元测试/训练。
+基线：6681381298b74e9b69dc0df0594d5d9c7274acbc
+Python3.10 AST通过：phase6_learning.py
+Python3.10 AST通过：phase6_nonidentifiability.py
+Python3.10 AST通过：phase6_synthetic_experiment.py
+Python3.10 AST通过：scripts/phase6_gradient_audit.py
+Python3.10 AST通过：tests/test_phase6_learning.py
+新增服务器待执行测试数：6
+全仓库Python静态解析：37个文件
+文档命令bash -n通过：块1
+文档命令bash -n通过：块2
+文档命令bash -n通过：块3
+文档命令bash -n通过：块4
+文档命令bash -n通过：块5
+文档命令bash -n通过：块6
+真实模型/训练/数据/旧损失/原合成及上传核心文件无改动：通过
+git diff --check：通过
+三份固定服务器快照逐载荷长度/SHA256：已重算一致（8a368c1/cfcdbdf/ea5283b）
+未执行：新单元测试、新CLI、模型前反向、合成训练、DEAP/HCI/GPU/LOSO。
