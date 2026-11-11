@@ -1,0 +1,175 @@
+DEAP：载荷完整，原探针状态保护通过；数学测试日志通过=True
+{
+  "selection": {
+    "raw_window_counts": [
+      5270,
+      7130
+    ],
+    "optimization_window_counts": [
+      5200,
+      5200
+    ],
+    "class_retention_probability": [
+      0.9867172675521821,
+      0.729312762973352
+    ],
+    "reference_sample_optimization_membership_fraction": 0.734375,
+    "note": "标签选择可能改变结果条件分布；本次只报告，不新增class weight或改变下采样。"
+  },
+  "posterior": {
+    "cns": {
+      "rms_between_input_mu_std": 0.0006631084513642222,
+      "rms_between_input_sigma_std": 0.0003614122196915303,
+      "mean_posterior_std": 0.9921705143126696,
+      "mean_conditional_gaussian_kl": 0.004836358738230697
+    },
+    "ans_with_common_cns_noise": {
+      "rms_between_input_mu_std": 0.01628924726253327,
+      "rms_between_input_sigma_std": 0.008211114788688365,
+      "mean_posterior_std": 0.9969436830387166,
+      "mean_conditional_gaussian_kl": 0.4909790770280926
+    },
+    "ans_vary_xa_hold_mc": {
+      "rms_between_input_mu_std": 0.01629167547899536,
+      "rms_between_input_sigma_std": 0.008200763249035662,
+      "mean_posterior_std": 0.9969429176282715,
+      "mean_conditional_gaussian_kl": 0.4908874942115911
+    },
+    "ans_marginal": {
+      "rms_between_input_mean_std": 0.006399211889648196,
+      "rms_between_input_total_std_variation": 0.003145231793103254,
+      "mean_conditional_variance": 0.996560889927354,
+      "mean_variance_of_conditional_mean_over_mc": 0.009413889996847492
+    }
+  },
+  "support": {
+    "own_low_density_fraction": 0.0546875,
+    "cross_low_density_fraction": 0.06256103515625,
+    "own_joint_distance_mean": 1.9253305308943018,
+    "cross_joint_distance_mean": 1.9191866828805322,
+    "cross_above_eval_p95_fraction": 0.08050537109375
+  },
+  "head_standardized_gradient_mean": {
+    "factual": {
+      "ma": 0.004384017039146822,
+      "reference_cns": 0.004059395822219243,
+      "reference_ans": 0.002393486726615155
+    },
+    "cross": {
+      "ma": 0.0044289033389267995,
+      "reference_cns": 0.0041062110718990096,
+      "reference_ans": 0.002423780825159314
+    }
+  },
+  "paired_probability": {
+    "factual_average_S": {
+      "mean": [
+        0.5209489949047565,
+        0.4790510069578886
+      ],
+      "std": [
+        0.024215812837077084,
+        0.024215808191631435
+      ]
+    },
+    "frontdoor_average_S_K": {
+      "mean": [
+        0.5138992108404636,
+        0.4861007872968912
+      ],
+      "std": [
+        0.0010355117703978712,
+        0.001035499266616238
+      ]
+    }
+  },
+  "note": "仅16个训练查询窗口；无真实中介/干预真值。概率std含MC噪声，不是纯输入信号或正式ACC。"
+}
+HCI：载荷完整，原探针状态保护通过；数学测试日志通过=True
+{
+  "selection": {
+    "raw_window_counts": [
+      1450,
+      850
+    ],
+    "optimization_window_counts": [
+      800,
+      800
+    ],
+    "class_retention_probability": [
+      0.5517241379310345,
+      0.9411764705882353
+    ],
+    "reference_sample_optimization_membership_fraction": 0.65625,
+    "note": "标签选择可能改变结果条件分布；本次只报告，不新增class weight或改变下采样。"
+  },
+  "posterior": {
+    "cns": {
+      "rms_between_input_mu_std": 0.020997722829459557,
+      "rms_between_input_sigma_std": 0.00928489906010531,
+      "mean_posterior_std": 0.9646347031743431,
+      "mean_conditional_gaussian_kl": 0.15156205084469473
+    },
+    "ans_with_common_cns_noise": {
+      "rms_between_input_mu_std": 0.01142870909588509,
+      "rms_between_input_sigma_std": 0.00577570522759924,
+      "mean_posterior_std": 0.9941928900396693,
+      "mean_conditional_gaussian_kl": 1.5884846297562278
+    },
+    "ans_vary_xa_hold_mc": {
+      "rms_between_input_mu_std": 0.009865535331560786,
+      "rms_between_input_sigma_std": 0.004975235354585897,
+      "mean_posterior_std": 0.9946661585569746,
+      "mean_conditional_gaussian_kl": 1.5838087094022333
+    },
+    "ans_marginal": {
+      "rms_between_input_mean_std": 0.005173842261617935,
+      "rms_between_input_total_std_variation": 0.0027300502773171466,
+      "mean_conditional_variance": 0.9969335743886318,
+      "mean_variance_of_conditional_mean_over_mc": 0.03155347991613855
+    }
+  },
+  "support": {
+    "own_low_density_fraction": 0.04296875,
+    "cross_low_density_fraction": 0.05615234375,
+    "own_joint_distance_mean": 2.277444284525253,
+    "cross_joint_distance_mean": 2.2609725410077917,
+    "cross_above_eval_p95_fraction": 0.01287841796875
+  },
+  "head_standardized_gradient_mean": {
+    "factual": {
+      "ma": 0.006694356423723792,
+      "reference_cns": 0.005131000264505621,
+      "reference_ans": 0.003830873164948349
+    },
+    "cross": {
+      "ma": 0.006691951496892739,
+      "reference_cns": 0.005116094415025072,
+      "reference_ans": 0.0038220302277288893
+    }
+  },
+  "paired_probability": {
+    "factual_average_S": {
+      "mean": [
+        0.49810134433209896,
+        0.5018986668437719
+      ],
+      "std": [
+        0.008726932869809825,
+        0.008726922343537329
+      ]
+    },
+    "frontdoor_average_S_K": {
+      "mean": [
+        0.49454163014888763,
+        0.5054583624005318
+      ],
+      "std": [
+        0.0018899118991690842,
+        0.0018899116598284985
+      ]
+    }
+  },
+  "note": "仅16个训练查询窗口；无真实中介/干预真值。概率std含MC噪声，不是纯输入信号或正式ACC。"
+}
+汇总已保存：<已屏蔽绝对路径>
