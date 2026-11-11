@@ -1,0 +1,57 @@
+{
+  "source_version": {
+    "commit": "15b79769535027f4dfb7de0cb5ab1c11252dec49",
+    "branch": "",
+    "tracked_changes": false
+  },
+  "arguments": {
+    "output_dir": "<已屏蔽绝对路径>",
+    "run_name": "paired_tanh_normal_20ep_001",
+    "seed": 42,
+    "device": "cpu",
+    "epochs": 20,
+    "batch_size": 128,
+    "workers": 0,
+    "diagnostic_level": "full",
+    "train_size": 2048,
+    "test_size": 512,
+    "points": 16,
+    "gammas": [
+      0.0,
+      1.0
+    ],
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "fidelity_weight": 1.0,
+    "fire_weight": 0.0,
+    "no_cns2ans": false,
+    "mediator_family": "tanh_normal",
+    "mc_repeats": 3,
+    "direct_n": 32768,
+    "oracle_s": 1024,
+    "oracle_k": 512,
+    "smoke": false
+  },
+  "scm": {
+    "d_u": 8,
+    "d_xc": 16,
+    "d_xa": 8,
+    "d_mc": 64,
+    "d_ma": 64,
+    "matrix_scale": 0.7,
+    "cns_ans_scale": 0.7,
+    "outcome_scale": 1.0,
+    "bias": 0.2,
+    "seed": 2026
+  },
+  "conditions": [
+    "oracle_mediator",
+    "observation_only",
+    "observation_input_fidelity"
+  ],
+  "selection": "自然训练总体，无标签选择，三组相同",
+  "supervision": "只有oracle_mediator读取训练中介；其余fit严格Xc/Xa/Y白名单",
+  "model_family_note": "生成器仍为tanh-Gaussian；normal为显式学习模型错设，不能称真实条件高斯。tanh_normal的KL对应tanh推前先验。",
+  "identification_note": "输入保真是统计工作约束，不能识别潜在中介；无真实生理测量锚点。",
+  "evaluation": "最后一轮评价，无test/oracle调参或选模；不修改真实LOSO选模规则。"
+}
