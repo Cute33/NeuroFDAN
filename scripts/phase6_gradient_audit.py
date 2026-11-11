@@ -133,6 +133,8 @@ def main() -> None:
         raise RuntimeError('只读状态保护失败')
     result = dict(operation='Phase6现有权重分项梯度与模式复核',dataset=args.dataset,label=args.label,fold=1,
         source_version=source_version(PROJECT), checkpoint_sha256=fingerprint, checkpoint_epoch=20,
+        original_training_source=cfg.get('source_version'),checkpoint_arguments=state['arguments'],
+        frontdoor_config=state['frontdoor_config'],
         settings={k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()},
         query_sources=query.tolist(), reference_sources=ref.tolist(), label_counts=torch.bincount(y[:16],minlength=2).tolist(),
         selected_reference_label_counts=torch.bincount(y[16:],minlength=2).tolist(),
