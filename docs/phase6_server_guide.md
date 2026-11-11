@@ -2,7 +2,7 @@
 
 本轮无需运行mainNeuroFDAN.py。不训练DEAP/HCI、不跑GPU或LOSO。使用现有dslenv、原数据和原epoch20 checkpoint；新结果统一在outputs/phase6。错误时保存日志，不清空原目录或重跑旧训练。
 
-最新第一批回传：两个梯度探针成功，smoke_001在Adam的Dynamo延迟导入失败，尚无训练step。请先按[第一批复核与优化器启动诊断](phase6_first_batch_review.md)执行，不重跑梯度、不执行本页第4节20轮实验。
+最新回传：优化器10次检查通过，原代码smoke_002完成全部三组拟合及评价；此前启动错误未复现。可执行本页第4节预定义配对合成，不重跑梯度/环境检查，不启动真实训练。见[准入条件与最新结果](phase6_validation_readiness.md)。smoke_001失败记录保留，不能将其当通过。
 
 ## 1. 获取独立分支与六项针对性测试
 
@@ -83,7 +83,7 @@ cat "$PHASE6_DEST/train.log.exit"
 )
 ```
 
-第一批回传两个gradient目录和paired_normal_smoke_001三个记录。先核对这些记录，再执行下一节；不启动真实单fold训练。
+以上为历史首轮命令。第一批已回传，smoke_001失败，随后同配置smoke_002完成；现在直接按第4节进行下一批，不重复本页第1–3节或覆盖旧目录。
 
 ## 4. 预定义配对合成（第一批检查通过后执行）
 
@@ -97,10 +97,17 @@ PHASE6_TOOLS=/home/fss/NeuroFDAN-phase6-tools
 python - <<'PY'
 import json
 from pathlib import Path
-r=json.loads(Path('/home/fss/NeuroFDAN/outputs/phase6/synthetic/paired_normal_smoke_001/probe_summary.json').read_text())
+r=json.loads(Path('/home/fss/NeuroFDAN/outputs/phase6/synthetic/paired_normal_smoke_002/probe_summary.json').read_text())
 if not r['completed'] or not r['smoke']:
     raise RuntimeError('先完成并核对三组接口检查，不跳过失败')
+if r['source_version']['commit']!='15b79769535027f4dfb7de0cb5ab1c11252dec49':
+    raise RuntimeError('smoke源码版本不匹配')
+o=json.loads(Path('/home/fss/NeuroFDAN/outputs/phase6/environment/optimizer_startup_001/probe_summary.json').read_text())
+if not o['all_optimizer_checks_ok']:
+    raise RuntimeError('优化器检查没有全部通过')
 PY
+test "$(git -C "$PHASE6_TOOLS" rev-parse HEAD)" = 15b79769535027f4dfb7de0cb5ab1c11252dec49
+test -z "$(git -C "$PHASE6_TOOLS" status --porcelain)"
 for PHASE6_FAMILY in normal tanh_normal
 do
     PHASE6_RUN="paired_${PHASE6_FAMILY}_20ep_001"

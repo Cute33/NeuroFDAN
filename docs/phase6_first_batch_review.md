@@ -1,5 +1,7 @@
 # Phase6第一批结果复核与优化器启动诊断
 
+后续更新：优化器10次检查及原代码smoke_002已通过，按[下一批学习验证与准入条件](phase6_validation_readiness.md)继续。本页保留第一批失败证据与当时诊断流程，不需重复执行。
+
 ## 1. 三份上传不等于三项实验都成功
 
 固定证据：DEAP=dab9df24cf3e8dcc3c6100f5019599694870bb29，目录161029_unknown_unknown_run_78ba2733；HCI=2a315f45e63a23cf0924a6d4ed4524d1de845e4d，目录161200_unknown_unknown_run_059c9793；smoke=6d366901abba6a8131426e2cf2a291c076a1df6f，目录161328_unknown_unknown_run_b06a417a。完整路径均以runs/2026-11-11_开头。
