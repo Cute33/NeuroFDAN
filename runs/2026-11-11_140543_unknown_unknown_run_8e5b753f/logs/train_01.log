@@ -1,0 +1,14 @@
+test_constant_mean_can_have_input_dependent_sigma (test_outcome_support_math.OutcomeSupportMathTests) ... ok
+test_distance_normalization_and_nonnegative_roundoff (test_outcome_support_math.OutcomeSupportMathTests) ... ok
+test_equal_mixture_component_permutation_does_not_change_density (test_outcome_support_math.OutcomeSupportMathTests) ... ok
+test_single_component_density_matches_diagonal_normal (test_outcome_support_math.OutcomeSupportMathTests) ... ok
+test_total_variance_includes_conditional_mean_variation (test_outcome_support_math.OutcomeSupportMathTests) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.003s
+
+OK
+来源检查完成，读取所需配对训练窗口；未读测试被试
+CNS/ANS均值、sigma和全方差统计完成；开始条件混合密度
+支持诊断完成；开始只对OutcomeHead输入求局部梯度，无参数更新
+完成：<已屏蔽绝对路径>
