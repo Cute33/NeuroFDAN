@@ -1,12 +1,63 @@
 """服务器端执行的四格评价数学与只读接口测试；不是训练实验。"""
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 import torch
 
 from frontdoor_scm import FrontDoorConfig, FrontDoorEstimator
-from scripts.evaluate_phase6_components import paired_mediators, state_digest, true_conditional_grid
+from scripts.evaluate_phase6_components import paired_mediators, prepare_output_directory, state_digest, true_conditional_grid
 from synthetic_scm import SCMConfig, SyntheticSCM
+
+
+class OutputDirectoryTests(unittest.TestCase):
+    """覆盖服务器先测试、后评价的目录状态；不用模型或checkpoint。"""
+    def test_test_logs_and_run_logs_are_preserved(self):
+        with TemporaryDirectory() as temporary:
+            out = Path(temporary)/'evaluation'
+            out.mkdir()
+            names = ('train.log', 'train.log.exit', 'component_tests.log', 'component_tests.log.exit')
+            expected = {name: ('原有内容：'+name).encode() for name in names}
+            for name, raw in expected.items():
+                (out/name).write_bytes(raw)
+            prepare_output_directory(out)
+            self.assertEqual({path.name: path.read_bytes() for path in out.iterdir()}, expected)
+
+    def test_existing_evaluation_is_rejected_and_preserved(self):
+        with TemporaryDirectory() as temporary:
+            out = Path(temporary)
+            artifact = out/'probe_summary.json'
+            artifact.write_text('{"completed": true}', encoding='utf-8')
+            with self.assertRaises(FileExistsError):
+                prepare_output_directory(out)
+            self.assertEqual(artifact.read_text(encoding='utf-8'), '{"completed": true}')
+
+    def test_unknown_file_or_directory_is_rejected(self):
+        with TemporaryDirectory() as temporary:
+            for name, directory in (('last.pt', False), ('component_tests.log', True)):
+                out = Path(temporary)/('directory' if directory else 'file')
+                out.mkdir()
+                item = out/name
+                if directory:
+                    item.mkdir()
+                else:
+                    item.write_bytes(b'preserved')
+                with self.assertRaises(FileExistsError):
+                    prepare_output_directory(out)
+                self.assertTrue(item.exists())
+
+    def test_log_symlink_is_rejected_without_touching_target(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            target = root/'original.log'
+            target.write_bytes(b'preserved')
+            out = root/'evaluation'
+            out.mkdir()
+            (out/'component_tests.log').symlink_to(target)
+            with self.assertRaises(FileExistsError):
+                prepare_output_directory(out)
+            self.assertEqual(target.read_bytes(), b'preserved')
 
 
 class ComponentEvaluationTests(unittest.TestCase):

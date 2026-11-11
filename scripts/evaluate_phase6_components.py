@@ -22,6 +22,16 @@ TRAINING_COMMIT = '15b79769535027f4dfb7de0cb5ab1c11252dec49'
 CELLS = ('true_m_true_h', 'true_m_learned_h', 'learned_m_true_h', 'learned_m_learned_h')
 
 
+def prepare_output_directory(out: Path) -> None:
+    """允许先写运行/测试日志；拒绝旧评价产物、目录及符号链接，保留全部原文件。"""
+    out.mkdir(parents=True, exist_ok=True)
+    allowed_logs = {'train.log', 'train.log.exit', 'component_tests.log', 'component_tests.log.exit'}
+    conflicts = sorted(path.name for path in out.iterdir()
+                       if path.name not in allowed_logs or path.is_symlink() or not path.is_file())
+    if conflicts:
+        raise FileExistsError('评价目录已有产物或非普通日志，请使用新的运行名：' + '、'.join(conflicts))
+
+
 def file_digest(path: Path) -> str:
     """逐块读取源文件指纹，不写入源目录。"""
     digest = hashlib.sha256()
@@ -169,10 +179,7 @@ def main() -> None:
     run, out = args.run_dir.resolve(), args.output_dir.resolve()
     if out == run or run in out.parents or out in run.parents:
         p.error('评价目录必须独立于原实验目录')
-    out.mkdir(parents=True, exist_ok=True)
-    # 允许日志包装器先创建目录；任何旧评价产物均禁止覆盖。
-    if any(path.name not in ('train.log', 'train.log.exit') for path in out.iterdir()):
-        raise FileExistsError('评价目录已有产物，请使用新的运行名')
+    prepare_output_directory(out)
     result = dict(operation='Phase6只读教师四格评价', completed=False, training_executed=False,
                   real_data_training=False, source_version=source_version(PROJECT), gammas=[])
     save_json(out/'probe_summary.json', result)
