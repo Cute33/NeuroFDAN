@@ -2,6 +2,8 @@
 
 本轮无需运行mainNeuroFDAN.py。不训练DEAP/HCI、不跑GPU或LOSO。使用现有dslenv、原数据和原epoch20 checkpoint；新结果统一在outputs/phase6。错误时保存日志，不清空原目录或重跑旧训练。
 
+最新第一批回传：两个梯度探针成功，smoke_001在Adam的Dynamo延迟导入失败，尚无训练step。请先按[第一批复核与优化器启动诊断](phase6_first_batch_review.md)执行，不重跑梯度、不执行本页第4节20轮实验。
+
 ## 1. 获取独立分支与六项针对性测试
 
 ```bash

@@ -34,6 +34,8 @@ E3/E4现已回传：B组输入路径存在，但局部输入影响远弱于采�
 
 Phase6独立分支见[潜在中介学习审查与三组配对验证](docs/phase6_mediator_learning_review.md)、[服务器运行与回传命令](docs/phase6_server_guide.md)。真实模型/训练器保持baseline；新增只读分项梯度和独立合成候选，不宣称输入重建解决潜在中介识别，不直接启动真实LOSO。新增代码尚待服务器验证。
 
+Phase6第一批已回传：6项测试与两个只读梯度探针通过，合成smoke在Adam初始化的Dynamo导入失败。参见[结果复核及独立启动诊断](docs/phase6_first_batch_review.md)；暂停20轮合成和真实训练，不覆盖已有结果、不盲目更改依赖或损失。
+
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
 - [第五阶段：日志分层、GitHub结果回传与认证说明](docs/phase5_server_upload_guide.md)
