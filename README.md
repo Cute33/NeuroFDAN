@@ -16,6 +16,8 @@ W1两组现已在服务器完成5轮：关闭衰减保留了中介参数尺度�
 
 E3/E4现已回传：B组输入路径存在，但局部输入影响远弱于采样噪声。参见[结果分析、20轮有限续训与正式实验门槛](docs/e3e4_results_and_training_gate.md)。文档分支 `feat/neurofdan-e3e4-review` 不修改源码；建议在独立副本上复用9d698f3训练工具，新增15轮后复盘，不自动扩展LOSO。
 
+20轮已复盘，尚未达到正式实验推进条件。参见[20轮结果、重复续训报错及训练批次组成审计](docs/epoch20_review_and_batch_audit.md)。独立分支 `feat/neurofdan-batch-composition-audit` 只读标签与原采样器，不运行模型或改变正式训练；优先量化batch40实际只有4个trial的优化影响候选。
+
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
 - [第五阶段：日志分层、GitHub结果回传与认证说明](docs/phase5_server_upload_guide.md)
