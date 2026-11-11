@@ -69,6 +69,12 @@ def validate_resume_weight_decay(state, args):
         raise ValueError('checkpoint的Adam weight_decay与本次参数不一致；对照必须新run从头训练')
 
 
+def validate_resume_sampling_mode(state, mode):
+    """旧checkpoint默认grouped；禁止用续训静默切换优化窗口排列。"""
+    if mode not in ('grouped', 'window') or state['arguments'].get('sampling_mode', 'grouped') != mode:
+        raise ValueError('checkpoint采样模式不匹配；顺序对照请新run从头训练')
+
+
 def parameter_rms(model):
     """只读各参数RMS；full诊断保留逐参数尺度，避免模块范数掩盖卷积核收缩。"""
     result = {}
@@ -372,7 +378,9 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
         raise ValueError('测试数据来源并非当前held-out被试')
     selected = population.balanced_indices(args.seed) if not args.no_balance else torch.arange(len(population))
     train_dataset = WindowSelection(population, selected)
-    train_loader, test_loader = make_loaders(train_dataset, test_dataset, args.batch_size, args.workers, args.seed)
+    sampling_mode = getattr(args, 'sampling_mode', 'grouped')
+    train_loader, test_loader = make_loaders(train_dataset, test_dataset, args.batch_size, args.workers,
+                                           args.seed, sampling_mode=sampling_mode)
     train_eval_loader = make_train_evaluation_loader(train_dataset, args.batch_size, args.workers)
     diagnostic_level = getattr(args, 'diagnostic_level', 'basic')
     raw_bank = build_reference_bank(population, train_subjects, held_out, args.N_ref, args.seed)
@@ -396,11 +404,14 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
                        smoke=bool(args.max_train_batches or args.max_test_batches),
                        selection='held-out ACC上升且>0.5，ACC相等时F1上升；DEAP正类1/HCI正类0',
                        arguments=vars(args), model=asdict(model.frontdoor_config),
-                       source_version=source_version(Path(__file__).resolve().parent))
+                       source_version=source_version(Path(__file__).resolve().parent),
+                       sampling_mode=sampling_mode,
+                       optimization_group_size=train_loader.sampler.group_size)
     best, first_epoch = BestCheckpoint(), 1
     if args.resume:
         state = load_checkpoint(args.resume, model, optimizer, device)
         validate_resume_weight_decay(state, args)
+        validate_resume_sampling_mode(state, sampling_mode)
         old = state['reference_report']
         if old['held_out_subject'] != held_out or old['dataset'] != dataset or state['arguments']['label'] != label:
             raise ValueError('checkpoint数据集、任务或held-out不匹配')
@@ -420,6 +431,8 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
         fold_config['start_parameter_rms'] = parameter_rms(model)
     logger.info('优化器=%s；各组weight_decay=%s；观察标签仅监督事实路径',
                 type(optimizer).__name__, [group.get('weight_decay') for group in optimizer.param_groups])
+    logger.info('优化窗口排列=%s；打乱组大小=%s；样本选择与未平衡参考总体不变',
+                sampling_mode, train_loader.sampler.group_size)
     (fold_dir / 'fold.json').write_text(json.dumps(fold_config, ensure_ascii=False, indent=2), encoding='utf-8')
     _record_sources(fold_dir / 'reference_sources.json', raw_bank)
     logger.info('当前fold=%s；训练被试=%s；测试被试=%s；参考库=%s/%s；来源检查通过',
