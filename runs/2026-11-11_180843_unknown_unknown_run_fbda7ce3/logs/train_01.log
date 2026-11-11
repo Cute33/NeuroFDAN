@@ -1,0 +1,9 @@
+gamma=0.0 积分重复=1/4 四格MSE={"true_m_true_h": 0.0001119454174620272, "true_m_learned_h": 0.004522859495594155, "learned_m_true_h": 0.000534448758236338, "learned_m_learned_h": 0.004313068240296255}
+gamma=0.0 积分重复=2/4 四格MSE={"true_m_true_h": 5.7079793912895366e-05, "true_m_learned_h": 0.00527771238127204, "learned_m_true_h": 0.0004316532394383779, "learned_m_learned_h": 0.004964611586325428}
+gamma=0.0 积分重复=3/4 四格MSE={"true_m_true_h": 4.6255517845031616e-05, "true_m_learned_h": 0.0047117761224911335, "learned_m_true_h": 0.0003907301906825297, "learned_m_learned_h": 0.004711164096974997}
+gamma=0.0 积分重复=4/4 四格MSE={"true_m_true_h": 5.2210885355315404e-05, "true_m_learned_h": 0.005031605865153423, "learned_m_true_h": 0.0004288680219005393, "learned_m_learned_h": 0.004773323458790392}
+gamma=1.0 积分重复=1/4 四格MSE={"true_m_true_h": 0.0002454808313703007, "true_m_learned_h": 0.00366752748451157, "learned_m_true_h": 0.0004053801375359067, "learned_m_learned_h": 0.004305275324934205}
+gamma=1.0 积分重复=2/4 四格MSE={"true_m_true_h": 0.00017811355330789894, "true_m_learned_h": 0.0034820597738040083, "learned_m_true_h": 0.0006121089198665645, "learned_m_learned_h": 0.004291485189208912}
+gamma=1.0 积分重复=3/4 四格MSE={"true_m_true_h": 0.0003195480301381368, "true_m_learned_h": 0.003571767001824122, "learned_m_true_h": 0.0005270100713550209, "learned_m_learned_h": 0.004151570020644615}
+gamma=1.0 积分重复=4/4 四格MSE={"true_m_true_h": 0.00013993897742526064, "true_m_learned_h": 0.0038128095311681697, "learned_m_true_h": 0.0003545893249524776, "learned_m_learned_h": 0.0043349777626940115}
+只读评价完成；不需要运行mainNeuroFDAN.py。结果目录：<已屏蔽绝对路径>

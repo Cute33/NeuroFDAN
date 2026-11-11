@@ -1,0 +1,13 @@
+test_known_cross_grid_equals_existing_pointwise_conditional (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+test_pairing_is_reproducible_and_model_state_unchanged (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+test_unbounded_coordinate_substitution_is_rejected (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+test_zero_confounding_removes_known_reference_dependence (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+test_existing_evaluation_is_rejected_and_preserved (test_phase6_component_evaluation.OutputDirectoryTests) ... ok
+test_log_symlink_is_rejected_without_touching_target (test_phase6_component_evaluation.OutputDirectoryTests) ... ok
+test_test_logs_and_run_logs_are_preserved (test_phase6_component_evaluation.OutputDirectoryTests) ... ok
+test_unknown_file_or_directory_is_rejected (test_phase6_component_evaluation.OutputDirectoryTests) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.039s
+
+OK

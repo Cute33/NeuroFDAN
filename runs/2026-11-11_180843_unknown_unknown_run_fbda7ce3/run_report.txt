@@ -1,0 +1,2 @@
+只读合成教师四格评价完成。未训练；原模型和源文件指纹保持一致。
+逐gamma的干预概率误差、经验库oracle及MC标准误见probe_summary.json。
