@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "<已屏蔽绝对路径>", line 189, in <module>
+    main()
+  File "<已屏蔽绝对路径>", line 83, in main
+    import torch
+  File "<已屏蔽绝对路径>", line 2016, in <module>
+    from torch import _VF as _VF, functional as functional  # usort: skip
+  File "<已屏蔽绝对路径>", line 7, in <module>
+    import torch.nn.functional as F
+  File "<已屏蔽绝对路径>", line 8, in <module>
+    from torch.nn.modules import *  # usort: skip # noqa: F403
+  File "<已屏蔽绝对路径>", line 1, in <module>
+    from .module import Module  # usort: skip
+  File "<已屏蔽绝对路径>", line 29, in <module>
+    from torch.utils._python_dispatch import is_traceable_wrapper_subclass
+  File "<已屏蔽绝对路径>", line 12, in <module>
+    import torchgen.model
+  File "<已屏蔽绝对路径>", line 79, in <module>
+    class DispatchKey(Enum):
+  File "<已屏蔽绝对路径>", line 276, in __new__
+    for member_name in classdict._member_names:
+RuntimeError: dictionary changed size during iteration
