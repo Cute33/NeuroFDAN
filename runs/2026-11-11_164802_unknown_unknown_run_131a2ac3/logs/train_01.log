@@ -1,0 +1,7 @@
+gamma=1.0 条件=oracle_mediator epoch=1/1 CE=0.710796 总损失=3.089236
+gamma=1.0 条件=oracle_mediator 干预MAE=0.030319
+gamma=1.0 条件=observation_only epoch=1/1 CE=0.733293 总损失=0.733756
+gamma=1.0 条件=observation_only 干预MAE=0.034879
+gamma=1.0 条件=observation_input_fidelity epoch=1/1 CE=0.732535 总损失=2.053342
+gamma=1.0 条件=observation_input_fidelity 干预MAE=0.033079
+合成验证已结束：<已屏蔽绝对路径>
