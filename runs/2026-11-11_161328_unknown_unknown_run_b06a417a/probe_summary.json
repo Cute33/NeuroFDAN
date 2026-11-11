@@ -1,0 +1,111 @@
+{
+  "operation": "Phase6三种监督条件合成验证",
+  "source_version": {
+    "commit": "15b79769535027f4dfb7de0cb5ab1c11252dec49",
+    "branch": "",
+    "tracked_changes": false
+  },
+  "smoke": true,
+  "completed": false,
+  "counterexample": {
+    "models": {
+      "A": {
+        "t": "1",
+        "confounding": "1",
+        "y_noise_variance": "1",
+        "observed_covariance": [
+          [
+            2,
+            1,
+            4
+          ],
+          [
+            1,
+            2,
+            4
+          ],
+          [
+            4,
+            4,
+            14
+          ]
+        ],
+        "do_mean_at_1_1": 2.0,
+        "do_variance": 4.0,
+        "do_probability_at_1_1": 0.8413447460685429
+      },
+      "B": {
+        "t": "2/3",
+        "confounding": "2",
+        "y_noise_variance": "5/9",
+        "observed_covariance": [
+          [
+            2,
+            1,
+            4
+          ],
+          [
+            1,
+            2,
+            4
+          ],
+          [
+            4,
+            4,
+            14
+          ]
+        ],
+        "do_mean_at_1_1": 1.3333333333333333,
+        "do_variance": 6.0,
+        "do_probability_at_1_1": 0.70689315946343
+      }
+    },
+    "same_observational_distribution": true,
+    "unavoidable_max_absolute_error_lower_bound": 0.06722579330255646,
+    "note": "Y*仅为阈值函数辅助记号；不是新SCM节点。未知中介仅凭X/Y无法区分A/B。此解析反例不替换tanh合成机制。"
+  },
+  "gammas": [
+    {
+      "gamma": 1.0,
+      "direct_probability": [
+        0.552887405475905,
+        0.5342372553712897,
+        0.4720695374050856,
+        0.5459880244448598
+      ],
+      "direct_standard_error": [
+        0.004041797416425717,
+        0.0039827717204459715,
+        0.003999789443327212,
+        0.00401541203914829
+      ],
+      "oracle_probability": [
+        0.5643273903843155,
+        0.5392649761491952,
+        0.48595049831331727,
+        0.5542043425880229
+      ],
+      "oracle_approx_standard_error": [
+        0.016584993491506713,
+        0.016785781927660216,
+        0.0169239201470271,
+        0.016505145449547065
+      ],
+      "direct_seconds": 0.03512360609602183,
+      "oracle_seconds": 0.020740239997394383,
+      "truth_comparison": {
+        "mae": 0.00964124618442766,
+        "probability_mse": 0.0001040850476226918,
+        "brier": 0.24838801593601303,
+        "nll": 0.6899199823192665,
+        "calibration_10bins": 0.009641246184427604
+      },
+      "true_probability_std": 0.03200957455809485,
+      "conditions": [],
+      "truth_agreement_warning": false
+    }
+  ],
+  "training_executed": null,
+  "training_status": "拟合已启动：gamma=1.0，条件=oracle_mediator；若中断，实际步数查history/日志",
+  "real_data_training": false
+}

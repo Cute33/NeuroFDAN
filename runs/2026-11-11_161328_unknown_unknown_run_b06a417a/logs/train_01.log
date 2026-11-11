@@ -1,0 +1,42 @@
+Traceback (most recent call last):
+  File "<已屏蔽绝对路径>", line 305, in <module>
+    main()
+  File "<已屏蔽绝对路径>", line 282, in main
+    model,record=fit(data,condition,args,directory,gamma)
+  File "<已屏蔽绝对路径>", line 56, in fit
+    optimizer = torch.optim.Adam([p for _,p in named],lr=args.lr,weight_decay=args.weight_decay)
+  File "<已屏蔽绝对路径>", line 78, in __init__
+    super().__init__(params, defaults)
+  File "<已屏蔽绝对路径>", line 371, in __init__
+    self.add_param_group(cast(dict, param_group))
+  File "<已屏蔽绝对路径>", line 27, in inner
+    import torch._dynamo
+  File "<已屏蔽绝对路径>", line 3, in <module>
+    from . import convert_frame, eval_frame, resume_execution
+  File "<已屏蔽绝对路径>", line 53, in <module>
+    from . import config, exc, trace_rules
+  File "<已屏蔽绝对路径>", line 3500, in <module>
+    add(_name)
+  File "<已屏蔽绝对路径>", line 3366, in add
+    _recompile_re()
+  File "<已屏蔽绝对路径>", line 3348, in _recompile_re
+    SKIP_DIRS_RE = re.compile(
+  File "<已屏蔽绝对路径>", line 251, in compile
+    return _compile(pattern, flags)
+  File "<已屏蔽绝对路径>", line 303, in _compile
+    p = sre_compile.compile(pattern, flags)
+  File "<已屏蔽绝对路径>", line 788, in compile
+    p = sre_parse.parse(p, flags)
+  File "<已屏蔽绝对路径>", line 955, in parse
+    p = _parse_sub(source, state, flags & SRE_FLAG_VERBOSE, 0)
+  File "<已屏蔽绝对路径>", line 444, in _parse_sub
+    itemsappend(_parse(source, state, verbose, nested + 1,
+  File "<已屏蔽绝对路径>", line 841, in _parse
+    p = _parse_sub(source, state, sub_verbose, nested + 1)
+  File "<已屏蔽绝对路径>", line 444, in _parse_sub
+    itemsappend(_parse(source, state, verbose, nested + 1,
+  File "<已屏蔽绝对路径>", line 526, in _parse
+    code = _escape(source, this, state)
+  File "<已屏蔽绝对路径>", line 431, in _escape
+    raise source.error("bad escape %s" % escape, len(escape))
+re.error: bad escape / at position 590
