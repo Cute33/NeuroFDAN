@@ -1,0 +1,72 @@
+{
+  "format_version": 1,
+  "created_at": "2026-11-11T20:59:06.983492+08:00",
+  "upload_checkout": {
+    "tool_checkout": {
+      "commit": "6681381298b74e9b69dc0df0594d5d9c7274acbc",
+      "branch": "",
+      "tracked_changes": false
+    },
+    "experiment_checkout_at_upload": {
+      "commit": "375d8f8527ce8f409dfc65795bc452df3c181b70",
+      "branch": "feat/neurofdan-phase3",
+      "tracked_changes": false
+    }
+  },
+  "recorded_run_sources": [],
+  "metadata": [],
+  "uploaded": [
+    {
+      "file": "run_report.txt",
+      "bytes": 175,
+      "sha256": "e61bc18b4f77d9c29169795d5f984b3720e3c1ba1f3b2c6b2af297ef546c93b0",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "config.json",
+      "bytes": 1484,
+      "sha256": "7b7eb6ec5d3e0bd32339d3e75170a24c63a5c28e76ac14d177f3506dc97e1600",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "probe_summary.json",
+      "bytes": 118148,
+      "sha256": "a38e9ed70ba69f52dd479472c87500f7d0c1edb80d99579c6c5572d9721a8c2f",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_01.log",
+      "bytes": 1984,
+      "sha256": "7a1ee12b35dc0acfa8693bba01f23e85cd7f0218b77d9fd1b989eefffce0991d",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_02.log",
+      "bytes": 549,
+      "sha256": "9417cd3e549329442c23d9d9737817426497fa29505bba4418ee960dd6781da8",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "upload_summary.json",
+      "bytes": 428,
+      "sha256": "db5f8e52b07ec77fa6a0239ce1bc23c60c53b6241f9887316c15156890696980"
+    },
+    {
+      "file": "upload_report.txt",
+      "bytes": 284,
+      "sha256": "3e22ff394b14196134ffaf2b17e1093c7a7a262ea4b0bce93bf097a8c5491eea"
+    }
+  ],
+  "missing": [
+    "run_summary.json"
+  ],
+  "skipped": [],
+  "total_bytes": 123052,
+  "limits": {
+    "max_file_mib": 8,
+    "max_total_mib": 32
+  },
+  "snapshot_atomic": false,
+  "note": "运行中的多个文件不是事务快照；上传源码SHA不等于旧运行源码SHA。未上传模型权重/原始信号。",
+  "sanitization": "白名单；拒绝链接；文本常见凭证/绝对路径屏蔽；数值NPZ重新编码。自动脱敏不能保证发现任意自由文本中的自定义秘密，首次建议dry-run人工检查。"
+}
