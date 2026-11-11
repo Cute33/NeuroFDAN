@@ -32,7 +32,11 @@ E3/E4现已回传：B组输入路径存在，但局部输入影响远弱于采�
 
 若诊断上传出现Git超时，参见[上传超时定位、重试与推送核验](docs/upload_timeout_recovery.md)。独立修复分支 `fix/neurofdan-upload-timeout` 提供分阶段耗时、可配置网络超时和本地推送收据，不重跑实验或修改SSH密钥。
 
-Phase6独立分支见[潜在中介学习审查与三组配对验证](docs/phase6_mediator_learning_review.md)、[服务器运行与回传命令](docs/phase6_server_guide.md)。真实模型/训练器保持baseline；新增只读分项梯度和独立合成候选，不宣称输入重建解决潜在中介识别，不直接启动真实LOSO。新增代码尚待服务器验证。
+Phase6独立分支见[潜在中介学习审查与三组配对验证](docs/phase6_mediator_learning_review.md)、[服务器运行与回传命令](docs/phase6_server_guide.md)。真实模型/训练器保持baseline；新增只读分项梯度和独立合成候选，不宣称输入重建解决潜在中介识别，不直接启动真实LOSO。首轮CPU接口已通过，学习改善与真实迁移尚待验证。
+
+Phase6历史第一批：6项测试与两个只读梯度探针通过，smoke_001在Adam初始化的Dynamo导入失败，随后暂停并检查。参见[结果复核及独立启动诊断](docs/phase6_first_batch_review.md)；旧失败目录保留，不盲目更改依赖或损失。
+
+最新优化器检查10/10通过，原版本smoke_002完成三组训练与评价，允许进入预定义20轮配对合成。参见[最新证据与正式实验准入条件](docs/phase6_validation_readiness.md)；旧失败记录仍保留，不重跑环境/梯度，不将接口成功当成方法有效。
 
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
