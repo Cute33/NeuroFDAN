@@ -22,6 +22,8 @@ E3/E4现已回传：B组输入路径存在，但局部输入影响远弱于采�
 
 采样对照已回传，window减少长期单类轮数但尚未稳定改善分类。用户已选择全局窗口shuffle＋DEAP400/HCI100，见[大batch运行与更新预算说明](docs/large_batch_run.md)。独立分支 `feat/neurofdan-large-batch-run` 增加可选评估分批及批次预算记录；本次命令显式设置训练400/100、评估40，原CLI默认保持兼容。先做GPU smoke，再按独立目录运行，不能将400窗口误称为按被试成批。
 
+四组大batch结果现已回传，工程运行成功但前门判别仍弱。见[结果复盘与固定小批记忆能力检查](docs/large_batch_results_and_capacity_check.md)。独立分支 `feat/neurofdan-fixed-batch-capacity` 只对临时内存模型作有界诊断更新，复用原训练函数，不保存权重、不覆盖正式配置，不将小批记忆等同于因果识别或正式分类效果。
+
 - [第五阶段：真实日志诊断与证据等级](docs/phase5_diagnostic_analysis.md)
 - [第五阶段：A/B工程实施与C/D候选及最小服务器探针](docs/phase5_action_plan.md)
 - [第五阶段：日志分层、GitHub结果回传与认证说明](docs/phase5_server_upload_guide.md)
