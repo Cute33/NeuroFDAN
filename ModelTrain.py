@@ -1,4 +1,4 @@
-"""LOSO二分训练：事实监督、训练总体参考、held-out测试选择checkpoint。"""
+"""LOSO二分训练：可选观察预测目标、训练总体参考、held-out测试选择checkpoint。"""
 import json
 import logging
 import math
@@ -14,6 +14,7 @@ from Datasets import (DATASET_SPECS, PhysiologicalWindows, WindowSelection,
                       cal_train_index, canonical_dataset, canonical_label, make_loaders, seed_worker)
 from NeuroFDAN import NeuroFDAN
 from frontdoor_scm import FrontDoorConfig, ReferenceBank, frontdoor_loss
+from classification_objectives import classification_terms, integrated_observational_nll
 from training_diagnostics import (GradientDiagnostics, MediatorDiagnostics, PredictionDiagnostics,
                                   isolated_evaluation, log_epoch_summary, save_epoch_diagnostics)
 from run_reporting import source_version, write_run_reports
@@ -118,6 +119,8 @@ def confusion_metrics(confusion, dataset):
                   recall=tp / (tp + fn) if tp + fn else 0.,
                   sensitivity=tp / (tp + fn) if tp + fn else 0.,
                   specificity=tn / (tn + fp) if tn + fp else 0.)
+    scores['balanced_accuracy'] = .5 * (scores['sensitivity'] + scores['specificity'])
+    scores['macro_f1'] = .5 * (scores['f1_class0'] + scores['f1_class1'])
     return scores
 
 
@@ -211,26 +214,32 @@ def prediction_probabilities(outputs, fd_mode):
     return probs
 
 
-def loss_component_gradient_report(model, output, terms, loss, epoch, lambda_obs, fire_weight):
+def loss_component_gradient_report(model, output, terms, loss, epoch, lambda_obs, fire_weight,
+                                   classification_objective='factual'):
     """复用同一前向图记录实际加权分项梯度；不写.grad、不消耗额外随机样本。"""
     from phase6_learning import gradient_components
     cfg = model.frontdoor_config
     beta = cfg.beta * min(max(epoch, 0) / cfg.beta_warmup_epochs, 1.)
-    components = dict(factual_ce=lambda_obs * terms['loss_obs'],
-                      kl_c=beta * output['kl_c'].mean(),
+    reference_term = 'factual_ce' if classification_objective == 'factual' else 'integrated_observational_nll'
+    task = lambda_obs * terms['loss_obs'] if reference_term == 'factual_ce' else terms['loss_integrated_observational']
+    components = {reference_term: task}
+    components.update(kl_c=beta * output['kl_c'].mean(),
                       kl_a=beta * output['kl_a'].mean(),
                       fire=fire_weight * output['fire_loss'], training_total=loss)
     return dict(batch_size=output['logits_obs'].shape[0], epoch=epoch, batch_index=0,
+                classification_objective=classification_objective, reference_term=reference_term,
                 factual_ce_samples=output['logits_obs_samples'].shape[1] if 'logits_obs_samples' in output else 1,
-                weights=dict(lambda_obs=lambda_obs, beta=beta, fire=fire_weight),
+                weights=(dict(lambda_obs=lambda_obs, beta=beta, fire=fire_weight) if classification_objective == 'factual'
+                         else dict(lambda_obs=0., integrated_observational=1., beta=beta, fire=fire_weight)),
                 weighted_terms={key: float(value.detach()) for key, value in components.items()},
-                gradients=gradient_components(components, list(model.named_parameters())),
+                gradients=gradient_components(components, list(model.named_parameters()), reference_term=reference_term),
                 note='实际优化首batch、同一前向图、裁剪前原始梯度；不是Adam实际更新量或整个epoch平均')
 
 
 def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
                     fd_mode='full', lambda_obs=1., fire_weight=0., max_batches=0,
-                    diagnostic_level='basic', loss_gradient_interval=0, factual_ce_mode='single'):
+                    diagnostic_level='basic', loss_gradient_interval=0, factual_ce_mode='single',
+                    classification_objective='factual'):
     model.train()
     gradients = GradientDiagnostics(model) if diagnostic_level == 'full' else None
     cm, sums, count = torch.zeros(2, 2, dtype=torch.long), {}, 0
@@ -244,17 +253,20 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
             forward_args['factual_ce_mode'] = factual_ce_mode
         output = model(xc, xa, **forward_args)
         primary_probs = prediction_probabilities(output, fd_mode)
-        terms = frontdoor_loss(output, y, model.frontdoor_config, epoch=epoch)
-        # 真实观察标签从不用于监督probs_do，也不传入任何oracle概率。
-        loss = terms['loss'] + (lambda_obs - 1.) * terms['loss_obs'] + fire_weight * output['fire_loss']
+        terms = classification_terms(output, y, model.frontdoor_config, epoch=epoch,
+                                     objective=classification_objective, lambda_obs=lambda_obs)
+        # 方案A是观察标签预测风险；没有oracle干预概率或中介真值。
+        loss = terms['loss'] + fire_weight * output['fire_loss']
         if not torch.isfinite(loss):
             raise FloatingPointError('训练损失出现非有限数值，请检查输入和模型设置')
         if batch_index == 0 and loss_gradient_interval > 0 and (epoch == 1 or epoch % loss_gradient_interval == 0):
-            loss_gradients = loss_component_gradient_report(model, output, terms, loss, epoch, lambda_obs, fire_weight)
+            loss_gradients = loss_component_gradient_report(model, output, terms, loss, epoch, lambda_obs, fire_weight,
+                                                            classification_objective)
             cns = loss_gradients['gradients']
-            logger.info('首batch分项梯度：epoch=%s batch=%s CE采样=%s CNS CE=%s fire=%s KLc=%s，详见optimization.loss_component_gradients',
-                        epoch, len(y), loss_gradients['factual_ce_samples'],
-                        cns['factual_ce']['cns']['l2'], cns['fire']['cns']['l2'], cns['kl_c']['cns']['l2'])
+            task_name = loss_gradients['reference_term']
+            logger.info('首batch分项梯度：epoch=%s batch=%s 主项=%s CNS任务=%s fire=%s KLc=%s，详见optimization.loss_component_gradients',
+                        epoch, len(y), task_name,
+                        cns[task_name]['cns']['l2'], cns['fire']['cns']['l2'], cns['kl_c']['cns']['l2'])
         loss.backward()
         if gradients is not None:
             gradients.update()
@@ -264,9 +276,11 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
         _add_confusion(cm, y, primary_probs)
         values = dict(output['mediator_statistics'], loss=loss.detach(),
                       factual_ce=terms['loss_obs'].detach(), kl=terms['loss_kl'].detach(),
+                      classification_loss=terms['classification_loss'].detach(),
+                      weighted_classification_loss=terms['weighted_classification_loss'].detach(),
                       fire_loss=output['fire_loss'].detach(),
-                      weighted_obs_loss=(lambda_obs*terms['loss_obs']).detach(),
-                      weighted_kl_loss=(terms['loss']-terms['loss_obs']).detach(),
+                      weighted_obs_loss=terms['weighted_obs_loss'].detach(),
+                      weighted_kl_loss=terms['weighted_kl_loss'].detach(),
                       weighted_fire_loss=(fire_weight*output['fire_loss']).detach())
         size = len(y)
         for key, value in values.items():
@@ -278,6 +292,7 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
         raise ValueError('训练没有执行任何batch')
     metrics = dict(confusion_metrics(cm, dataset), **{k: v / count for k, v in sums.items()})
     metrics['factual_ce_mode'] = factual_ce_mode
+    metrics['classification_objective'] = classification_objective
     metrics['factual_ce_samples'] = output['logits_obs_samples'].shape[1] if 'logits_obs_samples' in output else 1
     if gradients is not None:
         metrics['gradients'] = gradients.finish()
@@ -314,6 +329,8 @@ def evaluate(model, loader, raw_bank, device, dataset, fd_mode='full', max_batch
             for key, value in output['mediator_statistics'].items():
                 sums[key] = sums.get(key, 0.) + float(value) * len(y)
             sums['factual_ce'] = sums.get('factual_ce', 0.) + float(torch.nn.functional.cross_entropy(output['logits_obs'], y)) * len(y)
+            if fd_mode == 'full':
+                sums['integrated_observational_nll'] = sums.get('integrated_observational_nll', 0.) + float(integrated_observational_nll(output, y)) * len(y)
             count += len(y)
             if collect_predictions:
                 for ids, truth, probability in zip(batch['source_ids'].tolist(), y.cpu().tolist(), probs.cpu().tolist()):
@@ -401,6 +418,8 @@ def validate_resume_objective(state, args, dataset):
         raise ValueError('续训分类/fire权重与checkpoint不同；请新run，不静默切换目标')
     if old.get('factual_ce_mode', 'single') != getattr(args, 'factual_ce_mode', 'single'):
         raise ValueError('续训事实CE采样模式不同；MC对照必须新run从头训练')
+    if old.get('classification_objective', 'factual') != getattr(args, 'classification_objective', 'factual'):
+        raise ValueError('续训主分类目标不同；方案A必须新run从头训练')
 
 
 def save_fold_confusion(run_dir, fold_dir, dataset, label, held_out, confusion):
@@ -478,6 +497,9 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
                        selection='held-out ACC上升且>0.5，ACC相等时F1上升；DEAP正类1/HCI正类0',
                        arguments=vars(args), model=asdict(model.frontdoor_config),
                        source_version=source_version(Path(__file__).resolve().parent),
+                       classification_objective=getattr(args, 'classification_objective', 'factual'),
+                       classification_loss_weight=(1. if getattr(args, 'classification_objective', 'factual') == 'integrated_observational' else args.lambda_obs),
+                       supervision='观察情绪标签；不存在真实干预概率或中介标签监督',
                        sampling_mode=sampling_mode,
                        optimization_group_size=train_loader.sampler.group_size,
                        optimization_batch_size=args.batch_size, evaluation_batch_size=eval_batch_size,
@@ -507,8 +529,9 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
                           for group in optimizer.param_groups])
     if diagnostic_level == 'full':
         fold_config['start_parameter_rms'] = parameter_rms(model)
-    logger.info('优化器=%s；各组weight_decay=%s；观察标签仅监督事实路径',
-                type(optimizer).__name__, [group.get('weight_decay') for group in optimizer.param_groups])
+    logger.info('优化器=%s；各组weight_decay=%s；主分类目标=%s；标签为观察标签，不是干预真值',
+                type(optimizer).__name__, [group.get('weight_decay') for group in optimizer.param_groups],
+                getattr(args, 'classification_objective', 'factual'))
     logger.info('优化窗口排列=%s；打乱组大小=%s；样本选择与未平衡参考总体不变',
                 sampling_mode, train_loader.sampler.group_size)
     logger.info('训练batch=%s；评估batch=%s；完整epoch更新次数=%s；丢弃尾窗=%s（smoke上限另计）',
@@ -539,7 +562,8 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
                            epoch, args.fd_mode, args.lambda_obs, fire_weight, args.max_train_batches,
                            diagnostic_level=diagnostic_level,
                            loss_gradient_interval=getattr(args, 'loss_gradient_interval', 0),
-                           factual_ce_mode=getattr(args, 'factual_ce_mode', 'single'))
+                           factual_ce_mode=getattr(args, 'factual_ce_mode', 'single'),
+                           classification_objective=getattr(args, 'classification_objective', 'factual'))
             cache_holder = {}
             # 原测试路径先执行；额外训练集评估随后隔离随机流，不参与选模。
             metrics, cm, predictions = evaluate(model, test_loader, raw_bank, device, dataset,

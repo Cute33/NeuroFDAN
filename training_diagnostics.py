@@ -311,12 +311,17 @@ def log_epoch_summary(record: dict, collapse: dict, total_epochs: int, interval:
     if interval and record['epoch'] % interval == 0:
         primary = test['prediction_diagnostics']['primary']
         logger.info('周期诊断：事实训练/测试ACC=%.4f/%.4f；两路径测试不一致率=%.4f；'
-                    '测试P1均值/std=%.6f/%.3e；CE=%.6f CNS_KL=%.3e ANS_KL=%.3e',
+                    '测试P1均值/std=%.6f/%.3e；事实CE诊断=%.6f CNS_KL=%.3e ANS_KL=%.3e',
                     train['prediction_diagnostics']['factual']['metrics']['acc'],
                     test['prediction_diagnostics']['factual']['metrics']['acc'],
                     test['prediction_diagnostics']['factual_primary_disagreement'],
                     primary['probability_mean'][1], primary['probability_std'][1],
                     record['optimization']['factual_ce'], record['optimization']['kl_c'], record['optimization']['kl_a'])
+        if record['optimization'].get('classification_objective') == 'integrated_observational':
+            logger.info('方案A主分类NLL=%.6f；完整训练/测试积分NLL=%.6f/%.6f；BA=%.4f/%.4f；MacroF1=%.4f/%.4f；事实CE不加入总loss',
+                        record['optimization']['classification_loss'], train['integrated_observational_nll'],
+                        test['integrated_observational_nll'], train['balanced_accuracy'], test['balanced_accuracy'],
+                        train['macro_f1'], test['macro_f1'])
         if record['diagnostic_level'] == 'full':
             summary = record['mediator_summary']['test']
             grad = record['optimization']['gradients']

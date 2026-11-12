@@ -87,19 +87,20 @@ def learning_terms(model: FrontDoorEstimator, readouts: ModalityReadouts,
     return terms, out
 
 
-def gradient_components(terms: dict[str, Tensor], named: list[tuple[str, nn.Parameter]]) -> dict:
+def gradient_components(terms: dict[str, Tensor], named: list[tuple[str, nn.Parameter]],
+                        *, reference_term: str = 'factual_ce') -> dict:
     """autograd.grad分项范数和CE夹角；不写.grad，允许后续对total正常backward。"""
     parameters = [p for _, p in named]
     grouped = {}
-    if 'factual_ce' not in terms:
-        raise ValueError('分项夹角诊断必须包含事实CE')
-    labels = ['factual_ce']+[key for key in terms if key not in ('total','factual_ce')]
+    if reference_term not in terms:
+        raise ValueError('分项夹角诊断缺少指定的主分类项')
+    labels = [reference_term]+[key for key in terms if key not in ('total', reference_term)]
     ce_gradients = None
     for label in labels:
         value = terms[label]
         gradients = (torch.autograd.grad(value, parameters, retain_graph=True, allow_unused=True)
                      if value.requires_grad else (None,)*len(parameters))
-        if label == 'factual_ce':
+        if label == reference_term:
             ce_gradients = gradients
         accum = {}
         for i, ((name, _), g) in enumerate(zip(named, gradients)):
@@ -125,6 +126,7 @@ def gradient_components(terms: dict[str, Tensor], named: list[tuple[str, nn.Para
         grouped[label] = {}
         for group, row in accum.items():
             norm, ce_norm = row['square']**.5, row['ce_square']**.5
-            grouped[label][group] = dict(l2=norm, missing_tensors=row['missing'],zero_tensors=row['zero'],
-                cosine_to_ce=max(-1., min(1., row['dot_ce']/(norm*ce_norm))) if norm*ce_norm else None)
+            cosine_key = 'cosine_to_ce' if reference_term == 'factual_ce' else 'cosine_to_classification'
+            grouped[label][group] = dict(l2=norm, missing_tensors=row['missing'],zero_tensors=row['zero'])
+            grouped[label][group][cosine_key] = max(-1., min(1., row['dot_ce']/(norm*ce_norm))) if norm*ce_norm else None
     return grouped
