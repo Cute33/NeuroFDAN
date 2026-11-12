@@ -1,0 +1,7 @@
+NeuroFDAN运行摘要（非完整LOSO验收）
+本摘要不加载权重、不重新选模；正式统计需CalculateResult.py --require_complete。旧Phase4未记录训练源码SHA时不能用上传时SHA代替。
+held-out测试集参与checkpoint选择，存在测试集选模偏差
+fold=2 DEAP/arousal seed=42 epoch=100/100 状态=正常收尾 smoke=False best={'acc': 0.6, 'f1': 0.75, 'epoch': 1}
+最后测试={'acc': 0.6, 'selection_f1': 0.75, 'count': 400, 'complete_test': True}；单类测试记录数=100
+退出收据：logs/train_01.log python_exit=0 tee_exit=0；进程及日志写入均退出成功
+退出收据：logs/train_02.log python_exit=0 tee_exit=0；进程及日志写入均退出成功

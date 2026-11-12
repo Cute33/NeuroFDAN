@@ -1,0 +1,151 @@
+{
+  "format_version": 1,
+  "created_at": "2026-11-12T20:52:07.511966+08:00",
+  "upload_checkout": {
+    "tool_checkout": {
+      "commit": "8060a27538830a52d1dca8732f5b81166b01ee87",
+      "branch": "",
+      "tracked_changes": false
+    },
+    "experiment_checkout_at_upload": {
+      "commit": "916925ca6793019d37a74bfef46633a972b0b4e9",
+      "branch": "feat/neurofdan-phase3",
+      "tracked_changes": false
+    }
+  },
+  "recorded_run_sources": [
+    {
+      "fold": 2,
+      "source_version": {
+        "commit": "8060a27538830a52d1dca8732f5b81166b01ee87",
+        "branch": "",
+        "tracked_changes": false
+      }
+    }
+  ],
+  "metadata": [
+    {
+      "fold": 2,
+      "dataset": "DEAP",
+      "task": "arousal",
+      "seed": 42,
+      "smoke": false
+    }
+  ],
+  "uploaded": [
+    {
+      "file": "run_summary.json",
+      "bytes": 3822,
+      "sha256": "fce6d5486baba22e7c41e5fcb796fa90668b6405ef897f5911b42041c269e27f",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "run_report.txt",
+      "bytes": 513,
+      "sha256": "a231b8b8425ac6f60d6ca781e40415f1d3a66a409f1c4a308a8255f4d519bbe2",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold02/fold.json",
+      "bytes": 5888,
+      "sha256": "b85b0dedce2504b0d6fef981a7c9ee516b61be3536e5560ee58bf90405307118",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold02/summary.json",
+      "bytes": 3061,
+      "sha256": "0f7489a2296cf79286068bd5647ad2470be0d3184009c8b156af295c8d266a48",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold02/history.jsonl",
+      "bytes": 883296,
+      "sha256": "2518f2c6b0959eab4672ac825a85a9de90a2b7833bb55febeca07c66d6f3c1b8",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold02/reference_sources.json",
+      "bytes": 189452,
+      "sha256": "ee746feea88afd2399c4cd1f80458412f5c821956251b0d81afa27fa2d5f77c9",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold02/epoch_metrics.jsonl",
+      "bytes": 1296485,
+      "sha256": "c675450a72f4a2927f0da8ad8a7adca41caafb42b878188b391f0c72de7049d8",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold02/mediator_diagnostics.jsonl",
+      "bytes": 3098930,
+      "sha256": "1e95245447a9be5b68de45cadbab0074963e655013307ccad9237d6e89bf099e",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold02/collapse_diagnostics.jsonl",
+      "bytes": 307864,
+      "sha256": "6f0ff9daf9ba6a5aa406f4cd78d0538897af0b27c18342e397ec305ca870f67c",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "fold02/epoch_confusion_matrices.npz",
+      "bytes": 1029,
+      "sha256": "259785fb647267f400b65dc8b59f70d45231a4827d40f63e3a3ed6eb0d9dca6e",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_01.log",
+      "bytes": 32042,
+      "sha256": "5ae1de8264f2dbf01597cf7cf55304cbf437eaf56e97ed0a90986f9f49e21e64",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_02.log",
+      "bytes": 28051,
+      "sha256": "dbb597fd68b81ced7fec82b81a6eadbbc05f0b8d68f2282dedfb13159597cc99",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "upload_summary.json",
+      "bytes": 4361,
+      "sha256": "26ddd0652636c273f1b53943f17b93f0f1b1b15e77bccafefeb2001ef60334d6"
+    },
+    {
+      "file": "upload_report.txt",
+      "bytes": 707,
+      "sha256": "1321cfc17f0b187b3113fd0e1fb2b10fb44282ccf54a5d60d4b217360640b40b"
+    }
+  ],
+  "missing": [
+    "config.json",
+    "fold02/run_summary.json",
+    "fold02/run_report.txt",
+    "fold02/config.json",
+    "fold02/probe_summary.json"
+  ],
+  "skipped": [],
+  "total_bytes": 5855501,
+  "execution_evidence": [
+    {
+      "log": "logs/train_01.log",
+      "receipt_present": true,
+      "python_exit": 0,
+      "tee_exit": 0,
+      "status": "进程及日志写入均退出成功"
+    },
+    {
+      "log": "logs/train_02.log",
+      "receipt_present": true,
+      "python_exit": 0,
+      "tee_exit": 0,
+      "status": "进程及日志写入均退出成功"
+    }
+  ],
+  "limits": {
+    "max_file_mib": 16,
+    "max_total_mib": 64
+  },
+  "snapshot_atomic": false,
+  "note": "运行中的多个文件不是事务快照；上传源码SHA不等于旧运行源码SHA。未上传模型权重/原始信号。",
+  "sanitization": "白名单；拒绝链接；文本常见凭证/绝对路径屏蔽；数值NPZ重新编码。自动脱敏不能保证发现任意自由文本中的自定义秘密，首次建议dry-run人工检查。"
+}
