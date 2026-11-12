@@ -1,0 +1,337 @@
+test_accumulator_detects_violation_and_mask_change (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_constants_are_finite_but_invalid (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_dimensions_and_names (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_invalid_input_rejected (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_no_input_mutation (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_normalized_linear_trend_known_value (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_original_amplitude_positive_control_changes (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_three_affine_transforms_preserve_candidates (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_collect_persists_receipt_and_skip_reasons_without_touching_run (test_auto_evidence.AutoEvidenceTests) ... ok
+test_missing_receipt_does_not_invent_interruption (test_auto_evidence.AutoEvidenceTests) ... ok
+test_success_failure_and_malformed_receipts (test_auto_evidence.AutoEvidenceTests) ... ok
+test_symlink_receipt_is_rejected (test_auto_evidence.AutoEvidenceTests) ... ok
+test_heldout_reference_is_rejected_before_reading_data (test_capacity_path_diagnostics.CapacityPathTests) ... ok
+test_invalid_shapes_and_non_normalized_probability_are_rejected (test_capacity_path_diagnostics.CapacityPathTests) ... ok
+test_mediator_only_dependence_survives_reference_integration (test_capacity_path_diagnostics.CapacityPathTests) ... ok
+test_reference_only_shortcut_is_detected_and_inputs_unchanged (test_capacity_path_diagnostics.CapacityPathTests) ... ok
+test_config_mismatch_and_heldout_reference_rejected (test_epoch_checkpoint_gradient.EpochCheckpointGradientTests) ... ok
+test_epoch300_fold2_accepted_and_wrong_epoch_rejected (test_epoch_checkpoint_gradient.EpochCheckpointGradientTests) ... ok
+test_default_objective_is_unchanged_and_flag_is_opt_in (test_fire_gradient_control.FireGradientControlTests) ... usage: python -m unittest [-h] [--dataset DATASET] --label LABEL
+                          [--root_dir ROOT_DIR] [--output_dir OUTPUT_DIR]
+                          [--run_name RUN_NAME] [--seed {42}]
+                          [--device DEVICE] [--lr LR]
+                          [--weight_decay WEIGHT_DECAY] [--epochs EPOCHS]
+                          [--batch_size BATCH_SIZE]
+                          [--eval_batch_size EVAL_BATCH_SIZE]
+                          [--workers WORKERS]
+                          [--sampling_mode {grouped,window}]
+                          [--cpu_threads CPU_THREADS]
+                          [--start_subject START_SUBJECT]
+                          [--end_subject END_SUBJECT]
+                          [--held_out_subjects HELD_OUT_SUBJECTS [HELD_OUT_SUBJECTS ...]]
+                          [--no_balance] [--fd_mode {full,none}]
+                          [--no_cns2ans] [--mediator_dim MEDIATOR_DIM]
+                          [--hidden_dim HIDDEN_DIM]
+                          [--lif_neurons LIF_NEURONS] [--dropout DROPOUT]
+                          [--ref_dim REF_DIM] [--S_train S_TRAIN]
+                          [--K_train K_TRAIN] [--S_eval S_EVAL]
+                          [--K_eval K_EVAL] [--N_ref N_REF]
+                          [--reference_chunk_size REFERENCE_CHUNK_SIZE]
+                          [--beta BETA]
+                          [--beta_warmup_epochs BETA_WARMUP_EPOCHS]
+                          [--lambda_obs LAMBDA_OBS]
+                          [--fire_weight FIRE_WEIGHT]
+                          [--time_steps TIME_STEPS] [--logvar_min LOGVAR_MIN]
+                          [--logvar_max LOGVAR_MAX] [--resume RESUME]
+                          [--max_train_batches MAX_TRAIN_BATCHES]
+                          [--max_test_batches MAX_TEST_BATCHES]
+                          [--diagnostic_level {basic,full}]
+                          [--log_detail_interval LOG_DETAIL_INTERVAL]
+                          [--loss_gradient_interval LOSS_GRADIENT_INTERVAL]
+python -m unittest: error: 分项梯度记录间隔不得为负
+ok
+test_diagnostic_preserves_rng_gradients_and_adam_update (test_fire_gradient_control.FireGradientControlTests) ... ok
+test_ans_no_cns_features_or_current_input_argument (test_frontdoor_scm.FrontDoorTests) ... ok
+test_bank_heldout_duplicates_and_empty (test_frontdoor_scm.FrontDoorTests) ... ok
+test_bank_pairing_exclusion_and_provenance (test_frontdoor_scm.FrontDoorTests) ... ok
+test_cns_ans_ablation_eliminates_path (test_frontdoor_scm.FrontDoorTests) ... ok
+test_cns_current_reaches_lif_spikes (test_frontdoor_scm.FrontDoorTests) ... ok
+test_complete_gnn_feature_interface (test_frontdoor_scm.FrontDoorTests) ... ok
+test_conditional_ans_and_gradient (test_frontdoor_scm.FrontDoorTests) ... ok
+test_cuda_forward_backward (test_frontdoor_scm.FrontDoorTests) ... ok
+test_do_head_isolated_from_current_input (test_frontdoor_scm.FrontDoorTests) ... ok
+test_full_reference_shapes_and_no_pooling (test_frontdoor_scm.FrontDoorTests) ... ok
+test_hierarchical_shapes_and_clamp (test_frontdoor_scm.FrontDoorTests) ... ok
+test_invalid_shapes_and_singleton_training (test_frontdoor_scm.FrontDoorTests) ... ok
+test_kl_axes_and_oracle_opt_in (test_frontdoor_scm.FrontDoorTests) ... ok
+test_none_never_samples_reference_bank (test_frontdoor_scm.FrontDoorTests) ... ok
+test_outcome_inputs_and_nondegenerate_dependence (test_frontdoor_scm.FrontDoorTests) ... ok
+test_projection_gradient_and_optimizer_step_cpu (test_frontdoor_scm.FrontDoorTests) ... ok
+test_softmax_before_two_means (test_frontdoor_scm.FrontDoorTests) ... ok
+test_tanh_density_matches_transformed_distribution (test_frontdoor_scm.FrontDoorTests) ... ok
+test_tanh_normal_likelihood_and_support (test_frontdoor_scm.FrontDoorTests) ... ok
+test_convergence_in_repeated_runs (test_frontdoor_scm.OracleTests) ... ok
+test_gamma_oracle_direct_agreement (test_frontdoor_scm.OracleTests) ... ok
+test_invalid_point_shapes_are_rejected (test_frontdoor_scm.OracleTests) ... ok
+test_oracle_independent_of_direct_function (test_frontdoor_scm.OracleTests) ... ok
+test_outcome_conditional_independence_moments (test_frontdoor_scm.OracleTests) ... ok
+test_cli_and_invalid_eval_batch (test_large_batch_interface.LargeBatchTests) ... usage: python -m unittest [-h] [--dataset DATASET] --label LABEL
+                          [--root_dir ROOT_DIR] [--output_dir OUTPUT_DIR]
+                          [--run_name RUN_NAME] [--seed {42}]
+                          [--device DEVICE] [--lr LR]
+                          [--weight_decay WEIGHT_DECAY] [--epochs EPOCHS]
+                          [--batch_size BATCH_SIZE]
+                          [--eval_batch_size EVAL_BATCH_SIZE]
+                          [--workers WORKERS]
+                          [--sampling_mode {grouped,window}]
+                          [--cpu_threads CPU_THREADS]
+                          [--start_subject START_SUBJECT]
+                          [--end_subject END_SUBJECT]
+                          [--held_out_subjects HELD_OUT_SUBJECTS [HELD_OUT_SUBJECTS ...]]
+                          [--no_balance] [--fd_mode {full,none}]
+                          [--no_cns2ans] [--mediator_dim MEDIATOR_DIM]
+                          [--hidden_dim HIDDEN_DIM]
+                          [--lif_neurons LIF_NEURONS] [--dropout DROPOUT]
+                          [--ref_dim REF_DIM] [--S_train S_TRAIN]
+                          [--K_train K_TRAIN] [--S_eval S_EVAL]
+                          [--K_eval K_EVAL] [--N_ref N_REF]
+                          [--reference_chunk_size REFERENCE_CHUNK_SIZE]
+                          [--beta BETA]
+                          [--beta_warmup_epochs BETA_WARMUP_EPOCHS]
+                          [--lambda_obs LAMBDA_OBS]
+                          [--fire_weight FIRE_WEIGHT]
+                          [--time_steps TIME_STEPS] [--logvar_min LOGVAR_MIN]
+                          [--logvar_max LOGVAR_MAX] [--resume RESUME]
+                          [--max_train_batches MAX_TRAIN_BATCHES]
+                          [--max_test_batches MAX_TEST_BATCHES]
+                          [--diagnostic_level {basic,full}]
+                          [--log_detail_interval LOG_DETAIL_INTERVAL]
+                          [--loss_gradient_interval LOSS_GRADIENT_INTERVAL]
+python -m unittest: error: eval_batch_size必须至少为1
+ok
+test_resume_legacy_and_explicit_batches (test_large_batch_interface.LargeBatchTests) ... ok
+test_train400_eval40_and_default_compatibility (test_large_batch_interface.LargeBatchTests) ... ok
+test_window_indices_once_per_epoch_and_same_test_order (test_large_batch_interface.LargeBatchTests) ... ok
+test_checkpoint_roundtrip_and_legacy_load (test_long_profile.LongProfileTests) ... ok
+test_cli_dataset_defaults_and_explicit_override (test_long_profile.LongProfileTests) ... ok
+test_fire_target_formula_remains_two_branch_average (test_long_profile.LongProfileTests) ... ok
+test_legacy_width_preserves_initial_weights (test_long_profile.LongProfileTests) ... ok
+test_lif_width_separate_from_hidden_and_mediator (test_long_profile.LongProfileTests) ... ok
+test_resume_lr_and_fire_mismatch_rejected (test_long_profile.LongProfileTests) ... ok
+test_cli_defaults_to_natural_population (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+test_direct_api_rejects_balancing_before_loading_data (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+test_grid_does_not_balance_class_counts (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+test_grid_preserves_unique_sources_and_endpoints (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+test_invalid_grid_size_is_rejected (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+test_old_explicit_flag_remains_compatible (test_natural_training_policy.NaturalTrainingPolicyTests) ... ok
+test_constant_mean_can_have_input_dependent_sigma (test_outcome_support_math.OutcomeSupportMathTests) ... ok
+test_distance_normalization_and_nonnegative_roundoff (test_outcome_support_math.OutcomeSupportMathTests) ... ok
+test_equal_mixture_component_permutation_does_not_change_density (test_outcome_support_math.OutcomeSupportMathTests) ... ok
+test_single_component_density_matches_diagonal_normal (test_outcome_support_math.OutcomeSupportMathTests) ... ok
+test_total_variance_includes_conditional_mean_variation (test_outcome_support_math.OutcomeSupportMathTests) ... ok
+test_balance_keeps_pairing_and_unbalanced_population (test_phase2_integration.DatasetTests) ... ok
+test_deap_balance_uses_task_labels_not_arousal (test_phase2_integration.DatasetTests) ... ok
+test_deap_dimensions_baseline_windows_and_threshold (test_phase2_integration.DatasetTests) ... ok
+test_hci_windows_labels_metadata (test_phase2_integration.DatasetTests) ... ok
+test_loader_single_instance_sources_and_drop_last (test_phase2_integration.DatasetTests) ... ok
+test_normalization_local_axis_and_constant (test_phase2_integration.DatasetTests) ... ok
+test_one_batch_fold_cpu_checkpoint_no_formal_results (test_phase2_integration.DatasetTests) ... 训练集单类别预测：fold=3 epoch=1 预测=[0, 2] 连续1轮（single-class prediction detected）
+测试集单类别预测：fold=3 epoch=1 预测=[0, 2] 连续1轮（single-class prediction detected）
+ok
+test_reference_population_not_balanced_and_no_test (test_phase2_integration.DatasetTests) ... ok
+test_valence_forwarded_to_compatibility_constructor (test_phase2_integration.DatasetTests) ... ok
+test_backbone_preserved_and_batchnorm_frozen (test_phase2_integration.ModelTests) ... ok
+test_both_dataset_feature_dimensions_and_full_output (test_phase2_integration.ModelTests) ... ok
+test_cached_reference_expiry_and_cpu_eval (test_phase2_integration.ModelTests) ... ok
+test_forward_backward_optimizer_step_and_fact_loss (test_phase2_integration.ModelTests) ... ok
+test_legacy_ce_constructor_fixed_without_weight_changes (test_phase2_integration.ModelTests) ... ok
+test_live_reference_backbone_not_detached (test_phase2_integration.ModelTests) ... ok
+test_live_reference_gradient_and_conditional_path (test_phase2_integration.ModelTests) ... ok
+test_no_cns_path_and_none_modes_remain_explicit (test_phase2_integration.ModelTests) ... ok
+test_reference_chunking_preserves_probability_formula (test_phase2_integration.ModelTests) ... ok
+test_seed_before_initialization_and_no_unconditional_cuda (test_phase2_integration.ModelTests) ... ok
+test_single_model_definition_and_no_prototype_path (test_phase2_integration.ModelTests) ... ok
+test_checkpoint_acc_gate_and_dataset_specific_f1_tie (test_phase2_integration.ProtocolTests) ... ok
+test_fold_matrix_updates_preserve_other_subjects (test_phase2_integration.ProtocolTests) ... ok
+test_results_ignore_zero_unrun_folds (test_phase2_integration.ProtocolTests) ... ok
+test_bad_probability_and_configuration_mismatch (test_phase3_support.ResultAuditTests) ... ok
+test_cli_require_complete_exit_and_no_stale_export (test_phase3_support.ResultAuditTests) ... ok
+test_missing_fold_and_incomplete_are_distinct (test_phase3_support.ResultAuditTests) ... ok
+test_no_best_not_silently_averaged_as_full (test_phase3_support.ResultAuditTests) ... ok
+test_resume_stale_summary_is_not_completed (test_phase3_support.ResultAuditTests) ... ok
+test_smoke_and_reference_leak_excluded (test_phase3_support.ResultAuditTests) ... ok
+test_specs_match_loader_and_complete_export (test_phase3_support.ResultAuditTests) ... ok
+test_documented_cli_commands_parse (test_phase3_support.RuntimeSupportTests) ... ok
+test_logger_preserves_python_and_tee_failures (test_phase3_support.RuntimeSupportTests) ... ok
+test_primary_probability_guard_preserves_valid_gradient (test_phase3_support.RuntimeSupportTests) ... ok
+test_basic_and_full_have_same_primary_outputs_and_loss_update (test_phase4_diagnostics.EvaluationTests) ... ok
+test_full_fold_files_and_legacy_summary_history_compatibility (test_phase4_diagnostics.EvaluationTests) ... ok
+test_full_gradient_diagnostics_before_step_and_no_structure_change (test_phase4_diagnostics.EvaluationTests) ... ok
+test_repeated_cpu_eval_and_extra_eval_do_not_change_test_prediction (test_phase4_diagnostics.EvaluationTests) ... ok
+test_train_eval_parameters_bn_optimizer_modes_rng_unchanged (test_phase4_diagnostics.EvaluationTests) ... ok
+test_full_stream_statistics_not_batch_average_and_class_distance (test_phase4_diagnostics.MediatorTests) ... ok
+test_mean_variation_separate_from_posterior_and_sampling (test_phase4_diagnostics.MediatorTests) ... ok
+test_single_sample_and_single_draw_are_finite_not_evidence_of_collapse (test_phase4_diagnostics.MediatorTests) ... ok
+test_checkpoint_rule_unchanged_by_train_and_diagnostics (test_phase4_diagnostics.MetricTests) ... ok
+test_extreme_imbalance_and_factual_disagreement (test_phase4_diagnostics.MetricTests) ... ok
+test_matrix_order_and_both_positive_classes (test_phase4_diagnostics.MetricTests) ... ok
+test_single_class_zero_and_one_and_reported_candidates (test_phase4_diagnostics.MetricTests) ... ok
+test_jsonl_npz_resume_streak_and_no_mutation (test_phase4_diagnostics.PersistenceTests) ... ok
+test_server_guide_cli_and_bash_syntax (test_phase4_diagnostics.PersistenceTests) ... ok
+test_known_cross_grid_equals_existing_pointwise_conditional (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+test_pairing_is_reproducible_and_model_state_unchanged (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+test_unbounded_coordinate_substitution_is_rejected (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+test_zero_confounding_removes_known_reference_dependence (test_phase6_component_evaluation.ComponentEvaluationTests) ... ok
+test_existing_evaluation_is_rejected_and_preserved (test_phase6_component_evaluation.OutputDirectoryTests) ... ok
+test_log_symlink_is_rejected_without_touching_target (test_phase6_component_evaluation.OutputDirectoryTests) ... ok
+test_test_logs_and_run_logs_are_preserved (test_phase6_component_evaluation.OutputDirectoryTests) ... ok
+test_unknown_file_or_directory_is_rejected (test_phase6_component_evaluation.OutputDirectoryTests) ... ok
+test_gradient_components_separate_branches_and_conflicting_terms (test_phase6_learning.Phase6LearningTests) ... ok
+test_nonidentification_has_equal_observations_and_distinct_effects (test_phase6_learning.Phase6LearningTests) ... ok
+test_observation_view_never_reads_hidden_mediators_or_u (test_phase6_learning.Phase6LearningTests) ... ok
+test_permission_guard_rejects_hidden_fields (test_phase6_learning.Phase6LearningTests) ... ok
+test_reconstruction_uses_samples_and_conditional_ans_path (test_phase6_learning.Phase6LearningTests) ... ok
+test_zero_fidelity_weight_recovers_baseline_total_for_paired_noise (test_phase6_learning.Phase6LearningTests) ... ok
+test_default_size_preserves_original_training_bytes (test_phase6_outcome_control.HeadSampleSizeTests) ... ok
+test_disallowed_fields_and_smaller_size_are_rejected (test_phase6_outcome_control.HeadSampleSizeTests) ... ok
+test_larger_sample_contains_smaller_sample_as_exact_prefix (test_phase6_outcome_control.HeadSampleSizeTests) ... ok
+test_analytic_gradient_matches_finite_difference (test_phase6_outcome_control.OutcomeControlTests) ... ok
+test_fit_improves_training_nll_with_finite_two_class_probabilities (test_phase6_outcome_control.OutcomeControlTests) ... ok
+test_head_interface_has_no_mc_and_rejects_misaligned_axes (test_phase6_outcome_control.OutcomeControlTests) ... ok
+test_training_view_rejects_hidden_or_test_fields (test_phase6_outcome_control.OutcomeControlTests) ... ok
+test_aligned_inputs_invariant_to_global_cns_sign (test_physiological_anchors.AnchorTests) ... ok
+test_ans_anchor_gradient_reaches_cns_only_through_allowed_path (test_physiological_anchors.AnchorTests) ... ok
+test_candidate_cpu_optimizer_step_and_probability_normalization (test_physiological_anchors.AnchorTests) ... ok
+test_direct_and_independent_frontdoor_truth (test_physiological_anchors.AnchorTests) ... ok
+test_gsr_slope_and_window_source_order (test_physiological_anchors.AnchorTests) ... ok
+test_nan_and_wrong_window_rejected (test_physiological_anchors.AnchorTests) ... ok
+test_permission_and_anchor_computation_ignore_truth (test_physiological_anchors.AnchorTests) ... ok
+test_pure_alpha_spectrum_and_unit_power (test_physiological_anchors.AnchorTests) ... ok
+test_real_interface_dimensions_and_constant_validity (test_physiological_anchors.AnchorTests) ... ok
+test_rendered_signal_map_has_full_coefficient_rank (test_physiological_anchors.AnchorTests) ... ok
+test_sampling_axis_is_averaged_and_gradients_exist (test_physiological_anchors.AnchorTests) ... ok
+test_training_statistics_never_refit_on_test (test_physiological_anchors.AnchorTests) ... ok
+test_zero_alpha_recovers_existing_total (test_physiological_anchors.AnchorTests) ... ok
+test_default_cli_and_original_sequence (test_sampling_order_control.SamplingOrderTests) ... ok
+test_invalid_mode_rejected (test_sampling_order_control.SamplingOrderTests) ... ok
+test_old_and_new_checkpoint_resume_modes (test_sampling_order_control.SamplingOrderTests) ... ok
+test_sample_set_and_test_order_are_unchanged (test_sampling_order_control.SamplingOrderTests) ... ok
+test_window_is_uniform_permutation_with_independent_generator (test_sampling_order_control.SamplingOrderTests) ... ok
+test_aligned_positive_gain_invariance_and_failure_case (test_scale_anchor_learning.ScaleAnchorLearningTests) ... ok
+test_both_training_targets_have_finite_backward_and_step (test_scale_anchor_learning.ScaleAnchorLearningTests) ... ok
+test_default_preserves_original_mapping (test_scale_anchor_learning.ScaleAnchorLearningTests) ... ok
+test_scale_targets_and_original_control_share_xy (test_scale_anchor_learning.ScaleAnchorLearningTests) ... ok
+test_network_and_local_timeouts_are_separate (test_upload_transport.UploadTransportTests) ... ok
+test_nonzero_push_is_returned_for_existing_retry_policy (test_upload_transport.UploadTransportTests) ... ok
+test_preserves_explicit_ssh_command (test_upload_transport.UploadTransportTests) ... ok
+test_receipt_keeps_candidate_if_push_times_out (test_upload_transport.UploadTransportTests) ... ok
+test_timeout_names_phase_and_sanitizes_partial_stderr (test_upload_transport.UploadTransportTests) ... ok
+test_cli_defaults_and_explicit_zero (test_weight_decay_control.WeightDecayControlTests) ... usage: python -m unittest [-h] [--dataset DATASET] --label LABEL
+                          [--root_dir ROOT_DIR] [--output_dir OUTPUT_DIR]
+                          [--run_name RUN_NAME] [--seed {42}]
+                          [--device DEVICE] [--lr LR]
+                          [--weight_decay WEIGHT_DECAY] [--epochs EPOCHS]
+                          [--batch_size BATCH_SIZE]
+                          [--eval_batch_size EVAL_BATCH_SIZE]
+                          [--workers WORKERS]
+                          [--sampling_mode {grouped,window}]
+                          [--cpu_threads CPU_THREADS]
+                          [--start_subject START_SUBJECT]
+                          [--end_subject END_SUBJECT]
+                          [--held_out_subjects HELD_OUT_SUBJECTS [HELD_OUT_SUBJECTS ...]]
+                          [--no_balance] [--fd_mode {full,none}]
+                          [--no_cns2ans] [--mediator_dim MEDIATOR_DIM]
+                          [--hidden_dim HIDDEN_DIM]
+                          [--lif_neurons LIF_NEURONS] [--dropout DROPOUT]
+                          [--ref_dim REF_DIM] [--S_train S_TRAIN]
+                          [--K_train K_TRAIN] [--S_eval S_EVAL]
+                          [--K_eval K_EVAL] [--N_ref N_REF]
+                          [--reference_chunk_size REFERENCE_CHUNK_SIZE]
+                          [--beta BETA]
+                          [--beta_warmup_epochs BETA_WARMUP_EPOCHS]
+                          [--lambda_obs LAMBDA_OBS]
+                          [--fire_weight FIRE_WEIGHT]
+                          [--time_steps TIME_STEPS] [--logvar_min LOGVAR_MIN]
+                          [--logvar_max LOGVAR_MAX] [--resume RESUME]
+                          [--max_train_batches MAX_TRAIN_BATCHES]
+                          [--max_test_batches MAX_TEST_BATCHES]
+                          [--diagnostic_level {basic,full}]
+                          [--log_detail_interval LOG_DETAIL_INTERVAL]
+                          [--loss_gradient_interval LOSS_GRADIENT_INTERVAL]
+python -m unittest: error: weight_decay必须为有限非负数
+usage: python -m unittest [-h] [--dataset DATASET] --label LABEL
+                          [--root_dir ROOT_DIR] [--output_dir OUTPUT_DIR]
+                          [--run_name RUN_NAME] [--seed {42}]
+                          [--device DEVICE] [--lr LR]
+                          [--weight_decay WEIGHT_DECAY] [--epochs EPOCHS]
+                          [--batch_size BATCH_SIZE]
+                          [--eval_batch_size EVAL_BATCH_SIZE]
+                          [--workers WORKERS]
+                          [--sampling_mode {grouped,window}]
+                          [--cpu_threads CPU_THREADS]
+                          [--start_subject START_SUBJECT]
+                          [--end_subject END_SUBJECT]
+                          [--held_out_subjects HELD_OUT_SUBJECTS [HELD_OUT_SUBJECTS ...]]
+                          [--no_balance] [--fd_mode {full,none}]
+                          [--no_cns2ans] [--mediator_dim MEDIATOR_DIM]
+                          [--hidden_dim HIDDEN_DIM]
+                          [--lif_neurons LIF_NEURONS] [--dropout DROPOUT]
+                          [--ref_dim REF_DIM] [--S_train S_TRAIN]
+                          [--K_train K_TRAIN] [--S_eval S_EVAL]
+                          [--K_eval K_EVAL] [--N_ref N_REF]
+                          [--reference_chunk_size REFERENCE_CHUNK_SIZE]
+                          [--beta BETA]
+                          [--beta_warmup_epochs BETA_WARMUP_EPOCHS]
+                          [--lambda_obs LAMBDA_OBS]
+                          [--fire_weight FIRE_WEIGHT]
+                          [--time_steps TIME_STEPS] [--logvar_min LOGVAR_MIN]
+                          [--logvar_max LOGVAR_MAX] [--resume RESUME]
+                          [--max_train_batches MAX_TRAIN_BATCHES]
+                          [--max_test_batches MAX_TEST_BATCHES]
+                          [--diagnostic_level {basic,full}]
+                          [--log_detail_interval LOG_DETAIL_INTERVAL]
+                          [--loss_gradient_interval LOSS_GRADIENT_INTERVAL]
+python -m unittest: error: weight_decay必须为有限非负数
+usage: python -m unittest [-h] [--dataset DATASET] --label LABEL
+                          [--root_dir ROOT_DIR] [--output_dir OUTPUT_DIR]
+                          [--run_name RUN_NAME] [--seed {42}]
+                          [--device DEVICE] [--lr LR]
+                          [--weight_decay WEIGHT_DECAY] [--epochs EPOCHS]
+                          [--batch_size BATCH_SIZE]
+                          [--eval_batch_size EVAL_BATCH_SIZE]
+                          [--workers WORKERS]
+                          [--sampling_mode {grouped,window}]
+                          [--cpu_threads CPU_THREADS]
+                          [--start_subject START_SUBJECT]
+                          [--end_subject END_SUBJECT]
+                          [--held_out_subjects HELD_OUT_SUBJECTS [HELD_OUT_SUBJECTS ...]]
+                          [--no_balance] [--fd_mode {full,none}]
+                          [--no_cns2ans] [--mediator_dim MEDIATOR_DIM]
+                          [--hidden_dim HIDDEN_DIM]
+                          [--lif_neurons LIF_NEURONS] [--dropout DROPOUT]
+                          [--ref_dim REF_DIM] [--S_train S_TRAIN]
+                          [--K_train K_TRAIN] [--S_eval S_EVAL]
+                          [--K_eval K_EVAL] [--N_ref N_REF]
+                          [--reference_chunk_size REFERENCE_CHUNK_SIZE]
+                          [--beta BETA]
+                          [--beta_warmup_epochs BETA_WARMUP_EPOCHS]
+                          [--lambda_obs LAMBDA_OBS]
+                          [--fire_weight FIRE_WEIGHT]
+                          [--time_steps TIME_STEPS] [--logvar_min LOGVAR_MIN]
+                          [--logvar_max LOGVAR_MAX] [--resume RESUME]
+                          [--max_train_batches MAX_TRAIN_BATCHES]
+                          [--max_test_batches MAX_TEST_BATCHES]
+                          [--diagnostic_level {basic,full}]
+                          [--log_detail_interval LOG_DETAIL_INTERVAL]
+                          [--loss_gradient_interval LOSS_GRADIENT_INTERVAL]
+python -m unittest: error: weight_decay必须为有限非负数
+ok
+test_default_adam_step_matches_original_configuration (test_weight_decay_control.WeightDecayControlTests) ... ok
+test_old_namespace_keeps_original_decay_and_validation (test_weight_decay_control.WeightDecayControlTests) ... ok
+test_rms_distinguishes_kernel_scales_without_mutation (test_weight_decay_control.WeightDecayControlTests) ... ok
+test_zero_is_recorded_and_mismatched_resume_is_rejected (test_weight_decay_control.WeightDecayControlTests) ... ok
+
+----------------------------------------------------------------------
+Ran 165 tests in 15.102s
+
+OK
