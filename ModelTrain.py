@@ -221,6 +221,7 @@ def loss_component_gradient_report(model, output, terms, loss, epoch, lambda_obs
                       kl_a=beta * output['kl_a'].mean(),
                       fire=fire_weight * output['fire_loss'], training_total=loss)
     return dict(batch_size=output['logits_obs'].shape[0], epoch=epoch, batch_index=0,
+                factual_ce_samples=output['logits_obs_samples'].shape[1] if 'logits_obs_samples' in output else 1,
                 weights=dict(lambda_obs=lambda_obs, beta=beta, fire=fire_weight),
                 weighted_terms={key: float(value.detach()) for key, value in components.items()},
                 gradients=gradient_components(components, list(model.named_parameters())),
@@ -229,7 +230,7 @@ def loss_component_gradient_report(model, output, terms, loss, epoch, lambda_obs
 
 def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
                     fd_mode='full', lambda_obs=1., fire_weight=0., max_batches=0,
-                    diagnostic_level='basic', loss_gradient_interval=0):
+                    diagnostic_level='basic', loss_gradient_interval=0, factual_ce_mode='single'):
     model.train()
     gradients = GradientDiagnostics(model) if diagnostic_level == 'full' else None
     cm, sums, count = torch.zeros(2, 2, dtype=torch.long), {}, 0
@@ -237,8 +238,11 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
     for batch_index, (batch, _) in enumerate(loader):
         xc, xa, y = batch['x_c'].to(device), batch['x_a'].to(device), batch['Labels'].to(device)
         optimizer.zero_grad(set_to_none=True)
-        output = model(xc, xa, reference_bank=raw_bank if fd_mode == 'full' else None,
-                       source_ids=batch['source_ids'].to(device), fd_mode=fd_mode)
+        forward_args = dict(reference_bank=raw_bank if fd_mode == 'full' else None,
+                            source_ids=batch['source_ids'].to(device), fd_mode=fd_mode)
+        if factual_ce_mode != 'single':
+            forward_args['factual_ce_mode'] = factual_ce_mode
+        output = model(xc, xa, **forward_args)
         primary_probs = prediction_probabilities(output, fd_mode)
         terms = frontdoor_loss(output, y, model.frontdoor_config, epoch=epoch)
         # 真实观察标签从不用于监督probs_do，也不传入任何oracle概率。
@@ -248,8 +252,9 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
         if batch_index == 0 and loss_gradient_interval > 0 and (epoch == 1 or epoch % loss_gradient_interval == 0):
             loss_gradients = loss_component_gradient_report(model, output, terms, loss, epoch, lambda_obs, fire_weight)
             cns = loss_gradients['gradients']
-            logger.info('首batch分项梯度：epoch=%s batch=%s CNS CE=%s fire=%s KLc=%s，详见optimization.loss_component_gradients',
-                        epoch, len(y), cns['factual_ce']['cns']['l2'], cns['fire']['cns']['l2'], cns['kl_c']['cns']['l2'])
+            logger.info('首batch分项梯度：epoch=%s batch=%s CE采样=%s CNS CE=%s fire=%s KLc=%s，详见optimization.loss_component_gradients',
+                        epoch, len(y), loss_gradients['factual_ce_samples'],
+                        cns['factual_ce']['cns']['l2'], cns['fire']['cns']['l2'], cns['kl_c']['cns']['l2'])
         loss.backward()
         if gradients is not None:
             gradients.update()
@@ -272,6 +277,8 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
     if not count:
         raise ValueError('训练没有执行任何batch')
     metrics = dict(confusion_metrics(cm, dataset), **{k: v / count for k, v in sums.items()})
+    metrics['factual_ce_mode'] = factual_ce_mode
+    metrics['factual_ce_samples'] = output['logits_obs_samples'].shape[1] if 'logits_obs_samples' in output else 1
     if gradients is not None:
         metrics['gradients'] = gradients.finish()
         metrics['parameter_rms'] = parameter_rms(model)
@@ -392,6 +399,8 @@ def validate_resume_objective(state, args, dataset):
     new_fire = default_fire if new_fire is None else new_fire
     if old.get('lambda_obs', 1.) != args.lambda_obs or old_fire != new_fire:
         raise ValueError('续训分类/fire权重与checkpoint不同；请新run，不静默切换目标')
+    if old.get('factual_ce_mode', 'single') != getattr(args, 'factual_ce_mode', 'single'):
+        raise ValueError('续训事实CE采样模式不同；MC对照必须新run从头训练')
 
 
 def save_fold_confusion(run_dir, fold_dir, dataset, label, held_out, confusion):
@@ -521,13 +530,16 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     logger.info('中介维度=%s；编码器/Head宽度=%s；每分支LIF=%s；fire权重=%s，目标率仍0.05',
                 model.frontdoor_config.mediator_dim, model.frontdoor_config.hidden_dim,
                 model.frontdoor_config.lif_width, fire_weight)
+    logger.info('事实CE采样模式=%s；评价和选模路径保持%s',
+                getattr(args, 'factual_ce_mode', 'single'), fold_config['prediction'])
     last_metrics = None
     try:
         for epoch in range(first_epoch, args.epochs + 1):
             train_metrics, _ = train_one_epoch(model, train_loader, raw_bank, optimizer, device, dataset,
                            epoch, args.fd_mode, args.lambda_obs, fire_weight, args.max_train_batches,
                            diagnostic_level=diagnostic_level,
-                           loss_gradient_interval=getattr(args, 'loss_gradient_interval', 0))
+                           loss_gradient_interval=getattr(args, 'loss_gradient_interval', 0),
+                           factual_ce_mode=getattr(args, 'factual_ce_mode', 'single'))
             cache_holder = {}
             # 原测试路径先执行；额外训练集评估随后隔离随机流，不参与选模。
             metrics, cm, predictions = evaluate(model, test_loader, raw_bank, device, dataset,

@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# 独立DEAP fold2单因素对照：只降低fire权重；测试、训练和上传一并执行。
+# 独立DEAP fold2 fire0.028配置；可选事实CE采样模式；测试、训练和上传一并执行。
 set -euo pipefail
-if [ "$#" -ne 3 ]; then
-    echo '用法：bash scripts/run_fire_weight_control_and_upload.sh 数据根绝对目录 输出根绝对目录 唯一运行名' >&2
+if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]; then
+    echo '用法：bash scripts/run_fire_weight_control_and_upload.sh 数据根绝对目录 输出根绝对目录 唯一运行名 [single|all_samples]' >&2
     exit 2
 fi
 FIRE_ROOT=$1; FIRE_OUTPUT=$2; FIRE_NAME=$3
+FIRE_CE_MODE=${4:-single}
+case "$FIRE_CE_MODE" in single|all_samples) ;; *) exit 2 ;; esac
 case "$FIRE_ROOT:$FIRE_OUTPUT" in /*:/*) ;; *) exit 2 ;; esac
 case "$FIRE_NAME" in ''|*/*|.|..) exit 2 ;; esac
 FIRE_SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -31,6 +33,7 @@ if [ "$FIRE_RUN_EXIT" -eq 0 ]; then
       --dropout 0.3 --ref_dim 0 --time_steps 4 --logvar_min -6 --logvar_max 2 \
       --S_train 4 --K_train 16 --S_eval 16 --K_eval 64 --N_ref 2048 --reference_chunk_size 4 \
       --lambda_obs 1 --beta 0.001 --beta_warmup_epochs 10 --fire_weight 0.028 \
+      --factual_ce_mode "$FIRE_CE_MODE" \
       --diagnostic_level full --log_detail_interval 10 --loss_gradient_interval 10 \
       --max_train_batches 0 --max_test_batches 0 || FIRE_RUN_EXIT=$?
 fi

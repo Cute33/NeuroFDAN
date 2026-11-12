@@ -48,6 +48,8 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--beta', type=float, default=.001, help='标准正态KL正则系数')
     parser.add_argument('--beta_warmup_epochs', type=int, default=10, help='KL系数线性warmup轮数')
     parser.add_argument('--lambda_obs', type=float, default=1., help='事实分类CE权重，不用观察标签监督干预概率')
+    parser.add_argument('--factual_ce_mode', choices=['single', 'all_samples'], default='single',
+                        help='single沿用首组中介CE；all_samples平均现有S组各自CE，期望目标不变，不监督probs_do')
     parser.add_argument('--fire_weight', type=float, default=2.8, help='长程配置发放率损失权重；目标发放率仍0.05，不是2.8')
     parser.add_argument('--time_steps', type=int, default=4, help='Phase 1独立中介LIF的驱动步数，非原始窗口采样点数')
     parser.add_argument('--logvar_min', type=float, default=-6., help='中介log方差下界')
