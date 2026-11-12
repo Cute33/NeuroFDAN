@@ -1,0 +1,7 @@
+aligned gamma=1.0 oracle_mediator epoch=1/1 CE=0.718041 锚点=0.000000/0.000000
+aligned gamma=1.0 observation_only epoch=1/1 CE=0.728166 锚点=0.000000/0.000000
+aligned gamma=1.0 observation_physiological_anchors epoch=1/1 CE=0.727877 锚点=0.666616/0.686092
+misaligned gamma=1.0 oracle_mediator epoch=1/1 CE=0.706570 锚点=0.000000/0.000000
+misaligned gamma=1.0 observation_only epoch=1/1 CE=0.736221 锚点=0.000000/0.000000
+misaligned gamma=1.0 observation_physiological_anchors epoch=1/1 CE=0.736107 锚点=0.666772/0.686367
+完成：<已屏蔽绝对路径>

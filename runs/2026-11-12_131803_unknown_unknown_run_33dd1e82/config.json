@@ -1,0 +1,77 @@
+{
+  "arguments": {
+    "output_dir": "<已屏蔽绝对路径>",
+    "run_name": "synthetic_normal_smoke_001",
+    "seed": 42,
+    "device": "cpu",
+    "workers": 0,
+    "diagnostic_level": "full",
+    "epochs": 1,
+    "batch_size": 64,
+    "train_size": 128,
+    "test_size": 32,
+    "points": 4,
+    "gammas": [
+      1.0
+    ],
+    "mechanisms": [
+      "aligned",
+      "misaligned"
+    ],
+    "lr": 0.001,
+    "alpha_c": 0.1,
+    "alpha_a": 0.1,
+    "mediator_family": "normal",
+    "no_cns2ans": false,
+    "mc_repeats": 2,
+    "direct_n": 4096,
+    "oracle_s": 128,
+    "oracle_k": 128,
+    "smoke": true,
+    "plots": true
+  },
+  "source_version": {
+    "commit": "a3f458316cc809e07fb4764e9c26143eb5f33456",
+    "branch": "",
+    "tracked_changes": false
+  },
+  "conditions": [
+    "oracle_mediator",
+    "observation_only",
+    "observation_physiological_anchors"
+  ],
+  "supervision": "候选只用X/Y及从X计算的锚点；真实M/U/do概率不传入fit",
+  "interpretation": "合成系数单射渲染到波形；模型读取完整系数而非真实骨干，无临床信号真实性保证",
+  "defaults": {
+    "mediator_dim": 64,
+    "hidden_dim": 128,
+    "dropout": 0.3,
+    "S_train": 4,
+    "K_train": 16,
+    "S_eval": 16,
+    "K_eval": 64,
+    "N_ref": 2048,
+    "beta": 0.001,
+    "beta_warmup_epochs": 10,
+    "logvar_min": -6.0,
+    "logvar_max": 2.0,
+    "ref_dim": 0,
+    "num_classes": 2,
+    "time_steps": 4,
+    "no_cns2ans": false,
+    "mediator_family": "normal",
+    "reference_chunk_size": 0
+  },
+  "scm": {
+    "d_u": 8,
+    "d_xc": 16,
+    "d_xa": 8,
+    "d_mc": 64,
+    "d_ma": 64,
+    "matrix_scale": 0.7,
+    "cns_ans_scale": 0.7,
+    "outcome_scale": 1.0,
+    "bias": 0.2,
+    "seed": 2026
+  }
+}
