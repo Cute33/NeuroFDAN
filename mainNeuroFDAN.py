@@ -47,7 +47,9 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--reference_chunk_size', type=int, default=4, help='结果模型每次计算的K分块大小，零不分块，概率积分公式不变')
     parser.add_argument('--beta', type=float, default=.001, help='标准正态KL正则系数')
     parser.add_argument('--beta_warmup_epochs', type=int, default=10, help='KL系数线性warmup轮数')
-    parser.add_argument('--lambda_obs', type=float, default=1., help='事实分类CE权重，不用观察标签监督干预概率')
+    parser.add_argument('--lambda_obs', type=float, default=1., help='原事实CE权重；方案A显式为0，替换主项而不叠加事实任务')
+    parser.add_argument('--classification_objective', choices=['factual', 'integrated_observational'], default='factual',
+                        help='默认原事实CE；方案A用积分预测的观察标签NLL替换主项，不代表干预真值监督')
     parser.add_argument('--factual_ce_mode', choices=['single', 'all_samples'], default='single',
                         help='single沿用首组中介CE；all_samples平均现有S组各自CE，期望目标不变，不监督probs_do')
     parser.add_argument('--fire_weight', type=float, default=2.8, help='长程配置发放率损失权重；目标发放率仍0.05，不是2.8')
@@ -85,6 +87,8 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
         parser.error('终端诊断摘要间隔不得为负')
     if args.loss_gradient_interval < 0:
         parser.error('分项梯度记录间隔不得为负')
+    if args.classification_objective == 'integrated_observational' and (args.fd_mode != 'full' or args.lambda_obs != 0):
+        parser.error('方案A需要--fd_mode full及--lambda_obs 0，避免叠加事实任务或误用none模式')
     try:
         from ModelTrain import frontdoor_config
         frontdoor_config(args)

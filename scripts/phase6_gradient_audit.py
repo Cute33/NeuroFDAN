@@ -29,7 +29,7 @@ def measure(model, xc, xa, y, ids, bank, payload, training: bool) -> dict:
     """同一计算图逐项求导；do项只是P1的局部导数，不作为新训练目标。"""
     import torch
     from phase6_learning import gradient_components
-    from frontdoor_scm import frontdoor_loss
+    from classification_objectives import classification_terms
     model.train(training)
     if any(m.training for m in model.modules() if isinstance(m, torch.nn.modules.batchnorm._BatchNorm)):
         raise RuntimeError('BN未保持既有冻结规则')
@@ -43,14 +43,16 @@ def measure(model, xc, xa, y, ids, bank, payload, training: bool) -> dict:
         beta = cfg.beta*min(payload['epoch']/cfg.beta_warmup_epochs, 1.)
         fw = args.get('fire_weight')
         fw = float(fw if fw is not None else (0. if args['dataset']=='DEAP' else 1.))
-        losses = frontdoor_loss(out, y, cfg, payload['epoch'])
-        terms = dict(factual_ce=args['lambda_obs']*losses['loss_obs'],
-            kl_c=beta*out['kl_c'].mean(), kl_a=beta*out['kl_a'].mean(),
+        objective = args.get('classification_objective', 'factual')
+        losses = classification_terms(out, y, cfg, payload['epoch'], objective=objective, lambda_obs=args['lambda_obs'])
+        task_name = 'factual_ce' if objective == 'factual' else 'integrated_observational_nll'
+        terms = {task_name: losses['weighted_classification_loss']}
+        terms.update(kl_c=beta*out['kl_c'].mean(), kl_a=beta*out['kl_a'].mean(),
             fire=fw*out['fire_loss'],
             do_P1_local_derivative=out['probs_do'][:,1].mean())
         terms['training_total'] = sum(v for key,v in terms.items() if key!='do_P1_local_derivative')
         names = list(model.named_parameters())
-        grouped = gradient_components(terms, names)
+        grouped = gradient_components(terms, names, reference_term=task_name)
         def posterior_summary(mu, lv):
             # ANS先对S求均值，再计算输入差异；与条件网格变化分开解释。
             m, s = mu.double(), (.5*lv.double()).exp()
@@ -62,6 +64,7 @@ def measure(model, xc, xa, y, ids, bank, payload, training: bool) -> dict:
                 mean_posterior_sigma=s.mean().item(), class_mean=classes,
                 class_mean_distance=float((m[y==0].mean(0)-m[y==1].mean(0)).norm()) if all((y==k).any() for k in (0,1)) else None)
         return dict(mode='train_frozen_bn' if training else 'eval',
+            classification_objective=objective, gradient_reference_term=task_name,
             factual_ce_mode=factual_mode, factual_ce_samples=out['m_a'].shape[1] if factual_mode == 'all_samples' else 1,
             weighted_terms={k:float(v.detach()) for k,v in terms.items()},
             gradients=grouped, S=cfg.S_train, K=cfg.K_train,
