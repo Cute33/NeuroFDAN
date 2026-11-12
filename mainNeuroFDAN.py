@@ -16,11 +16,11 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--run_name', default=None, help='实验名称；默认由前门模式、路径消融和参考维度生成')
     parser.add_argument('--seed', type=int, choices=[42], default=42, help='固定随机种子，初始化模型及数据之前设置')
     parser.add_argument('--device', default='auto', help='auto、cpu、cuda:0或旧版GPU数字编号')
-    parser.add_argument('--lr', type=float, default=.0001, help='Adam初始学习率')
+    parser.add_argument('--lr', type=float, default=.00002, help='Adam学习率；长程配置默认2e-5，显式可设1e-5')
     parser.add_argument('--weight_decay', type=float, default=.01,
                         help='Adam耦合L2系数；默认沿用0.01，零仅用于显式单变量对照，不切换AdamW')
-    parser.add_argument('--epochs', type=int, default=100, help='每个fold的训练轮数')
-    parser.add_argument('--batch_size', type=int, default=40, help='训练batch；评估默认同值，可用eval_batch_size独立指定；训练尾批明确丢弃')
+    parser.add_argument('--epochs', type=int, default=300, help='每个fold总训练轮数，延续到500需同配置resume')
+    parser.add_argument('--batch_size', type=int, default=None, help='默认DEAP400/HCI100；训练尾批明确丢弃')
     parser.add_argument('--eval_batch_size', type=int, default=None,
                         help='测试及epoch末训练集评估batch；未指定沿用batch_size，大训练batch时可显式保持40')
     parser.add_argument('--workers', type=int, default=0, help='DataLoader进程数，内存有限时保持零')
@@ -36,6 +36,7 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--no_cns2ans', action='store_true', help='估计器消融：切断CNS中介到ANS电流的路径')
     parser.add_argument('--mediator_dim', type=int, default=64, help='CNS和ANS潜在中介维度')
     parser.add_argument('--hidden_dim', type=int, default=128, help='Phase 1中介及结果模型隐藏维度，不改变卷积通道数')
+    parser.add_argument('--lif_neurons', type=int, default=256, help='每个中介分支LIF神经元数，独立于hidden_dim及64维中介')
     parser.add_argument('--dropout', type=float, default=.3, help='结果模型dropout')
     parser.add_argument('--ref_dim', type=int, default=0, help='零完整保留当前骨干特征；正整数为额外投影维度')
     parser.add_argument('--S_train', type=int, default=4, help='训练中介采样次数')
@@ -47,7 +48,7 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--beta', type=float, default=.001, help='标准正态KL正则系数')
     parser.add_argument('--beta_warmup_epochs', type=int, default=10, help='KL系数线性warmup轮数')
     parser.add_argument('--lambda_obs', type=float, default=1., help='事实分类CE权重，不用观察标签监督干预概率')
-    parser.add_argument('--fire_weight', type=float, default=None, help='发放率正则权重，默认沿用HCI为1、DEAP为0')
+    parser.add_argument('--fire_weight', type=float, default=2.8, help='长程配置发放率损失权重；目标发放率仍0.05，不是2.8')
     parser.add_argument('--time_steps', type=int, default=4, help='Phase 1独立中介LIF的驱动步数，非原始窗口采样点数')
     parser.add_argument('--logvar_min', type=float, default=-6., help='中介log方差下界')
     parser.add_argument('--logvar_max', type=float, default=2., help='中介log方差上界')
@@ -59,6 +60,15 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--log_detail_interval', type=int, default=10,
                         help='终端简洁诊断摘要间隔；每轮仍打印两组紧凑矩阵，零关闭周期摘要；不影响逐轮诊断保存')
     args = parser.parse_args(argv)
+    from Datasets import canonical_dataset, canonical_label
+    try:
+        args.dataset, args.label = canonical_dataset(args.dataset), canonical_label(args.label)
+    except ValueError as error:
+        parser.error(str(error))
+    if args.batch_size is None:
+        args.batch_size = 400 if args.dataset == 'DEAP' else 100
+    if args.eval_batch_size is None:
+        args.eval_batch_size = args.batch_size
     if args.eval_batch_size is not None and args.eval_batch_size < 1:
         parser.error('eval_batch_size必须至少为1')
     if not math.isfinite(args.weight_decay) or args.weight_decay < 0:
@@ -69,9 +79,7 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
         parser.error('接口检查batch上限及损失权重不得为负')
     if args.log_detail_interval < 0:
         parser.error('终端诊断摘要间隔不得为负')
-    from Datasets import canonical_dataset, canonical_label
     try:
-        args.dataset, args.label = canonical_dataset(args.dataset), canonical_label(args.label)
         from ModelTrain import frontdoor_config
         frontdoor_config(args)
     except ValueError as error:

@@ -31,7 +31,8 @@ class LargeBatchTests(unittest.TestCase):
     def test_cli_and_invalid_eval_batch(self):
         args = get_args(argv=['--label', 'arousal', '--batch_size', '400', '--eval_batch_size', '40'])
         self.assertEqual((args.batch_size, args.eval_batch_size), (400, 40))
-        self.assertIsNone(get_args(argv=['--label', 'arousal']).eval_batch_size)
+        defaults = get_args(argv=['--label', 'arousal'])
+        self.assertEqual(defaults.eval_batch_size, defaults.batch_size)
         with self.assertRaises(SystemExit):
             get_args(argv=['--label', 'arousal', '--eval_batch_size', '0'])
         with self.assertRaises(ValueError):
