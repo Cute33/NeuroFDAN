@@ -547,7 +547,7 @@ class NeuroFDAN(nn.Module):
         self.feature_version = 0
 
     def forward(self, x_c=None, x_a=None, gsr=None, *, reference_bank=None,
-                source_ids=None, fd_mode='full', S=None, K=None):
+                source_ids=None, fd_mode='full', S=None, K=None, factual_ce_mode='single'):
         """支持旧的 EEG/ECG/GSR 三位置参数；统一返回概率、事实logits和统计字典。"""
         if x_c is None or x_a is None:
             raise ValueError('必须提供配对的CNS和ANS输入')
@@ -563,7 +563,7 @@ class NeuroFDAN(nn.Module):
                 raise ValueError('模型权重已更新，参考特征缓存必须重建')
         h_c, h_a = self.backbone(x_c, x_a)
         effective_bank = _LiveReferenceView(reference_bank, self.backbone, x_c.device) if raw_reference else reference_bank
-        outputs = self.frontdoor(h_c, h_a, effective_bank, source_ids, fd_mode, S, K)
+        outputs = self.frontdoor(h_c, h_a, effective_bank, source_ids, fd_mode, S, K, factual_ce_mode)
         rates_c = self.frontdoor.cns.snn.last_rates
         rates_a = self.frontdoor.ans.snn.last_rates
         fire_loss = .5 * ((rates_c.mean(0) - .05).square().mean()

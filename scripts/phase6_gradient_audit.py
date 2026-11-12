@@ -35,8 +35,10 @@ def measure(model, xc, xa, y, ids, bank, payload, training: bool) -> dict:
         raise RuntimeError('BN未保持既有冻结规则')
     with torch.random.fork_rng(devices=[]):
         torch.manual_seed(42)
+        factual_mode = payload['arguments'].get('factual_ce_mode', 'single')
+        extra = {} if factual_mode == 'single' else dict(factual_ce_mode=factual_mode)
         out = model(xc, xa, reference_bank=bank, source_ids=ids, fd_mode='full',
-                    S=model.frontdoor_config.S_train, K=model.frontdoor_config.K_train)
+                    S=model.frontdoor_config.S_train, K=model.frontdoor_config.K_train, **extra)
         cfg, args = model.frontdoor_config, payload['arguments']
         beta = cfg.beta*min(payload['epoch']/cfg.beta_warmup_epochs, 1.)
         fw = args.get('fire_weight')
@@ -60,6 +62,7 @@ def measure(model, xc, xa, y, ids, bank, payload, training: bool) -> dict:
                 mean_posterior_sigma=s.mean().item(), class_mean=classes,
                 class_mean_distance=float((m[y==0].mean(0)-m[y==1].mean(0)).norm()) if all((y==k).any() for k in (0,1)) else None)
         return dict(mode='train_frozen_bn' if training else 'eval',
+            factual_ce_mode=factual_mode, factual_ce_samples=out['m_a'].shape[1] if factual_mode == 'all_samples' else 1,
             weighted_terms={k:float(v.detach()) for k,v in terms.items()},
             gradients=grouped, S=cfg.S_train, K=cfg.K_train,
             weights=dict(beta=beta, lambda_obs=args['lambda_obs'], fire=fw),

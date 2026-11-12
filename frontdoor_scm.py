@@ -262,18 +262,26 @@ class FrontDoorEstimator(nn.Module):
 
     def forward(self, x_c: Tensor, x_a: Tensor, reference_bank: Optional[ReferenceBank] = None,
                 source_ids: Optional[Tensor] = None, fd_mode: str = 'full',
-                S: Optional[int] = None, K: Optional[int] = None) -> dict[str, Tensor]:
+                S: Optional[int] = None, K: Optional[int] = None,
+                factual_ce_mode: str = 'single') -> dict[str, Tensor]:
         cfg = self.config
         S = (cfg.S_train if self.training else cfg.S_eval) if S is None else S
         K = (cfg.K_train if self.training else cfg.K_eval) if K is None else K
         if fd_mode not in ('full', 'none') or S < 1 or K < 1 or x_c.shape[0] != x_a.shape[0]:
             raise ValueError('模式、采样数或 batch 配对不合法')
+        if factual_ce_mode not in ('single', 'all_samples'):
+            raise ValueError('事实CE模式仅允许single或all_samples')
         result = self.cns(x_c, S)
         result.update(self.ans(x_a, result['m_c']))
         b = x_c.shape[0]
         own_reference = self.reference_encoder(x_c, x_a)
-        # 观察路径取第一次完整分层采样，不与参考库积分混淆。
-        logits_obs = self.outcome(result['m_a'][:, 0], own_reference)
+        # 默认保留原调用和随机流；可选对现有S组中介计算同一个事实CE期望。
+        if factual_ce_mode == 'all_samples':
+            logits_samples = self.outcome(result['m_a'], own_reference[:, None, :].expand(b, S, -1))
+            result['logits_obs_samples'] = logits_samples
+            logits_obs = logits_samples[:, 0]
+        else:
+            logits_obs = self.outcome(result['m_a'][:, 0], own_reference)
         result.update(logits_obs=logits_obs, probs_obs=logits_obs.softmax(-1))
         result['kl_c'] = gaussian_kl(result['mu_c'], result['logvar_c'])
         result['kl_a'] = gaussian_kl(result['mu_a'], result['logvar_a']).mean(1)
@@ -306,7 +314,16 @@ def frontdoor_loss(outputs: dict[str, Tensor], y: Tensor, config: FrontDoorConfi
     """观察 CE + warmup KL；干预监督仅由显式 oracle 概率开启。"""
     if config.mediator_family != 'normal':
         raise ValueError('此标准正态 KL 接口仅用于高斯中介；tanh 合成拟合使用条件似然')
-    obs = F.cross_entropy(outputs['logits_obs'], y.long())
+    logits_samples = outputs.get('logits_obs_samples')
+    if logits_samples is None:
+        obs = F.cross_entropy(outputs['logits_obs'], y.long())
+    else:
+        if logits_samples.ndim != 3 or min(logits_samples.shape) < 1:
+            raise ValueError('事实采样logits必须为非空[B,S,C]')
+        b, s, c = logits_samples.shape
+        if c != config.num_classes or y.shape != (b,) or outputs['logits_obs'].shape != (b, c):
+            raise ValueError('事实采样logits必须为[B,S,C]，标签为[B]')
+        obs = F.cross_entropy(logits_samples.reshape(b * s, c), y.long().repeat_interleave(s))
     kl = (outputs['kl_c'] + outputs['kl_a']).mean()
     coefficient = config.beta * min(max(epoch, 0) / config.beta_warmup_epochs, 1.0)
     total = obs + coefficient * kl
