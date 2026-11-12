@@ -42,7 +42,9 @@ def feature_summary(value, mask, normalized, normalized_mask, names):
 
 
 def main():
-    p = argparse.ArgumentParser(description='原窗口生理锚点训练来源与数值审查')
+    p = argparse.ArgumentParser(description='原窗口生理锚点训练来源与数值审查', add_help=False,
+                                formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    p.add_argument('-h', '--help', action='help', help='显示中文参数说明并退出')
     p.add_argument('--dataset', choices=['DEAP', 'HCI'], required=True, help='原数据集')
     p.add_argument('--label', choices=['arousal', 'valence'], default='arousal', help='记录任务；锚点不读取标签')
     p.add_argument('--root_dir', type=Path, default=Path('/home/fss'), help='含Dataset的数据根目录')

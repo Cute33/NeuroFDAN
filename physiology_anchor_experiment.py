@@ -212,7 +212,9 @@ def export_tables_and_plots(directory, results, plots):
 
 
 def main():
-    p = argparse.ArgumentParser(description='生理锚点三组配对合成；不接入真实LOSO训练')
+    p = argparse.ArgumentParser(description='生理锚点三组配对合成；不接入真实LOSO训练', add_help=False,
+                                formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    p.add_argument('-h', '--help', action='help', help='显示中文参数说明并退出')
     p.add_argument('--output_dir', type=Path, required=True, help='新的phase6结果根目录')
     p.add_argument('--run_name', required=True, help='唯一运行名，不覆盖')
     p.add_argument('--seed', type=int, choices=[42], default=42, help='固定训练种子')
