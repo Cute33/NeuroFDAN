@@ -1,0 +1,73 @@
+{
+  "format_version": 1,
+  "created_at": "2026-11-12T14:02:19.614401+08:00",
+  "upload_checkout": {
+    "tool_checkout": {
+      "commit": "6681381298b74e9b69dc0df0594d5d9c7274acbc",
+      "branch": "",
+      "tracked_changes": false
+    },
+    "experiment_checkout_at_upload": {
+      "commit": "3f1569459bbf23dbff90838466a1beccaa5cce2d",
+      "branch": "feat/neurofdan-phase3",
+      "tracked_changes": false
+    }
+  },
+  "recorded_run_sources": [],
+  "metadata": [],
+  "uploaded": [
+    {
+      "file": "history.jsonl",
+      "bytes": 933614,
+      "sha256": "3902dfa9a97fabd12aa50776b806f624c8d06d98090018fe2b6ffb36f7644f24",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "config.json",
+      "bytes": 1843,
+      "sha256": "de2efc4494a6a86c1f81542599ced1e073d40f879f195226d0486db0c72c9c87",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "probe_summary.json",
+      "bytes": 264792,
+      "sha256": "b8ca21f3c2a1ce89ab4959c7f537c4c45edd70332e185bacd70492cc8ed9aae8",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_01.log",
+      "bytes": 14761,
+      "sha256": "f0cf3fdf9854cc6eea2175e001f272e1cbbc37a0a32673865438ddb8e1582d6b",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_02.log",
+      "bytes": 543,
+      "sha256": "a53dd1fc4632c2244a91df555426f904681fcfb471c4fc0777f216bb9f6e8436",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "upload_summary.json",
+      "bytes": 428,
+      "sha256": "2c015e816a622c953db622231d8c6bffea5afc03ec7cb04b53bfbe37b454d6f8"
+    },
+    {
+      "file": "upload_report.txt",
+      "bytes": 284,
+      "sha256": "3e22ff394b14196134ffaf2b17e1093c7a7a262ea4b0bce93bf097a8c5491eea"
+    }
+  ],
+  "missing": [
+    "run_summary.json",
+    "run_report.txt"
+  ],
+  "skipped": [],
+  "total_bytes": 1216265,
+  "limits": {
+    "max_file_mib": 16,
+    "max_total_mib": 64
+  },
+  "snapshot_atomic": false,
+  "note": "运行中的多个文件不是事务快照；上传源码SHA不等于旧运行源码SHA。未上传模型权重/原始信号。",
+  "sanitization": "白名单；拒绝链接；文本常见凭证/绝对路径屏蔽；数值NPZ重新编码。自动脱敏不能保证发现任意自由文本中的自定义秘密，首次建议dry-run人工检查。"
+}

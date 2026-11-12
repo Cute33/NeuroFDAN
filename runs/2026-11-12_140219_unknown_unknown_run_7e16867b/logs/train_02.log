@@ -1,0 +1,9 @@
+test_aligned_positive_gain_invariance_and_failure_case (test_scale_anchor_learning.ScaleAnchorLearningTests) ... ok
+test_both_training_targets_have_finite_backward_and_step (test_scale_anchor_learning.ScaleAnchorLearningTests) ... ok
+test_default_preserves_original_mapping (test_scale_anchor_learning.ScaleAnchorLearningTests) ... ok
+test_scale_targets_and_original_control_share_xy (test_scale_anchor_learning.ScaleAnchorLearningTests) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.387s
+
+OK
