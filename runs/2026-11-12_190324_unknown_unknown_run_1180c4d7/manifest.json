@@ -1,0 +1,83 @@
+{
+  "format_version": 1,
+  "created_at": "2026-11-12T19:03:24.730530+08:00",
+  "upload_checkout": {
+    "tool_checkout": {
+      "commit": "3a448e85d15320190f447d5b873eb5f6ebb3f101",
+      "branch": "",
+      "tracked_changes": false
+    },
+    "experiment_checkout_at_upload": {
+      "commit": "1c888a8577edd9eb0eb6580ef0bc740e6d05ec8b",
+      "branch": "feat/neurofdan-phase3",
+      "tracked_changes": false
+    }
+  },
+  "recorded_run_sources": [],
+  "metadata": [],
+  "uploaded": [
+    {
+      "file": "config.json",
+      "bytes": 430,
+      "sha256": "3a02db40ea7a660944b59273c4d8a98f747c121eed9169af234ebadd5d3ce4c2",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "probe_summary.json",
+      "bytes": 121393,
+      "sha256": "a65ae261eecc2065966b7f2931094c8350594bacafb876b30900f97d430e73db",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_01.log",
+      "bytes": 1586,
+      "sha256": "623cca67b49944e7b10c27ef75ad8bb8b263f4481fe698c55fe28eeacc760e67",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_02.log",
+      "bytes": 24475,
+      "sha256": "e07949388d3ae7d4801f77ce297d4637fdf20be07bc3dbd90287d05be216879a",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "upload_summary.json",
+      "bytes": 967,
+      "sha256": "7883b2445ca635f6d5027947878063e4e77156b69b485cedb69b99c0babf4976"
+    },
+    {
+      "file": "upload_report.txt",
+      "bytes": 478,
+      "sha256": "8b52627cd5d70f0db83bed94f6fea2ef2f64ad01cddca34246b5518c73c2666a"
+    }
+  ],
+  "missing": [
+    "run_summary.json",
+    "run_report.txt"
+  ],
+  "skipped": [],
+  "total_bytes": 149329,
+  "execution_evidence": [
+    {
+      "log": "logs/train_01.log",
+      "receipt_present": true,
+      "python_exit": 0,
+      "tee_exit": 0,
+      "status": "进程及日志写入均退出成功"
+    },
+    {
+      "log": "logs/train_02.log",
+      "receipt_present": true,
+      "python_exit": 0,
+      "tee_exit": 0,
+      "status": "进程及日志写入均退出成功"
+    }
+  ],
+  "limits": {
+    "max_file_mib": 16,
+    "max_total_mib": 64
+  },
+  "snapshot_atomic": false,
+  "note": "运行中的多个文件不是事务快照；上传源码SHA不等于旧运行源码SHA。未上传模型权重/原始信号。",
+  "sanitization": "白名单；拒绝链接；文本常见凭证/绝对路径屏蔽；数值NPZ重新编码。自动脱敏不能保证发现任意自由文本中的自定义秘密，首次建议dry-run人工检查。"
+}

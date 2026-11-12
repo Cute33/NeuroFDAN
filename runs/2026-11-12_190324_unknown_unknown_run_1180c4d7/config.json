@@ -1,0 +1,19 @@
+{
+  "dataset": "DEAP",
+  "label": "arousal",
+  "root_dir": "<已屏蔽绝对路径>",
+  "fold_dir": "<已屏蔽绝对路径>",
+  "checkpoint_epoch": 300,
+  "output_dir": "<已屏蔽绝对路径>",
+  "run_name": "deap_arousal_fold02_epoch300_terms_001",
+  "held_out_subjects": [
+    2
+  ],
+  "seed": 42,
+  "device": "cpu",
+  "epochs": 0,
+  "batch_size": 16,
+  "reference_samples": 64,
+  "workers": 0,
+  "diagnostic_level": "full"
+}
