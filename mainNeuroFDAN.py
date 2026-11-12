@@ -59,6 +59,8 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
                         help='默认逐轮完整训练/测试矩阵与概率统计；full增加中介分布和裁剪前梯度；不改变训练目标')
     parser.add_argument('--log_detail_interval', type=int, default=10,
                         help='终端简洁诊断摘要间隔；每轮仍打印两组紧凑矩阵，零关闭周期摘要；不影响逐轮诊断保存')
+    parser.add_argument('--loss_gradient_interval', type=int, default=0,
+                        help='首轮及每N轮实际首优化batch记录分项梯度；零关闭，不改变损失或额外采样')
     args = parser.parse_args(argv)
     from Datasets import canonical_dataset, canonical_label
     try:
@@ -79,6 +81,8 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
         parser.error('接口检查batch上限及损失权重不得为负')
     if args.log_detail_interval < 0:
         parser.error('终端诊断摘要间隔不得为负')
+    if args.loss_gradient_interval < 0:
+        parser.error('分项梯度记录间隔不得为负')
     try:
         from ModelTrain import frontdoor_config
         frontdoor_config(args)
