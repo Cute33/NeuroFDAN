@@ -16,6 +16,31 @@ def fit_gate(records, prior_nll):
                                 and r['integrated_observational_nll'] <= prior_nll - .05 for r in records)
 
 
+def save_private_checkpoint(model, result, destination):
+    """仅显式诊断时保存末端私有权重；独立格式、不含信号、不覆盖任何已有文件。"""
+    import os
+    import tempfile
+    import torch
+    target = destination / 'private_fit_last.pt'
+    payload = dict(format_version='neurofdan_private_fit_v1', role='training_subset_diagnostic_only',
+        model=model.state_dict(), frontdoor_config=result['model'], arguments=result['arguments'],
+        source_version=result['source_version'], actual_steps=result['actual_steps'],
+        selected_source_ids=result['selected_source_ids'], reference_source_ids=result['reference_source_ids'],
+        reference_report=result['reference_report'], passed=result['passed'])
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=destination, prefix='.private-fit-', delete=False) as stream:
+            temporary = Path(stream.name)
+            torch.save(payload, stream)
+        # 同文件系统原子创建新名字，目标已有时失败，不使用会覆盖目标的replace。
+        os.link(temporary, target)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+    result.update(weights_saved=True, private_checkpoint_file=target.name,
+                  private_checkpoint_format=payload['format_version'])
+
+
 def measure(model, batch, bank, device, dataset, seed):
     import torch
     from ModelTrain import cache_reference_features, confusion_metrics, prediction_probabilities
@@ -61,6 +86,10 @@ def main():
     controls = argparse.ArgumentParser(add_help=False)
     controls.add_argument('--fit_max_steps', type=int, default=300)
     controls.add_argument('--fit_check_every', type=int, default=50)
+    controls.add_argument('--fit_baseline_summary', default=None,
+                          help='可选KL单因素对照原摘要；启动前、来源和首步NLL严格核对')
+    controls.add_argument('--fit_save_checkpoint', action='store_true',
+                          help='只保存新目录中的私有末端权重，供后续只读探针，不用于正式续训')
     fit, training_argv = controls.parse_known_args()
     from mainNeuroFDAN import get_args
     args = get_args(argv=training_argv)
@@ -74,6 +103,14 @@ def main():
     path = dest / 'probe_summary.json'
     if path.exists():
         raise FileExistsError('验收结果已存在，拒绝覆盖')
+    if fit.fit_save_checkpoint and ((dest / 'private_fit_last.pt').exists() or (dest / 'private_fit_last.pt').is_symlink()):
+        raise FileExistsError('私有权重已存在，拒绝覆盖')
+    baseline = None
+    if fit.fit_baseline_summary:
+        from scheme_a_control_evidence import read_json, check_arguments, summary_sha256
+        baseline = read_json(fit.fit_baseline_summary)
+        baseline_hash = summary_sha256(fit.fit_baseline_summary)
+        check_arguments(baseline, vars(args), vars(fit))
     dest.mkdir(parents=True, exist_ok=True)
     from run_reporting import source_version
     result = dict(operation='方案A固定自然训练批次拟合验收', source_version=source_version(PROJECT),
@@ -124,6 +161,11 @@ def main():
             selected_source_ids=batch['source_ids'].cpu().tolist(), reference_source_ids=bank.source_ids.tolist(),
             true_counts=counts, constant_prior_nll=prior_nll, full_epoch_steps=epoch_steps,
             loss_epoch_mapping='1+(私有step-1)//完整训练总体每轮步数；不是LOSO实际epoch')
+        if baseline is not None:
+            from scheme_a_control_evidence import check_sources
+            check_sources(baseline, result)
+            result['control_protocol'] = dict(changed_training_factor='beta:0.001->0',
+                source_ids_and_reference_ids_equal=True, baseline_summary_sha256=baseline_hash)
         if device.type == 'cuda':
             torch.cuda.reset_peak_memory_stats(device)
         save()
@@ -136,6 +178,10 @@ def main():
             terms = classification_terms(out, batch['Labels'], model.frontdoor_config, epoch,
                                          objective=args.classification_objective, lambda_obs=args.lambda_obs)
             loss = terms['loss'] + args.fire_weight * out['fire_loss']
+            if step == 1 and baseline is not None:
+                from scheme_a_control_evidence import check_initial_nll
+                check_initial_nll(baseline, float(terms['classification_loss'].detach()))
+                result['control_protocol']['initial_task_nll_matches'] = True
             if not torch.isfinite(loss):
                 raise FloatingPointError('私有拟合损失含NaN/Inf')
             report = None
@@ -175,9 +221,15 @@ def main():
                     break
             else:
                 save()
+        if baseline is not None:
+            if summary_sha256(fit.fit_baseline_summary) != baseline_hash:
+                raise RuntimeError('原基线摘要读取期间发生变化，停止解释配对比较')
+            result['control_protocol']['original_baseline_unchanged'] = True
+        if fit.fit_save_checkpoint:
+            save_private_checkpoint(model, result, dest)
         result['completed'] = True
         save()
-        print('验收通过，将允许全新模型单fold20轮。' if result['passed'] else
+        print('拟合门槛通过；本脚本不启动正式fold训练，由调用流程决定后续。' if result['passed'] else
               '预算内未通过拟合验收，停止，不启动20轮；不据此宣称结构理论上不可能训练。', flush=True)
         return 0 if result['passed'] else 3
     except BaseException as error:
