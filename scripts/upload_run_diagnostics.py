@@ -186,6 +186,33 @@ def read_snapshot(path: Path, limit: int) -> bytes:
     return raw
 
 
+def log_exit_evidence(log: Path, target: str) -> dict:
+    """自动读取记录脚本的.exit，只上传两个整数；不执行日志内容或读取环境。"""
+    result = dict(log=target, receipt_present=False, python_exit=None, tee_exit=None,
+                  status='退出状态未知；不据此猜测运行中、手动中止或异常退出')
+    receipt = Path(str(log) + '.exit')
+    if not receipt.exists() and not receipt.is_symlink():
+        return result
+    result['receipt_present'] = True
+    try:
+        values = {}
+        for line in read_snapshot(receipt, 16384).decode('utf-8').splitlines():
+            if not line.strip():
+                continue
+            match = re.fullmatch(r'(python_exit|tee_exit)=(-?\d{1,3})', line.strip())
+            if not match or match[1] in values:
+                raise ValueError('退出收据含重复或非白名单字段')
+            values[match[1]] = int(match[2])
+        if set(values) != {'python_exit', 'tee_exit'}:
+            raise ValueError('退出收据缺少必要字段')
+        result.update(values)
+        result['status'] = ('进程及日志写入均退出成功' if values == dict(python_exit=0, tee_exit=0)
+                            else '进程或日志写入退出非零；不推测是否人为中止')
+    except (OSError, ValueError, UnicodeError) as error:
+        result['issue'] = sanitize_text(str(error))
+    return result
+
+
 def collect(repository: Path, run: Path, bundle: Path, args, source: dict) -> dict:
     missing, skipped, uploaded = [], [], []
     total, limit = 0, args.max_file_mib * 1024**2
@@ -204,7 +231,7 @@ def collect(repository: Path, run: Path, bundle: Path, args, source: dict) -> di
     logs = [run/'train.log']
     logs += sorted((repository/'logs').glob(f'*/{run.name}.log')) if re.fullmatch(r'[\w.-]+',run.name) else []
     logs += [Path(value).expanduser().absolute() for value in args.log]
-    seen_logs = set()
+    seen_logs, execution = set(), []
     for log in logs:
         if log in seen_logs:
             continue
@@ -213,7 +240,9 @@ def collect(repository: Path, run: Path, bundle: Path, args, source: dict) -> di
             if log.suffix != '.log':
                 skipped.append(dict(file='额外日志', reason='仅允许.log文本日志'))
                 continue
-            candidates.append((log, f'logs/train_{len(seen_logs):02d}.log'))
+            target = f'logs/train_{len(seen_logs):02d}.log'
+            candidates.append((log, target))
+            execution.append(log_exit_evidence(log, target))
         elif log in [Path(value).expanduser().absolute() for value in args.log]:
             missing.append('显式指定的额外日志')
     if not any(target.startswith('logs/') for _,target in candidates):
@@ -239,6 +268,8 @@ def collect(repository: Path, run: Path, bundle: Path, args, source: dict) -> di
     except (OSError,ValueError,TypeError,AttributeError):
         report=dict(folds=[],formal_loso_verified=False,note='部分源文件结构异常，无法生成完整摘要；请查看manifest及原产物',
                     selection_bias='测试集参与选模的偏差仍存在')
+    report['execution_evidence'] = execution
+    report['execution_note'] = '自动读取.log.exit；没有收据时不声称退出成功。实际轮数来自记录，不能自动判断人为停止意图。'
     for name,content in [('upload_summary.json',json.dumps(report,ensure_ascii=False,indent=2,allow_nan=False)),
                           ('upload_report.txt',sanitize_text(report_text(report)))]:
         data=content.encode('utf-8')
@@ -252,6 +283,7 @@ def collect(repository: Path, run: Path, bundle: Path, args, source: dict) -> di
         recorded_run_sources=[dict(fold=f['fold'],source_version=f['source_version']) for f in report['folds']],
         metadata=[{key:f[key] for key in ('fold','dataset','task','seed','smoke')} for f in report['folds']],
         uploaded=uploaded,missing=missing,skipped=skipped,total_bytes=total,
+        execution_evidence=execution,
         limits=dict(max_file_mib=args.max_file_mib,max_total_mib=args.max_total_mib),
         snapshot_atomic=False, note='运行中的多个文件不是事务快照；上传源码SHA不等于旧运行源码SHA。未上传模型权重/原始信号。',
         sanitization='白名单；拒绝链接；文本常见凭证/绝对路径屏蔽；数值NPZ重新编码。自动脱敏不能保证发现任意自由文本中的自定义秘密，首次建议dry-run人工检查。')
@@ -394,6 +426,13 @@ def main() -> None:
             raise ValueError('快照目录不得位于实验run内部')
         bundle.mkdir(parents=True,exist_ok=True)
         report=collect(experiment_repository,run,bundle,args,source)
+        for record in report['folds']:
+            print(f'自动运行记录：fold={record["fold"]}，实际/计划轮数='
+                  f'{record["last_recorded_epoch"]}/{record["planned_epochs"]}，'
+                  f'smoke={record["smoke"]}，产物状态={record["status"]}', flush=True)
+        manifest = json.loads((bundle/'manifest.json').read_text(encoding='utf-8'))
+        print(f'自动记录：缺少项={len(manifest["missing"])}，跳过项={len(manifest["skipped"])}；'
+              '详细原因及退出收据已随快照记录，回传SHA/链接即可。', flush=True)
         first=report['folds'][0] if report['folds'] else {}
         slug=lambda v: re.sub(r'[^A-Za-z0-9_-]','_',str(v or 'unknown'))[:40]
         suffix=f'fold{first["fold"]:02d}' if len(report['folds'])==1 and isinstance(first.get('fold'),int) else 'run'

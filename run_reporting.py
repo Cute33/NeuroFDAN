@@ -111,6 +111,9 @@ def report_text(summary: dict) -> str:
         lines.append(f'最后测试={row["last_test"]}；单类测试记录数={row["single_class_test_records"]}')
         if row['issues']:
             lines.append('注意：' + '；'.join(row['issues']))
+    for receipt in summary.get('execution_evidence', []):
+        lines.append(f'退出收据：{receipt["log"]} python_exit={receipt["python_exit"]} '
+                     f'tee_exit={receipt["tee_exit"]}；{receipt["status"]}')
     return '\n'.join(lines) + '\n'
 
 
