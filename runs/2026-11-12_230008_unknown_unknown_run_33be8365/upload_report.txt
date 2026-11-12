@@ -1,0 +1,7 @@
+NeuroFDAN运行摘要（非完整LOSO验收）
+本摘要不加载权重、不重新选模；正式统计需CalculateResult.py --require_complete。旧Phase4未记录训练源码SHA时不能用上传时SHA代替。
+held-out测试集参与checkpoint选择，存在测试集选模偏差
+退出收据：logs/train_02.log python_exit=0 tee_exit=0；进程及日志写入均退出成功
+退出收据：logs/train_03.log python_exit=0 tee_exit=0；进程及日志写入均退出成功
+退出收据：logs/train_04.log python_exit=0 tee_exit=0；进程及日志写入均退出成功
+退出收据：logs/train_05.log python_exit=3 tee_exit=0；进程或日志写入退出非零；不推测是否人为中止

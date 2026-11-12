@@ -1,0 +1,24 @@
+test_appends_without_downloading_old_blobs_or_changing_old_tree (test_upload_partial.PartialUploadTests) ... ok
+test_changed_payload_is_rejected_before_push (test_upload_partial.PartialUploadTests) ... ok
+test_concurrent_append_rebases_snapshot_without_force (test_upload_partial.PartialUploadTests) ... ok
+test_empty_remote_gets_new_root_commit (test_upload_partial.PartialUploadTests) ... ok
+test_existing_snapshot_is_never_overwritten (test_upload_partial.PartialUploadTests) ... ok
+test_failed_fetch_does_not_claim_candidate_or_start_push (test_upload_transport.UploadTransportTests) ... ok
+test_network_and_local_timeouts_are_separate (test_upload_transport.UploadTransportTests) ... ok
+test_nonzero_push_is_returned_for_existing_retry_policy (test_upload_transport.UploadTransportTests) ... ok
+test_preserves_explicit_ssh_command (test_upload_transport.UploadTransportTests) ... ok
+test_receipt_keeps_candidate_if_push_times_out (test_upload_transport.UploadTransportTests) ... ok
+test_timeout_names_phase_and_sanitizes_partial_stderr (test_upload_transport.UploadTransportTests) ... ok
+test_collect_persists_receipt_and_skip_reasons_without_touching_run (test_auto_evidence.AutoEvidenceTests) ... ok
+test_missing_receipt_does_not_invent_interruption (test_auto_evidence.AutoEvidenceTests) ... ok
+test_success_failure_and_malformed_receipts (test_auto_evidence.AutoEvidenceTests) ... ok
+test_symlink_receipt_is_rejected (test_auto_evidence.AutoEvidenceTests) ... ok
+test_bad_matrix_is_rejected (test_scheme_a_summary.SchemeSummaryTests) ... ok
+test_recovers_prior_gap_and_preserves_source_without_id_arrays (test_scheme_a_summary.SchemeSummaryTests) ... ok
+test_zero_point_five_ba_is_not_assumed_single_class (test_scheme_a_summary.SchemeSummaryTests) ... ok
+test_zero_task_norm_yields_null_ratio_and_weighted_terms_stay_visible (test_scheme_a_summary.SchemeSummaryTests) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 1.101s
+
+OK

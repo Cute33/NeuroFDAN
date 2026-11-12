@@ -1,0 +1,27 @@
+{
+  "operation": "方案A分阶段工作流",
+  "source_version": {
+    "commit": "30152089b943ccf904d205810c72fb20161a483a",
+    "branch": "",
+    "tracked_changes": false
+  },
+  "classification_objective": "integrated_observational",
+  "observation_labels": true,
+  "oracle_supervision": false,
+  "stages": {
+    "tests": {
+      "status": "passed",
+      "exit_code": 0
+    },
+    "fit_check": {
+      "status": "budget_not_passed",
+      "exit_code": 3
+    },
+    "fold20": {
+      "status": "not_started",
+      "exit_code": 3
+    }
+  },
+  "workflow_state": "fold20:not_started",
+  "fit_weights_transferred_to_fold": false
+}
