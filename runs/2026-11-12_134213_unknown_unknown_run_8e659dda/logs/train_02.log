@@ -1,0 +1,13 @@
+test_accumulator_detects_violation_and_mask_change (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_constants_are_finite_but_invalid (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_dimensions_and_names (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_invalid_input_rejected (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_no_input_mutation (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_normalized_linear_trend_known_value (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_original_amplitude_positive_control_changes (test_anchor_invariance.AnchorInvarianceTests) ... ok
+test_three_affine_transforms_preserve_candidates (test_anchor_invariance.AnchorInvarianceTests) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.013s
+
+OK
