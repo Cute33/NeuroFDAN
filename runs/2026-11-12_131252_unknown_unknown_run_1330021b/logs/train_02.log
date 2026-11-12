@@ -1,0 +1,18 @@
+test_aligned_inputs_invariant_to_global_cns_sign (test_physiological_anchors.AnchorTests) ... ok
+test_ans_anchor_gradient_reaches_cns_only_through_allowed_path (test_physiological_anchors.AnchorTests) ... ok
+test_candidate_cpu_optimizer_step_and_probability_normalization (test_physiological_anchors.AnchorTests) ... ok
+test_direct_and_independent_frontdoor_truth (test_physiological_anchors.AnchorTests) ... ok
+test_gsr_slope_and_window_source_order (test_physiological_anchors.AnchorTests) ... ok
+test_nan_and_wrong_window_rejected (test_physiological_anchors.AnchorTests) ... ok
+test_permission_and_anchor_computation_ignore_truth (test_physiological_anchors.AnchorTests) ... ok
+test_pure_alpha_spectrum_and_unit_power (test_physiological_anchors.AnchorTests) ... ok
+test_real_interface_dimensions_and_constant_validity (test_physiological_anchors.AnchorTests) ... ok
+test_rendered_signal_map_has_full_coefficient_rank (test_physiological_anchors.AnchorTests) ... ok
+test_sampling_axis_is_averaged_and_gradients_exist (test_physiological_anchors.AnchorTests) ... ok
+test_training_statistics_never_refit_on_test (test_physiological_anchors.AnchorTests) ... ok
+test_zero_alpha_recovers_existing_total (test_physiological_anchors.AnchorTests) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.781s
+
+OK
