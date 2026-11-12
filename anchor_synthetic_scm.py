@@ -29,9 +29,14 @@ def render_coefficients(x_c: np.ndarray, x_a: np.ndarray) -> tuple[torch.Tensor,
     return torch.from_numpy(c), torch.from_numpy(a)
 
 
-def coefficient_anchors(x_c: np.ndarray, x_a: np.ndarray) -> dict:
+def coefficient_anchors(x_c: np.ndarray, x_a: np.ndarray, variant: str = 'original') -> dict:
     """实际调用同一个频谱/波形提取器；合成目标不读取真实M、U或Y。"""
-    return extract_anchors(*render_coefficients(x_c, x_a), 'DEAP')
+    if variant == 'original':
+        return extract_anchors(*render_coefficients(x_c, x_a), 'DEAP')
+    if variant == 'scale_stable':
+        from anchor_invariance_candidates import extract_scale_stable
+        return extract_scale_stable(*render_coefficients(x_c, x_a), 'DEAP')
+    raise ValueError('未知合成锚点版本')
 
 
 class AnchorSyntheticSCM(SyntheticSCM):
@@ -40,16 +45,19 @@ class AnchorSyntheticSCM(SyntheticSCM):
     两组都遵守S1，但观测Y分布不同；只允许在各机制内部比较三种监督。
     对齐组是有利的工作假设，不是对DEAP/HCI真实中介的事实断言。
     """
-    def __init__(self, mechanism: str = 'aligned', seed: int = 2026):
+    def __init__(self, mechanism: str = 'aligned', seed: int = 2026, anchor_variant: str = 'original'):
         if mechanism not in ('aligned', 'misaligned'):
             raise ValueError('未知锚点机制')
         super().__init__(SCMConfig(seed=seed))
         self.mechanism = mechanism
+        if anchor_variant not in ('original','scale_stable'):
+            raise ValueError('未知锚点版本')
+        self.anchor_variant = anchor_variant
 
     def mediator_inputs(self, xc, xa):
         if self.mechanism == 'misaligned':
             return xc, xa
-        anchors = coefficient_anchors(xc, xa)
+        anchors = coefficient_anchors(xc, xa, self.anchor_variant)
         # 固定的生成结构映射，不使用任何训练/测试统计或标签。
         # 复制到原维度使Bc/Ba形状不变；锚点维度不是新SCM节点。
         def expand(value, dim):
