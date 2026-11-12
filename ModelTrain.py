@@ -211,12 +211,29 @@ def prediction_probabilities(outputs, fd_mode):
     return probs
 
 
+def loss_component_gradient_report(model, output, terms, loss, epoch, lambda_obs, fire_weight):
+    """复用同一前向图记录实际加权分项梯度；不写.grad、不消耗额外随机样本。"""
+    from phase6_learning import gradient_components
+    cfg = model.frontdoor_config
+    beta = cfg.beta * min(max(epoch, 0) / cfg.beta_warmup_epochs, 1.)
+    components = dict(factual_ce=lambda_obs * terms['loss_obs'],
+                      kl_c=beta * output['kl_c'].mean(),
+                      kl_a=beta * output['kl_a'].mean(),
+                      fire=fire_weight * output['fire_loss'], training_total=loss)
+    return dict(batch_size=output['logits_obs'].shape[0], epoch=epoch, batch_index=0,
+                weights=dict(lambda_obs=lambda_obs, beta=beta, fire=fire_weight),
+                weighted_terms={key: float(value.detach()) for key, value in components.items()},
+                gradients=gradient_components(components, list(model.named_parameters())),
+                note='实际优化首batch、同一前向图、裁剪前原始梯度；不是Adam实际更新量或整个epoch平均')
+
+
 def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
                     fd_mode='full', lambda_obs=1., fire_weight=0., max_batches=0,
-                    diagnostic_level='basic'):
+                    diagnostic_level='basic', loss_gradient_interval=0):
     model.train()
     gradients = GradientDiagnostics(model) if diagnostic_level == 'full' else None
     cm, sums, count = torch.zeros(2, 2, dtype=torch.long), {}, 0
+    loss_gradients = None
     for batch_index, (batch, _) in enumerate(loader):
         xc, xa, y = batch['x_c'].to(device), batch['x_a'].to(device), batch['Labels'].to(device)
         optimizer.zero_grad(set_to_none=True)
@@ -228,6 +245,11 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
         loss = terms['loss'] + (lambda_obs - 1.) * terms['loss_obs'] + fire_weight * output['fire_loss']
         if not torch.isfinite(loss):
             raise FloatingPointError('训练损失出现非有限数值，请检查输入和模型设置')
+        if batch_index == 0 and loss_gradient_interval > 0 and (epoch == 1 or epoch % loss_gradient_interval == 0):
+            loss_gradients = loss_component_gradient_report(model, output, terms, loss, epoch, lambda_obs, fire_weight)
+            cns = loss_gradients['gradients']
+            logger.info('首batch分项梯度：epoch=%s batch=%s CNS CE=%s fire=%s KLc=%s，详见optimization.loss_component_gradients',
+                        epoch, len(y), cns['factual_ce']['cns']['l2'], cns['fire']['cns']['l2'], cns['kl_c']['cns']['l2'])
         loss.backward()
         if gradients is not None:
             gradients.update()
@@ -253,6 +275,8 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
     if gradients is not None:
         metrics['gradients'] = gradients.finish()
         metrics['parameter_rms'] = parameter_rms(model)
+    if loss_gradients is not None:
+        metrics['loss_component_gradients'] = loss_gradients
     return metrics, cm
 
 
@@ -502,7 +526,8 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
         for epoch in range(first_epoch, args.epochs + 1):
             train_metrics, _ = train_one_epoch(model, train_loader, raw_bank, optimizer, device, dataset,
                            epoch, args.fd_mode, args.lambda_obs, fire_weight, args.max_train_batches,
-                           diagnostic_level=diagnostic_level)
+                           diagnostic_level=diagnostic_level,
+                           loss_gradient_interval=getattr(args, 'loss_gradient_interval', 0))
             cache_holder = {}
             # 原测试路径先执行；额外训练集评估随后隔离随机流，不参与选模。
             metrics, cm, predictions = evaluate(model, test_loader, raw_bank, device, dataset,
