@@ -237,7 +237,10 @@ def train_one_epoch(model, loader, raw_bank, optimizer, device, dataset, epoch,
         _add_confusion(cm, y, primary_probs)
         values = dict(output['mediator_statistics'], loss=loss.detach(),
                       factual_ce=terms['loss_obs'].detach(), kl=terms['loss_kl'].detach(),
-                      fire_loss=output['fire_loss'].detach())
+                      fire_loss=output['fire_loss'].detach(),
+                      weighted_obs_loss=(lambda_obs*terms['loss_obs']).detach(),
+                      weighted_kl_loss=(terms['loss']-terms['loss_obs']).detach(),
+                      weighted_fire_loss=(fire_weight*output['fire_loss']).detach())
         size = len(y)
         for key, value in values.items():
             sums[key] = sums.get(key, 0.) + float(value) * size
@@ -336,13 +339,35 @@ def save_checkpoint(path, model, optimizer, epoch, best, args, raw_bank, metrics
 def load_checkpoint(path, model, optimizer=None, map_location='cpu'):
     """仅加载本项目自身产生的checkpoint；map_location支持CPU/CUDA切换。"""
     state = torch.load(path, map_location=map_location, weights_only=False)
-    if state.get('format_version') != 2 or state['frontdoor_config'] != asdict(model.frontdoor_config):
+    if state.get('format_version') != 2 or normalized_model_config(state['frontdoor_config']) != normalized_model_config(asdict(model.frontdoor_config)):
         raise ValueError('checkpoint格式或模型配置不匹配')
     model.load_state_dict(state['model'])
     model.weights_updated()
     if optimizer is not None:
         optimizer.load_state_dict(state['optimizer'])
     return state
+
+
+def normalized_model_config(values):
+    """旧checkpoint无lif_neurons时表示当时的hidden_dim，不改变实际权重维度。"""
+    values = dict(values)
+    if values.get('lif_neurons') is None:
+        values['lif_neurons'] = values['hidden_dim']
+    return values
+
+
+def validate_resume_objective(state, args, dataset):
+    """防止optimizer载入后静默覆盖新lr或改变监督/发放率权重；改配置须新run。"""
+    if any(group.get('lr') != args.lr for group in state['optimizer']['param_groups']):
+        raise ValueError('续训学习率与checkpoint不同；参数对照必须新run从头训练')
+    old = state['arguments']
+    default_fire = 0. if dataset == 'DEAP' else 1.
+    old_fire = old.get('fire_weight')
+    new_fire = args.fire_weight
+    old_fire = default_fire if old_fire is None else old_fire
+    new_fire = default_fire if new_fire is None else new_fire
+    if old.get('lambda_obs', 1.) != args.lambda_obs or old_fire != new_fire:
+        raise ValueError('续训分类/fire权重与checkpoint不同；请新run，不静默切换目标')
 
 
 def save_fold_confusion(run_dir, fold_dir, dataset, label, held_out, confusion):
@@ -368,7 +393,8 @@ def frontdoor_config(args):
                           beta=args.beta, beta_warmup_epochs=args.beta_warmup_epochs,
                           ref_dim=args.ref_dim, no_cns2ans=args.no_cns2ans,
                           reference_chunk_size=args.reference_chunk_size, time_steps=args.time_steps,
-                          logvar_min=args.logvar_min, logvar_max=args.logvar_max)
+                          logvar_min=args.logvar_min, logvar_max=args.logvar_max,
+                          lif_neurons=getattr(args, 'lif_neurons', None))
 
 
 def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, optimizer=None):
@@ -427,6 +453,7 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     best, first_epoch = BestCheckpoint(), 1
     if args.resume:
         state = load_checkpoint(args.resume, model, optimizer, device)
+        validate_resume_objective(state, args, dataset)
         validate_resume_weight_decay(state, args)
         validate_resume_sampling_mode(state, sampling_mode)
         validate_resume_batch_settings(state, args.batch_size, eval_batch_size)
@@ -467,6 +494,9 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     from torch.utils.tensorboard import SummaryWriter
     writer = SummaryWriter(str(fold_dir / 'tensorboard'))
     fire_weight = args.fire_weight if args.fire_weight is not None else (1. if dataset == 'HCI' else 0.)
+    logger.info('中介维度=%s；编码器/Head宽度=%s；每分支LIF=%s；fire权重=%s，目标率仍0.05',
+                model.frontdoor_config.mediator_dim, model.frontdoor_config.hidden_dim,
+                model.frontdoor_config.lif_width, fire_weight)
     last_metrics = None
     try:
         for epoch in range(first_epoch, args.epochs + 1):

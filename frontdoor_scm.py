@@ -28,6 +28,12 @@ class FrontDoorConfig:
     no_cns2ans: bool = False
     mediator_family: str = 'normal'
     reference_chunk_size: int = 0
+    lif_neurons: Optional[int] = None
+
+    @property
+    def lif_width(self) -> int:
+        """旧配置未指定时沿用hidden_dim；真实CLI可独立指定LIF神经元数。"""
+        return self.hidden_dim if self.lif_neurons is None else self.lif_neurons
 
     def __post_init__(self):
         for key in ('mediator_dim', 'hidden_dim', 'S_train', 'K_train', 'S_eval',
@@ -40,6 +46,8 @@ class FrontDoorConfig:
             raise ValueError('dropout、方差边界或 KL 系数无效')
         if self.mediator_family not in ('normal', 'tanh_normal'):
             raise ValueError('中介分布仅支持 normal 和 tanh_normal')
+        if self.lif_neurons is not None and (not isinstance(self.lif_neurons, int) or self.lif_neurons < 1):
+            raise ValueError('LIF神经元数必须为正整数或旧配置的None')
 
 
 def flatten_input(x: Tensor, dim: int) -> Tensor:
@@ -104,15 +112,15 @@ class GaussianMediator(nn.Module):
     def __init__(self, input_dim: int, config: FrontDoorConfig):
         super().__init__()
         self.input_dim, self.config = input_dim, config
-        h = config.hidden_dim
+        h, neurons = config.hidden_dim, config.lif_width
         self.encoder = nn.Sequential(nn.Linear(input_dim, h), nn.SiLU(),
-                                     nn.Linear(h, config.time_steps * h))
-        self.snn = CurrentLIF(h)
-        self.parameters_head = nn.Linear(2 * h, 2 * config.mediator_dim)
+                                     nn.Linear(h, config.time_steps * neurons))
+        self.snn = CurrentLIF(neurons)
+        self.parameters_head = nn.Linear(2 * neurons, 2 * config.mediator_dim)
 
     def distribution(self, x: Tensor, extra: Optional[Tensor] = None) -> tuple[Tensor, Tensor]:
         drive = self.encoder(flatten_input(x, self.input_dim))
-        drive = drive.reshape(x.shape[0], self.config.time_steps, self.config.hidden_dim)
+        drive = drive.reshape(x.shape[0], self.config.time_steps, self.config.lif_width)
         rates, current = self.snn(drive, extra)
         mu, logvar = self.parameters_head(torch.cat((rates, current), -1)).chunk(2, -1)
         return mu, logvar.clamp(self.config.logvar_min, self.config.logvar_max)
@@ -150,7 +158,7 @@ class ANSMediator(GaussianMediator):
     """只接收 ANS 和采样 CNS 中介；每次采样分别生成 [B,S,D] 参数。"""
     def __init__(self, input_dim: int, config: FrontDoorConfig):
         super().__init__(input_dim, config)
-        self.cns_current = None if config.no_cns2ans else nn.Linear(config.mediator_dim, config.hidden_dim)
+        self.cns_current = None if config.no_cns2ans else nn.Linear(config.mediator_dim, config.lif_width)
 
     def forward(self, x_a: Tensor, m_c: Tensor) -> dict[str, Tensor]:
         if m_c.ndim != 3 or m_c.shape[0] != x_a.shape[0] or m_c.shape[-1] != self.config.mediator_dim:
@@ -158,7 +166,7 @@ class ANSMediator(GaussianMediator):
         b, s, d = m_c.shape
         inputs = flatten_input(x_a, self.input_dim)[:, None, :].expand(b, s, self.input_dim)
         # 消融只读取形状，完全不读取 CNS 数值，且不构造梯度路径。
-        extra = None if self.cns_current is None else self.cns_current(m_c).reshape(b * s, self.config.hidden_dim)
+        extra = None if self.cns_current is None else self.cns_current(m_c).reshape(b * s, self.config.lif_width)
         mu, logvar = self.distribution(inputs.reshape(b * s, self.input_dim), extra)
         mu, logvar = mu.reshape(b, s, d), logvar.reshape(b, s, d)
         return {'mu_a': mu, 'logvar_a': logvar, 'm_a': self.draw(mu, logvar)}

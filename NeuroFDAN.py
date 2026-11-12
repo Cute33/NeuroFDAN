@@ -539,7 +539,7 @@ class NeuroFDAN(nn.Module):
         if num_classes != 2:
             raise ValueError('第二阶段使用两个logits；不能对单个logit执行类别softmax')
         self.backbone = PhysiologicalBackbone(eeg_channels, ecg_channels + gsr_channels, input_len)
-        self.frontdoor_config = frontdoor_config or FrontDoorConfig()
+        self.frontdoor_config = frontdoor_config or FrontDoorConfig(lif_neurons=256)
         if self.frontdoor_config.num_classes != 2 or self.frontdoor_config.mediator_family != 'normal':
             raise ValueError('真实数据模式使用双类别高斯潜在中介，不使用合成真值分布接口')
         # hidden_dim 保留旧构造参数兼容；旧实际骨干同样未使用它决定通道数。
