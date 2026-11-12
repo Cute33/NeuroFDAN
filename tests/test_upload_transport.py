@@ -56,7 +56,7 @@ class UploadTransportTests(unittest.TestCase):
                 stdout = '测试作者' if command[-1] == 'user.name' else 'test@example.invalid'
             elif operation == 'ls-remote':
                 stdout = 'b' * 40 + '\trefs/heads/server-diagnostics\n'
-            elif operation == 'rev-parse':
+            elif operation in ('rev-parse', 'hash-object', 'write-tree', 'commit-tree'):
                 stdout = candidate + '\n'
             return subprocess.CompletedProcess(command, 0, stdout, '')
         with tempfile.TemporaryDirectory() as temporary:
@@ -72,6 +72,31 @@ class UploadTransportTests(unittest.TestCase):
             self.assertEqual(receipt['run_id'], '独立记录')
             self.assertIn('尚未核验', receipt['phase'])
             self.assertNotIn('upload_state.json', uploader.WHITE)
+
+    def test_failed_fetch_does_not_claim_candidate_or_start_push(self):
+        operations = []
+        def run(command, **kwargs):
+            operation = command[3]
+            operations.append(operation)
+            if operation == 'fetch':
+                raise subprocess.TimeoutExpired(command, kwargs['timeout'])
+            stdout = ''
+            if operation == 'config' and len(command) == 5:
+                stdout = 'test@example.invalid'
+            elif operation == 'ls-remote':
+                stdout = 'b' * 40 + '\trefs/heads/server-diagnostics\n'
+            return subprocess.CompletedProcess(command, 0, stdout, '')
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            bundle = root / 'bundle'
+            bundle.mkdir()
+            (bundle / 'manifest.json').write_text('{"uploaded": []}', encoding='utf-8')
+            with patch.object(uploader.subprocess, 'run', side_effect=run), contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(RuntimeError, 'Git fetch 超时'):
+                    uploader.publish(root, 'git@github.com:Cute33/NeuroFDAN.git', bundle, 'fetch_failed')
+            self.assertIsNone(json.loads((bundle / 'upload_state.json').read_text())['candidate_sha'])
+            self.assertNotIn('commit-tree', operations)
+            self.assertNotIn('push', operations)
 
 
 if __name__ == '__main__':
