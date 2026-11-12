@@ -304,6 +304,8 @@ def collect(repository: Path, run: Path, bundle: Path, args, source: dict) -> di
 
 
 def publish(repository: Path, url: str, bundle: Path, run_id: str) -> tuple[str, str]:
+    if not re.fullmatch(r'[\w.-]+', run_id) or run_id in ('.', '..'):
+        raise ValueError('非法上传目录名')
     write_upload_state(bundle, run_id, phase='准备临时Git工作区', candidate_sha=None)
     identity = [git(repository,'config','user.'+key,check=False).stdout.strip() for key in ('name','email')]
     if not all(identity):
@@ -313,23 +315,24 @@ def publish(repository: Path, url: str, bundle: Path, run_id: str) -> tuple[str,
         git(workspace,'init')
         git(workspace,'remote','add','origin',url)
         git(workspace,'config','user.name',identity[0]); git(workspace,'config','user.email',identity[1])
+        git(workspace,'config','commit.gpgsign','false')
+        # depth=1仍包含最新树中的所有旧结果；过滤blob并避免checkout才不下载旧载荷。
+        git(workspace,'config','remote.origin.promisor','true')
+        git(workspace,'config','remote.origin.partialclonefilter','blob:none')
         for attempt in range(3):
             write_upload_state(bundle, run_id, phase='查询/获取远端分支', attempt=attempt+1)
             remote=git(workspace,'ls-remote','--heads','origin',f'refs/heads/{BRANCH}').stdout.strip()
+            parent = None
             if remote:
-                git(workspace,'fetch','--depth=1','origin',f'refs/heads/{BRANCH}')
-                # 只切换临时Git工作区；失败的自有提交未发布，快照保存在外部bundle。
-                git(workspace,'checkout','--detach','FETCH_HEAD')
+                print('请求blob:none部分获取；只复用远端树，不checkout历史诊断文件。', flush=True)
+                git(workspace,'fetch','--depth=1','--filter=blob:none','--no-tags','origin',f'refs/heads/{BRANCH}')
+                parent = git(workspace,'rev-parse','FETCH_HEAD').stdout.strip()
+                if git(workspace,'ls-tree',parent,'--',f'runs/{run_id}').stdout.strip():
+                    raise ValueError('唯一上传目录已存在，拒绝覆盖历史')
+                git(workspace,'read-tree',parent)
             else:
-                git(workspace,'symbolic-ref','HEAD',f'refs/heads/{BRANCH}')
-            target=workspace/'runs'/run_id
-            if target.is_dir() and not any(target.iterdir()):
-                target.rmdir()
-            if target.exists():
-                raise ValueError('唯一上传目录已存在，拒绝覆盖历史')
-            target.mkdir(parents=True)
+                git(workspace,'read-tree','--empty')
             manifest=json.loads((bundle/'manifest.json').read_text(encoding='utf-8'))
-            files=[]
             for entry in [*manifest['uploaded'],dict(file='manifest.json')]:
                 relative=Path(entry['file'])
                 if relative.is_absolute() or '..' in relative.parts or len(relative.parts)>2:
@@ -343,17 +346,24 @@ def publish(repository: Path, url: str, bundle: Path, run_id: str) -> tuple[str,
                 raw=read_snapshot(bundle/relative,16*1024**2)
                 if entry.get('sha256') and hashlib.sha256(raw).hexdigest()!=entry['sha256']:
                     raise ValueError('快照在收集后发生变化，拒绝提交')
-                destination=target/relative
-                destination.parent.mkdir(parents=True,exist_ok=True)
-                destination.write_bytes(raw)
-                files.append(destination.relative_to(workspace).as_posix())
-            # 仅对清单中明确的白名单文件覆盖ignore；从不对push使用force。
-            git(workspace,'add','-f','--',*files)
-            git(workspace,'commit','-m',f'新增服务器诊断快照：{run_id}')
-            sha=git(workspace,'rev-parse','HEAD').stdout.strip()
-            write_upload_state(bundle, run_id, phase='即将push，结果尚未核验', candidate_sha=sha)
+                # hash的必须是刚校验的字节；不再次打开可能被外部改写的bundle原文件。
+                payload=workspace/'validated-upload-payload'
+                payload.write_bytes(raw)
+                oid=git(workspace,'hash-object','--no-filters','-w','--',str(payload)).stdout.strip()
+                if not re.fullmatch(r'[0-9a-f]{40,64}',oid):
+                    raise RuntimeError('写入新载荷后未获得有效Git对象SHA')
+                target=f'runs/{run_id}/{relative.as_posix()}'
+                git(workspace,'update-index','--add','--cacheinfo',f'100644,{oid},{target}')
+            # 旧对象OID来自远端原树，新对象已逐项校验；只在索引新增本run，不暂存旧文件删除。
+            tree=git(workspace,'write-tree','--missing-ok').stdout.strip()
+            parents=('-p',parent) if parent else ()
+            sha=git(workspace,'commit-tree',tree,*parents,'-m',f'新增服务器诊断快照：{run_id}').stdout.strip()
+            if not re.fullmatch(r'[0-9a-f]{40,64}',sha):
+                raise RuntimeError('未获得有效候选提交SHA')
+            write_upload_state(bundle, run_id, phase='即将push，结果尚未核验', candidate_sha=sha,
+                               parent_sha=parent, transport='blob:none+index+commit-tree')
             print(f'候选提交SHA={sha}；目标=runs/{run_id}；本地收据={bundle/"upload_state.json"}', flush=True)
-            pushed=git(workspace,'push','origin',f'HEAD:refs/heads/{BRANCH}',check=False)
+            pushed=git(workspace,'push','origin',f'{sha}:refs/heads/{BRANCH}',check=False)
             if pushed.returncode==0:
                 write_upload_state(bundle, run_id, phase='push返回成功，正在核验远端')
                 observed=git(workspace,'ls-remote','--heads','origin',f'refs/heads/{BRANCH}').stdout.split()
@@ -361,7 +371,7 @@ def publish(repository: Path, url: str, bundle: Path, run_id: str) -> tuple[str,
                     write_upload_state(bundle, run_id, phase='远端核验成功', remote_sha=observed[0])
                     return sha,observed[0]
                 # 并发上传者可能已继续提交；再次取远端并验证本提交仍为其祖先。
-                git(workspace,'fetch','origin',f'refs/heads/{BRANCH}')
+                git(workspace,'fetch','--depth=32','--filter=blob:none','--no-tags','origin',f'refs/heads/{BRANCH}')
                 ancestor=git(workspace,'merge-base','--is-ancestor',sha,'FETCH_HEAD',check=False)
                 if ancestor.returncode==0:
                     print('远端随后有并发提交；已验证本上传提交仍在远端历史中。')
