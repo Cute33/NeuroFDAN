@@ -1,0 +1,53 @@
+{
+  "source_version": {
+    "commit": "7b39f4efb0fb6b70777c7b7638c572145ce201a3",
+    "branch": "",
+    "tracked_changes": false
+  },
+  "arguments": {
+    "dataset": "HCI",
+    "label": "arousal",
+    "root_dir": "<已屏蔽绝对路径>",
+    "output_dir": "<已屏蔽绝对路径>",
+    "run_name": "hci_scale_stable_audit_001",
+    "held_out_subjects": [
+      1
+    ],
+    "seed": 42,
+    "device": "cpu",
+    "batch_size": 40,
+    "workers": 0,
+    "diagnostic_level": "full",
+    "anchor_variant": "scale_stable",
+    "check_affine_invariance": true
+  },
+  "train_subjects": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24
+  ],
+  "held_out_subject": 1,
+  "fs": 128,
+  "points": 768,
+  "preprocessing": "锚点从文件内基线截取后的归一化前窗口计算；另比较原normalize_subject输出，不改变数据管线"
+}
