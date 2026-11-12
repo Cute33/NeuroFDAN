@@ -56,7 +56,17 @@ def main():
     p.add_argument('--batch_size', type=int, default=40, help='提取分块大小，不是训练batch')
     p.add_argument('--workers', type=int, choices=[0], default=0, help='单进程顺序读取')
     p.add_argument('--diagnostic_level', choices=['full'], default='full', help='完整聚合特征审查')
+    p.add_argument('--anchor_variant', choices=['original','scale_stable'], default='original',
+                   help='默认保留原锚点；scale_stable仅审查相对频谱/波形候选，不影响训练')
+    p.add_argument('--check_affine_invariance', action='store_true',
+                   help='仅scale_stable：逐窗口检查正增益/偏置不变性，失败保存结果并退出非零')
     args = p.parse_args()
+    extractor = extract_anchors
+    if args.check_affine_invariance and args.anchor_variant != 'scale_stable':
+        p.error('不变性守卫仅用于scale_stable候选，不要求原始幅值锚点满足该性质')
+    if args.anchor_variant == 'scale_stable':
+        from anchor_invariance_candidates import extract_scale_stable, affine_perturbation, update_invariance
+        extractor = extract_scale_stable
     spec = DATASET_SPECS[args.dataset]; heldout = args.held_out_subjects[0]
     if heldout not in range(1, spec['subjects']+1) or args.batch_size < 1:
         p.error('被试编号或提取batch无效')
@@ -74,6 +84,9 @@ def main():
                   real_data_training=False, source_version=config['source_version'], subjects=[],
                   held_out_subject_read=False, labels_field_accessed_or_used=False, config=config,
                   file_note='pickle会反序列化整份原字典；本脚本不访问labels字段或使用标签值')
+    if args.check_affine_invariance:
+        result['affine_invariance'] = {kind:{} for kind in ('gain','offset','channel_affine')}
+        result['invariance_tolerance'] = dict(atol=1e-5, rtol=1e-5)
     save_json(directory/'probe_summary.json', result)
     collected = {k:[] for k in ('c','a','mask_c','mask_a','nc','na','nmask_c','nmask_a')}
     names = {}
@@ -91,8 +104,14 @@ def main():
         xa = np.asarray(raw[:, spec['peripheral'], offset:], dtype=np.float32)
         inputs = [matrix_windows(v, spec['windows']) for v in (xc, xa, normalize_subject(xc), normalize_subject(xa))]
         for start in range(0, len(inputs[0]), args.batch_size):
-            ac = extract_anchors(inputs[0][start:start+args.batch_size], inputs[1][start:start+args.batch_size], args.dataset)
-            norm = extract_anchors(inputs[2][start:start+args.batch_size], inputs[3][start:start+args.batch_size], args.dataset)
+            xc_batch, xa_batch = inputs[0][start:start+args.batch_size], inputs[1][start:start+args.batch_size]
+            ac = extractor(xc_batch, xa_batch, args.dataset)
+            norm = extractor(inputs[2][start:start+args.batch_size], inputs[3][start:start+args.batch_size], args.dataset)
+            if args.check_affine_invariance:
+                for kind, record_invariance in result['affine_invariance'].items():
+                    perturbed = extractor(affine_perturbation(xc_batch, kind),
+                                          affine_perturbation(xa_batch, kind), args.dataset)
+                    update_invariance(record_invariance, ac, perturbed)
             for key in ('c','a','mask_c','mask_a'):
                 collected[key].append(ac[key]); collected['n'+key].append(norm[key])
             names = {k:ac[k] for k in ('names_c','names_a')}
@@ -110,7 +129,8 @@ def main():
     result.update(completed=True, training_population_windows=len(values['c']),
                   dimensions=dict(cns=len(names['names_c']), ans=len(names['names_a'])),
                   features={s:feature_summary(values[s], values['mask_'+s], values['n'+s], values['nmask_'+s], names['names_'+s]) for s in ('c','a')},
-                  interpretation='无原始单位校准/伪迹剔除保证；ECG为波形统计而非HRV，GSR不称SCR分解；与中介真值无等同关系')
+                  interpretation='无原始单位校准/伪迹剔除保证；ECG为波形统计而非HRV，GSR不称SCR分解；与中介真值无等同关系',
+                  anchor_variant=args.anchor_variant)
     result['all_modalities_have_active_features'] = all(any(r['active'] for r in result['features'][s]) for s in ('c','a'))
     for side in ('c','a'):
         for j, feature in enumerate(result['features'][side]):
@@ -119,7 +139,12 @@ def main():
             between = float((counts*(means-feature['mean'])**2).sum()/max(1,counts.sum()))
             feature['between_subject_variance_fraction'] = between/feature['std']**2 if feature['active'] else None
     result['subject_note'] = '被试间方差占比用于警惕身份信息；不把被试差异等同于已测U，也不自动去除或改预处理'
+    if args.check_affine_invariance:
+        rows = [v for r in result['affine_invariance'].values() for v in r.values()]
+        result['affine_invariance_passed'] = bool(rows) and all(r['elements'] > 0 and r['violations'] == 0 and r['mask_changes'] == 0 for r in rows)
     save_json(directory/'probe_summary.json', result)
+    if args.check_affine_invariance and not result['affine_invariance_passed']:
+        raise RuntimeError('候选不变性超出容差或有效掩码改变，已保存审查结果；停止，不修改数据或阈值绕过')
     print(f'锚点审查完成：{directory}/probe_summary.json；没有模型或训练步骤', flush=True)
 
 
