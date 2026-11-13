@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<已屏蔽绝对路径>", line 151, in <module>
+    if __name__=='__main__': main()
+  File "<已屏蔽绝对路径>", line 115, in main
+    am=model.ans(t['x_a'],t['m_c'][:,None])
+KeyError: 'm_c'
