@@ -1,6 +1,11 @@
 """服务器CPU测试：归一化范围、默认兼容、梯度、标量退化与训练字段。"""
 import sys
 import unittest
+import contextlib
+import io
+import json
+import tempfile
+from unittest.mock import patch
 from dataclasses import replace
 from pathlib import Path
 import torch
@@ -8,6 +13,7 @@ from frontdoor_scm import FrontDoorConfig, FrontDoorEstimator, GaussianMediator
 from ModelTrain import normalized_model_config
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
 from cns_norm_synthetic import view, fit
+import cns_norm_synthetic as n0
 from scheme_a_fit_check import fit_gate
 
 
@@ -62,3 +68,38 @@ class CNSInputNormTests(unittest.TestCase):
     def test_amplitude_shift_loss_is_explicit(self):
         _,b=self.models(); x=torch.arange(16,dtype=torch.float32)[None]
         torch.testing.assert_close(b.cns.input_norm(x),b.cns.input_norm(x+4.))
+
+    def test_evaluation_view_has_mediators_but_observation_training_does_not(self):
+        import numpy as np
+        raw={k:np.ones((2,4)) for k in ('x_c','x_a','m_c','m_a','u')};raw['y']=np.array([0,1])
+        self.assertEqual(set(n0.evaluation_view(raw)), {'x_c','x_a','y','m_c','m_a'})
+        self.assertEqual(set(view(raw)), {'x_c','x_a','y'})
+        with self.assertRaises(ValueError): fit(n0.evaluation_view(raw),'none',False,1,42)
+
+    def test_full_n0_entry_completes_all_groups_and_keeps_training_permissions(self):
+        training_keys=[]
+        original_fit=n0.fit
+        def record_fit(data,norm,oracle,steps,seed):
+            training_keys.append((oracle,set(data)))
+            return original_fit(data,norm,oracle,steps,seed)
+        threads=torch.get_num_threads()
+        try:
+            with tempfile.TemporaryDirectory() as root, torch.random.fork_rng(devices=[]):
+                output=Path(root)/'n0'
+                with patch.object(sys,'argv',['n0','--output_dir',str(output),'--steps','1']), \
+                     patch.object(n0,'fit',side_effect=record_fit), contextlib.redirect_stdout(io.StringIO()):
+                    n0.main()
+                report=json.loads((output/'probe_summary.json').read_text())
+                self.assertTrue(report['completed'])
+                self.assertEqual([r['name'] for r in report['rows']],
+                    ['observation_only','observation_norm','oracle_mediator'])
+                self.assertEqual(len({r['initial_parameter_sha256'] for r in report['rows']}),1)
+                self.assertEqual(training_keys,[(False,{'x_c','x_a','y'}),
+                    (False,{'x_c','x_a','y'}),(True,{'x_c','x_a','y','m_c','m_a'})])
+                for row in report['rows']:
+                    for key in ('observed_nll','do_mae','conditional_nll_c','conditional_nll_a'):
+                        self.assertTrue(torch.isfinite(torch.tensor(row[key])))
+                self.assertFalse(report['automatically_start_real_training'])
+                self.assertIn('amplitude_counterexample',report)
+        finally:
+            torch.set_num_threads(threads)

@@ -14,6 +14,11 @@ def view(raw, oracle=False):
     return {k: torch.as_tensor(raw[k].copy(), dtype=torch.long if k == 'y' else torch.float32) for k in keys}
 
 
+def evaluation_view(raw):
+    """独立测试可访问真实中介以评分条件恢复；不传给观察监督fit。"""
+    return view(raw, oracle=True)
+
+
 def fit(data, norm, oracle, steps, seed):
     import torch
     from torch.nn import functional as F
@@ -103,7 +108,7 @@ def main():
     save()
     for name,norm,oracle in [('observation_only','none',False),('observation_norm','layernorm',False),('oracle_mediator','none',True)]:
         model,bank,row=fit(view(raw,oracle),norm,oracle,args.steps,42)
-        model.eval(); t=view(test); predictions=[]; do=[]
+        model.eval(); t=evaluation_view(test); predictions=[]; do=[]
         with torch.no_grad():
             for repeat in range(3):
                 torch.manual_seed(3042+repeat)
