@@ -29,6 +29,7 @@ class FrontDoorConfig:
     mediator_family: str = 'normal'
     reference_chunk_size: int = 0
     lif_neurons: Optional[int] = None
+    cns_input_norm: str = 'none'
 
     @property
     def lif_width(self) -> int:
@@ -36,6 +37,8 @@ class FrontDoorConfig:
         return self.hidden_dim if self.lif_neurons is None else self.lif_neurons
 
     def __post_init__(self):
+        if self.cns_input_norm not in ('none', 'layernorm'):
+            raise ValueError('CNS入口归一化仅支持none或layernorm')
         for key in ('mediator_dim', 'hidden_dim', 'S_train', 'K_train', 'S_eval',
                     'K_eval', 'N_ref', 'beta_warmup_epochs', 'time_steps'):
             if getattr(self, key) < 1:
@@ -146,6 +149,19 @@ class GaussianMediator(nn.Module):
 
 class CNSMediator(GaussianMediator):
     """仅接收 CNS 输入；参数 [B,D]，独立噪声采样 [B,S,D]。"""
+    def __init__(self, input_dim: int, config: FrontDoorConfig):
+        super().__init__(input_dim, config)
+        if config.cns_input_norm == 'layernorm' and input_dim < 2:
+            raise ValueError('标量CNS输入不能使用LayerNorm：会退化为常数')
+        self.input_norm = (nn.LayerNorm(input_dim, eps=1e-5, elementwise_affine=False)
+                           if config.cns_input_norm == 'layernorm' else None)
+
+    def distribution(self, x: Tensor, extra: Optional[Tensor] = None) -> tuple[Tensor, Tensor]:
+        # oracle条件似然与forward统一走同一入口；ANS和参考输入保持原路径。
+        if self.input_norm is not None:
+            x = self.input_norm(flatten_input(x, self.input_dim))
+        return super().distribution(x, extra)
+
     def forward(self, x_c: Tensor, S: int = 4) -> dict[str, Tensor]:
         if S < 1:
             raise ValueError('S 必须为正整数')

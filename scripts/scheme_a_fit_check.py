@@ -10,9 +10,11 @@ PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
 
 
-def fit_gate(records, prior_nll):
+def fit_gate(records, prior_nll, metric='balanced_accuracy'):
     """预先固定的工程验收，不是因果识别标准或LOSO成绩。"""
-    return len(records) == 3 and all(r['balanced_accuracy'] >= .8 and r['min_class_recall'] >= .6
+    if metric not in ('acc', 'balanced_accuracy'):
+        raise ValueError('未知拟合主指标')
+    return len(records) == 3 and all(r[metric] >= .8 and r['min_class_recall'] >= .6
                                 and r['integrated_observational_nll'] <= prior_nll - .05 for r in records)
 
 
@@ -86,6 +88,8 @@ def main():
     controls = argparse.ArgumentParser(add_help=False)
     controls.add_argument('--fit_max_steps', type=int, default=300)
     controls.add_argument('--fit_check_every', type=int, default=50)
+    controls.add_argument('--fit_gate_metric', choices=['acc', 'balanced_accuracy'], default='balanced_accuracy',
+                          help='仅私有拟合工程验收主指标；新归一化试验显式用acc，旧调用默认不变')
     controls.add_argument('--fit_baseline_summary', default=None,
                           help='可选KL单因素对照原摘要；启动前、来源和首步NLL严格核对')
     controls.add_argument('--fit_save_checkpoint', action='store_true',
@@ -118,7 +122,8 @@ def main():
         arguments=vars(args), fit_controls=vars(fit), completed=False, passed=False,
         training_executed=False, actual_steps=0, full_fold_training=False,
         weights_saved=False, weights_transferred_to_fold=False, records=[],
-        gate=dict(balanced_accuracy_min=.8, min_class_recall=.6, nll_below_prior_by=.05,
+        gate=dict(**{fit.fit_gate_metric+'_min': .8},
+                  min_class_recall=.6, nll_below_prior_by=.05,
                   monte_carlo_draws=3, all_draws_must_pass=True),
         note='仅训练来源子集的工程拟合；不是测试性能、完整LOSO或因果识别证明；主训练另从seed42初始化。')
 
@@ -207,15 +212,17 @@ def main():
             del loss, out, terms
             if step == 1 or step % fit.fit_check_every == 0 or step == fit.fit_max_steps:
                 draws = measure(model, batch, bank, device, args.dataset, args.seed)
-                passed = step >= fit.fit_check_every and fit_gate(draws, prior_nll)
+                passed = step >= fit.fit_check_every and fit_gate(draws, prior_nll, fit.fit_gate_metric)
                 result['records'].append(dict(step=step, loss_epoch=epoch, optimization_nll=task_loss,
                     draws=draws, gradient_report=report, passed=passed))
                 result['passed'] = passed
                 if device.type == 'cuda':
                     result['peak_allocated_mib'] = torch.cuda.max_memory_allocated(device) / 1024**2
                 save()
+                scores = (f'ACC={[round(d["acc"],4) for d in draws]} F1={[round(d["selection_f1"],4) for d in draws]}'
+                          if fit.fit_gate_metric == 'acc' else f'BA={[round(d["balanced_accuracy"],4) for d in draws]}')
                 print(f'私有拟合step={step}/{fit.fit_max_steps} 主NLL={task_loss:.6f} '
-                      f'BA={[round(d["balanced_accuracy"],4) for d in draws]} '
+                      f'{scores} '
                       f'三次MC均通过={passed}', flush=True)
                 if passed:
                     break

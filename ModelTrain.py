@@ -399,6 +399,7 @@ def load_checkpoint(path, model, optimizer=None, map_location='cpu'):
 def normalized_model_config(values):
     """旧checkpoint无lif_neurons时表示当时的hidden_dim，不改变实际权重维度。"""
     values = dict(values)
+    values.setdefault('cns_input_norm', 'none')
     if values.get('lif_neurons') is None:
         values['lif_neurons'] = values['hidden_dim']
     return values
@@ -446,7 +447,8 @@ def frontdoor_config(args):
                           ref_dim=args.ref_dim, no_cns2ans=args.no_cns2ans,
                           reference_chunk_size=args.reference_chunk_size, time_steps=args.time_steps,
                           logvar_min=args.logvar_min, logvar_max=args.logvar_max,
-                          lif_neurons=getattr(args, 'lif_neurons', None))
+                          lif_neurons=getattr(args, 'lif_neurons', None),
+                          cns_input_norm=getattr(args, 'cns_input_norm', 'none'))
 
 
 def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, optimizer=None):

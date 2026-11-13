@@ -35,6 +35,8 @@ def get_args(description='NeuroFDAN第二阶段LOSO训练', argv=None):
     parser.add_argument('--fd_mode', choices=['full', 'none'], default='full', help='完整前门概率或Phase 1事实路径对照')
     parser.add_argument('--no_cns2ans', action='store_true', help='估计器消融：切断CNS中介到ANS电流的路径')
     parser.add_argument('--mediator_dim', type=int, default=64, help='CNS和ANS潜在中介维度')
+    parser.add_argument('--cns_input_norm', choices=['none', 'layernorm'], default='none',
+                        help='可选CNS中介入口无仿射LayerNorm，不改变ANS/参考编码或原始数据')
     parser.add_argument('--hidden_dim', type=int, default=128, help='Phase 1中介及结果模型隐藏维度，不改变卷积通道数')
     parser.add_argument('--lif_neurons', type=int, default=256, help='每个中介分支LIF神经元数，独立于hidden_dim及64维中介')
     parser.add_argument('--dropout', type=float, default=.3, help='结果模型dropout')
