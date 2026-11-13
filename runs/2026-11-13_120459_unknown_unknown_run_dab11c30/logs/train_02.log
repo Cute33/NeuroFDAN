@@ -1,0 +1,9 @@
+test_checkpoint_identity_and_heldout_guard (test_private_signal_audit.SignalAuditTests) ... ok
+test_constant_mean_variable_noise_is_distinguished (test_private_signal_audit.SignalAuditTests) ... ok
+test_dimension_and_sample_variation_do_not_mix_and_no_mutation (test_private_signal_audit.SignalAuditTests) ... ok
+test_input_variation_and_variance_identity (test_private_signal_audit.SignalAuditTests) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+OK

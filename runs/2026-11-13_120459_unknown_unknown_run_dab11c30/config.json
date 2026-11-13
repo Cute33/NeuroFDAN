@@ -1,0 +1,6 @@
+{
+  "checkpoint": "<已屏蔽绝对路径>",
+  "root_dir": "<已屏蔽绝对路径>",
+  "output_dir": "<已屏蔽绝对路径>",
+  "device": "cuda:0"
+}
