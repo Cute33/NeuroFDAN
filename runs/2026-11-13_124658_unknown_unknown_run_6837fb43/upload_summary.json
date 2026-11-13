@@ -1,0 +1,26 @@
+{
+  "format_version": 1,
+  "generated_at": "2026-11-13T12:46:58.109118+08:00",
+  "folds": [],
+  "observed_fold_count": 0,
+  "formal_loso_verified": false,
+  "note": "本摘要不加载权重、不重新选模；正式统计需CalculateResult.py --require_complete。旧Phase4未记录训练源码SHA时不能用上传时SHA代替。",
+  "selection_bias": "held-out测试集参与checkpoint选择，存在测试集选模偏差",
+  "execution_evidence": [
+    {
+      "log": "logs/train_02.log",
+      "receipt_present": true,
+      "python_exit": 0,
+      "tee_exit": 0,
+      "status": "进程及日志写入均退出成功"
+    },
+    {
+      "log": "logs/train_03.log",
+      "receipt_present": true,
+      "python_exit": 0,
+      "tee_exit": 0,
+      "status": "进程及日志写入均退出成功"
+    }
+  ],
+  "execution_note": "自动读取.log.exit；没有收据时不声称退出成功。实际轮数来自记录，不能自动判断人为停止意图。"
+}
