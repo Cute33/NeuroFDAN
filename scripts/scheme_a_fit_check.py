@@ -92,6 +92,8 @@ def main():
                           help='仅私有拟合工程验收主指标；新归一化试验显式用acc，旧调用默认不变')
     controls.add_argument('--fit_baseline_summary', default=None,
                           help='可选KL单因素对照原摘要；启动前、来源和首步NLL严格核对')
+    controls.add_argument('--fit_norm_baseline_summary', default=None,
+                          help='N1归一化单因素原beta0摘要，首步NLL有意不同，核对同初始化参数')
     controls.add_argument('--fit_save_checkpoint', action='store_true',
                           help='只保存新目录中的私有末端权重，供后续只读探针，不用于正式续训')
     fit, training_argv = controls.parse_known_args()
@@ -109,11 +111,17 @@ def main():
         raise FileExistsError('验收结果已存在，拒绝覆盖')
     if fit.fit_save_checkpoint and ((dest / 'private_fit_last.pt').exists() or (dest / 'private_fit_last.pt').is_symlink()):
         raise FileExistsError('私有权重已存在，拒绝覆盖')
+    if fit.fit_baseline_summary and fit.fit_norm_baseline_summary:
+        raise ValueError('两种单因素对照不能同时启用')
     baseline = None
-    if fit.fit_baseline_summary:
+    baseline_path = fit.fit_norm_baseline_summary or fit.fit_baseline_summary
+    norm_control = bool(fit.fit_norm_baseline_summary)
+    if baseline_path:
         from scheme_a_control_evidence import read_json, check_arguments, summary_sha256
-        baseline = read_json(fit.fit_baseline_summary)
-        baseline_hash = summary_sha256(fit.fit_baseline_summary)
+        if norm_control:
+            from cns_norm_pairing import check_arguments
+        baseline = read_json(baseline_path)
+        baseline_hash = summary_sha256(baseline_path)
         check_arguments(baseline, vars(args), vars(fit))
     dest.mkdir(parents=True, exist_ok=True)
     from run_reporting import source_version
@@ -158,8 +166,22 @@ def main():
             raise ValueError('固定自然批次只有一类；停止，不做标签平衡或重新挑样本')
         pi = counts[1] / sum(counts)
         prior_nll = -pi * math.log(pi) - (1 - pi) * math.log(1 - pi)
+        cfg = frontdoor_config(args)
+        if norm_control:
+            from dataclasses import replace
+            from cns_norm_pairing import parameter_hash
+            # 同一初始化随机流先构建none模板，fork恢复后再构建试验模型；不训练模板。
+            with torch.random.fork_rng(devices=[]):
+                template = NeuroFDAN(ecg_channels=2, frontdoor_config=replace(cfg,cns_input_norm='none'))
+                template_hash = parameter_hash(template)
+                del template
         model = NeuroFDAN(ecg_channels=2 if args.dataset == 'DEAP' else 3,
-                          frontdoor_config=frontdoor_config(args)).to(device)
+                          frontdoor_config=cfg).to(device)
+        if norm_control:
+            initial_hash = parameter_hash(model)
+            if initial_hash != template_hash: raise RuntimeError('norm与none模板的初始参数不同')
+            result['initial_parameters'] = dict(norm_sha256=initial_hash,none_template_sha256=template_hash,
+                matched=True,note='当前默认none模板与试验模型逐字节相同；历史基线未保存初始指纹，不能声称历史逐参数核验')
         optimizer = build_optimizer(model, args)
         epoch_steps = len(population) // args.batch_size
         result.update(model=asdict(model.frontdoor_config), reference_report=bank.report,
@@ -168,8 +190,10 @@ def main():
             loss_epoch_mapping='1+(私有step-1)//完整训练总体每轮步数；不是LOSO实际epoch')
         if baseline is not None:
             from scheme_a_control_evidence import check_sources
+            if norm_control:
+                from cns_norm_pairing import check_sources
             check_sources(baseline, result)
-            result['control_protocol'] = dict(changed_training_factor='beta:0.001->0',
+            result['control_protocol'] = dict(changed_training_factor=('cns_input_norm:none->layernorm' if norm_control else 'beta:0.001->0'),
                 source_ids_and_reference_ids_equal=True, baseline_summary_sha256=baseline_hash)
         if device.type == 'cuda':
             torch.cuda.reset_peak_memory_stats(device)
@@ -183,7 +207,7 @@ def main():
             terms = classification_terms(out, batch['Labels'], model.frontdoor_config, epoch,
                                          objective=args.classification_objective, lambda_obs=args.lambda_obs)
             loss = terms['loss'] + args.fire_weight * out['fire_loss']
-            if step == 1 and baseline is not None:
+            if step == 1 and baseline is not None and not norm_control:
                 from scheme_a_control_evidence import check_initial_nll
                 check_initial_nll(baseline, float(terms['classification_loss'].detach()))
                 result['control_protocol']['initial_task_nll_matches'] = True
@@ -229,7 +253,7 @@ def main():
             else:
                 save()
         if baseline is not None:
-            if summary_sha256(fit.fit_baseline_summary) != baseline_hash:
+            if summary_sha256(baseline_path) != baseline_hash:
                 raise RuntimeError('原基线摘要读取期间发生变化，停止解释配对比较')
             result['control_protocol']['original_baseline_unchanged'] = True
         if fit.fit_save_checkpoint:
