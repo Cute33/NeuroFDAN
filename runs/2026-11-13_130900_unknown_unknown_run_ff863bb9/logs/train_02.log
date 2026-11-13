@@ -1,0 +1,72 @@
+test_actual_training_entry_records_integrated_objective (test_scheme_a.SchemeATests) ... 训练集单类别预测：fold=3 epoch=1 预测=[4, 0] 连续1轮（single-class prediction detected）
+测试集单类别预测：fold=3 epoch=1 预测=[4, 0] 连续1轮（single-class prediction detected）
+ok
+test_checkpoint_objective_change_requires_fresh_run (test_scheme_a.SchemeATests) ... ok
+test_cli_baseline_and_integrated_guards (test_scheme_a.SchemeATests) ... usage: - [-h] [--dataset DATASET] --label LABEL [--root_dir ROOT_DIR]
+         [--output_dir OUTPUT_DIR] [--run_name RUN_NAME] [--seed {42}]
+         [--device DEVICE] [--lr LR] [--weight_decay WEIGHT_DECAY]
+         [--epochs EPOCHS] [--batch_size BATCH_SIZE]
+         [--eval_batch_size EVAL_BATCH_SIZE] [--workers WORKERS]
+         [--sampling_mode {grouped,window}] [--cpu_threads CPU_THREADS]
+         [--start_subject START_SUBJECT] [--end_subject END_SUBJECT]
+         [--held_out_subjects HELD_OUT_SUBJECTS [HELD_OUT_SUBJECTS ...]]
+         [--no_balance] [--fd_mode {full,none}] [--no_cns2ans]
+         [--mediator_dim MEDIATOR_DIM] [--cns_input_norm {none,layernorm}]
+         [--hidden_dim HIDDEN_DIM] [--lif_neurons LIF_NEURONS]
+         [--dropout DROPOUT] [--ref_dim REF_DIM] [--S_train S_TRAIN]
+         [--K_train K_TRAIN] [--S_eval S_EVAL] [--K_eval K_EVAL]
+         [--N_ref N_REF] [--reference_chunk_size REFERENCE_CHUNK_SIZE]
+         [--beta BETA] [--beta_warmup_epochs BETA_WARMUP_EPOCHS]
+         [--lambda_obs LAMBDA_OBS]
+         [--classification_objective {factual,integrated_observational}]
+         [--factual_ce_mode {single,all_samples}] [--fire_weight FIRE_WEIGHT]
+         [--time_steps TIME_STEPS] [--logvar_min LOGVAR_MIN]
+         [--logvar_max LOGVAR_MAX] [--resume RESUME]
+         [--max_train_batches MAX_TRAIN_BATCHES]
+         [--max_test_batches MAX_TEST_BATCHES]
+         [--diagnostic_level {basic,full}]
+         [--log_detail_interval LOG_DETAIL_INTERVAL]
+         [--loss_gradient_interval LOSS_GRADIENT_INTERVAL]
+-: error: 方案A需要--fd_mode full及--lambda_obs 0，避免叠加事实任务或误用none模式
+usage: - [-h] [--dataset DATASET] --label LABEL [--root_dir ROOT_DIR]
+         [--output_dir OUTPUT_DIR] [--run_name RUN_NAME] [--seed {42}]
+         [--device DEVICE] [--lr LR] [--weight_decay WEIGHT_DECAY]
+         [--epochs EPOCHS] [--batch_size BATCH_SIZE]
+         [--eval_batch_size EVAL_BATCH_SIZE] [--workers WORKERS]
+         [--sampling_mode {grouped,window}] [--cpu_threads CPU_THREADS]
+         [--start_subject START_SUBJECT] [--end_subject END_SUBJECT]
+         [--held_out_subjects HELD_OUT_SUBJECTS [HELD_OUT_SUBJECTS ...]]
+         [--no_balance] [--fd_mode {full,none}] [--no_cns2ans]
+         [--mediator_dim MEDIATOR_DIM] [--cns_input_norm {none,layernorm}]
+         [--hidden_dim HIDDEN_DIM] [--lif_neurons LIF_NEURONS]
+         [--dropout DROPOUT] [--ref_dim REF_DIM] [--S_train S_TRAIN]
+         [--K_train K_TRAIN] [--S_eval S_EVAL] [--K_eval K_EVAL]
+         [--N_ref N_REF] [--reference_chunk_size REFERENCE_CHUNK_SIZE]
+         [--beta BETA] [--beta_warmup_epochs BETA_WARMUP_EPOCHS]
+         [--lambda_obs LAMBDA_OBS]
+         [--classification_objective {factual,integrated_observational}]
+         [--factual_ce_mode {single,all_samples}] [--fire_weight FIRE_WEIGHT]
+         [--time_steps TIME_STEPS] [--logvar_min LOGVAR_MIN]
+         [--logvar_max LOGVAR_MAX] [--resume RESUME]
+         [--max_train_batches MAX_TRAIN_BATCHES]
+         [--max_test_batches MAX_TEST_BATCHES]
+         [--diagnostic_level {basic,full}]
+         [--log_detail_interval LOG_DETAIL_INTERVAL]
+         [--loss_gradient_interval LOSS_GRADIENT_INTERVAL]
+-: error: 方案A需要--fd_mode full及--lambda_obs 0，避免叠加事实任务或误用none模式
+ok
+test_default_factual_loss_and_gradient_are_bitwise_unchanged (test_scheme_a.SchemeATests) ... ok
+test_fit_gate_requires_all_draws_nll_and_both_class_recalls (test_scheme_a.SchemeATests) ... ok
+test_nll_scores_probability_average_not_probability_as_logits (test_scheme_a.SchemeATests) ... ok
+test_real_model_backward_reaches_cns_ans_current_and_outcome (test_scheme_a.SchemeATests) ... ok
+test_rejects_none_mode_implicit_auxiliary_task_and_invalid_probabilities (test_scheme_a.SchemeATests) ... ok
+test_replaces_factual_ce_and_reaches_cross_combinations (test_scheme_a.SchemeATests) ... ok
+test_budget_and_acc_metric_guard (test_cns_norm_pairing.PairingTests) ... ok
+test_none_template_and_norm_initialization_match_without_rng_consumption (test_cns_norm_pairing.PairingTests) ... ok
+test_only_normalization_may_change (test_cns_norm_pairing.PairingTests) ... ok
+test_sources_and_model_config_guard (test_cns_norm_pairing.PairingTests) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.490s
+
+OK

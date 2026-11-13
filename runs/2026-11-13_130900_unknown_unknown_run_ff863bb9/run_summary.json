@@ -1,0 +1,256 @@
+{
+  "operation": "N1固定训练子集容量比较，非正式fold成绩",
+  "protocol_checks_passed": true,
+  "changed_training_factor": "cns_input_norm:none->layernorm",
+  "true_counts": [
+    153,
+    247
+  ],
+  "constant_prior_nll": 0.6652747443075995,
+  "baseline": {
+    "actual_steps": 300,
+    "completed": true,
+    "passed": false,
+    "draws": [
+      {
+        "acc": 0.6175,
+        "selection_f1": 0.7635239567233385,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "class_recalls": [
+          0.0,
+          1.0
+        ],
+        "integrated_observational_nll": 0.6652335524559021,
+        "probability_std": [
+          0.00166381634120602,
+          0.0016638177238148019
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.0036964478718770387,
+            "sigma_between_input_std": 0.00262113813389672,
+            "mean_posterior_sigma": 0.9388870778470773,
+            "class_mean_distance": 0.006995883486593414
+          },
+          "ans": {
+            "mean_between_input_std": 0.06461975856964816,
+            "sigma_between_input_std": 0.032304721784847765,
+            "mean_posterior_sigma": 1.000891252600538,
+            "class_mean_distance": 0.05575250733735467
+          }
+        }
+      },
+      {
+        "acc": 0.6175,
+        "selection_f1": 0.7635239567233385,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "class_recalls": [
+          0.0,
+          1.0
+        ],
+        "integrated_observational_nll": 0.6652796864509583,
+        "probability_std": [
+          0.0017453723704306916,
+          0.001745370895073764
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.0036964478718770387,
+            "sigma_between_input_std": 0.00262113813389672,
+            "mean_posterior_sigma": 0.9388870778470773,
+            "class_mean_distance": 0.006995883486593414
+          },
+          "ans": {
+            "mean_between_input_std": 0.06486083869084704,
+            "sigma_between_input_std": 0.03214681673031566,
+            "mean_posterior_sigma": 1.0002490155030879,
+            "class_mean_distance": 0.04570814447887126
+          }
+        }
+      },
+      {
+        "acc": 0.6175,
+        "selection_f1": 0.7635239567233385,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "class_recalls": [
+          0.0,
+          1.0
+        ],
+        "integrated_observational_nll": 0.6654849052429199,
+        "probability_std": [
+          0.0017072628913045818,
+          0.0017072665873652162
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.0036964478718770387,
+            "sigma_between_input_std": 0.00262113813389672,
+            "mean_posterior_sigma": 0.9388870778470773,
+            "class_mean_distance": 0.006995883486593414
+          },
+          "ans": {
+            "mean_between_input_std": 0.06432334803508288,
+            "sigma_between_input_std": 0.03191457533928826,
+            "mean_posterior_sigma": 1.0006488935729072,
+            "class_mean_distance": 0.05197637927107612
+          }
+        }
+      }
+    ]
+  },
+  "normalization": {
+    "actual_steps": 300,
+    "completed": true,
+    "passed": false,
+    "draws": [
+      {
+        "acc": 0.6175,
+        "selection_f1": 0.7635239567233385,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "class_recalls": [
+          0.0,
+          1.0
+        ],
+        "integrated_observational_nll": 0.6651989817619324,
+        "probability_std": [
+          0.0017034071863021277,
+          0.001703406254464815
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.010696613964037368,
+            "sigma_between_input_std": 0.005098674349301764,
+            "mean_posterior_sigma": 0.9797992354646121,
+            "class_mean_distance": 0.02858499421551223
+          },
+          "ans": {
+            "mean_between_input_std": 0.06776077079329175,
+            "sigma_between_input_std": 0.033850203788327586,
+            "mean_posterior_sigma": 1.0011084553503689,
+            "class_mean_distance": 0.06172043703855047
+          }
+        }
+      },
+      {
+        "acc": 0.6175,
+        "selection_f1": 0.7635239567233385,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "class_recalls": [
+          0.0,
+          1.0
+        ],
+        "integrated_observational_nll": 0.665256679058075,
+        "probability_std": [
+          0.0017879549772756758,
+          0.0017879538598776403
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.010696613964037368,
+            "sigma_between_input_std": 0.005098674349301764,
+            "mean_posterior_sigma": 0.9797992354646121,
+            "class_mean_distance": 0.02858499421551223
+          },
+          "ans": {
+            "mean_between_input_std": 0.06801700740818598,
+            "sigma_between_input_std": 0.03366674635876721,
+            "mean_posterior_sigma": 1.000413712333099,
+            "class_mean_distance": 0.05085112012769155
+          }
+        }
+      },
+      {
+        "acc": 0.6175,
+        "selection_f1": 0.7635239567233385,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "class_recalls": [
+          0.0,
+          1.0
+        ],
+        "integrated_observational_nll": 0.6654729247093201,
+        "probability_std": [
+          0.0017490953366514784,
+          0.001749094532704636
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.010696613964037368,
+            "sigma_between_input_std": 0.005098674349301764,
+            "mean_posterior_sigma": 0.9797992354646121,
+            "class_mean_distance": 0.02858499421551223
+          },
+          "ans": {
+            "mean_between_input_std": 0.06736671092121692,
+            "sigma_between_input_std": 0.03342702442176995,
+            "mean_posterior_sigma": 1.0008106637352818,
+            "class_mean_distance": 0.05292309735902404
+          }
+        }
+      }
+    ]
+  },
+  "initial_parameters": {
+    "norm_sha256": "89e6b9ec27b84e0aafb6741d2f04e9a90a8236ec66ba46bbf5dd3f672b2aa067",
+    "none_template_sha256": "89e6b9ec27b84e0aafb6741d2f04e9a90a8236ec66ba46bbf5dd3f672b2aa067",
+    "matched": true,
+    "note": "当前默认none模板与试验模型逐字节相同；历史基线未保存初始指纹，不能声称历史逐参数核验"
+  },
+  "main_prediction": "probs_do",
+  "primary_metric": "ACC",
+  "note": "当前none模板和norm初始化相同；历史基线无初始指纹，不称历史逐参数核验。拟合按ACC验收，旧BA门槛不参与新放行。",
+  "automatic_full_fold_training": false
+}

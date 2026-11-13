@@ -1,0 +1,37 @@
+{
+  "operation": "方案A CNS入口归一化单因素固定训练子集拟合对照",
+  "source_version": {
+    "commit": "2514db61f5923123794750b0a91a8fa9b24a7094",
+    "branch": "",
+    "tracked_changes": false
+  },
+  "changed_training_factor": {
+    "cns_input_norm": [
+      "none",
+      "layernorm"
+    ]
+  },
+  "baseline_summary_sha256": "d2525358224c977d2070d2678a49c8c576926c0c4f950147a9bed745d1d2ca16",
+  "baseline_modified": false,
+  "full_fold_training": false,
+  "automatic_fold_training": false,
+  "planned_max_private_steps": 300,
+  "stages": {
+    "tests": {
+      "status": "passed",
+      "exit_code": 0
+    },
+    "private_fit": {
+      "status": "budget_not_passed",
+      "exit_code": 3
+    },
+    "summary": {
+      "status": "completed",
+      "exit_code": 0
+    },
+    "comparison": {
+      "status": "completed",
+      "exit_code": 0
+    }
+  }
+}
