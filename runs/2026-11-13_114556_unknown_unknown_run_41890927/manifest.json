@@ -1,0 +1,114 @@
+{
+  "format_version": 1,
+  "created_at": "2026-11-13T11:45:56.418635+08:00",
+  "upload_checkout": {
+    "tool_checkout": {
+      "commit": "bfe108e703b5d089fc53d59d254b61d6fcbbb885",
+      "branch": "",
+      "tracked_changes": false
+    },
+    "experiment_checkout_at_upload": {
+      "commit": "9ef2b05af9b0780db8974e1ace979f4a8ff81f76",
+      "branch": "feat/neurofdan-phase3",
+      "tracked_changes": false
+    }
+  },
+  "recorded_run_sources": [],
+  "metadata": [],
+  "uploaded": [
+    {
+      "file": "run_summary.json",
+      "bytes": 6651,
+      "sha256": "5e3b8423eaa68838cbb3888b9b85845cd3fa41f12cf1cfe1e6a510b4bd199570",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "config.json",
+      "bytes": 835,
+      "sha256": "07db004c3980fc8c81ea55ef72e40cd8770b05771eaae967fd0b6126c88773a3",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "probe_summary.json",
+      "bytes": 222423,
+      "sha256": "626dfc94ff39832106353398d2e2153605e82f038b00bdd734c615a785d568b1",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_01.log",
+      "bytes": 693,
+      "sha256": "572536d1ed772a52a6dc4d06bd1a691b2588b9dfa19af01071fa3d78bd1d9a73",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_02.log",
+      "bytes": 5130,
+      "sha256": "8acdb4341e81191d403bc9127599434d58ddd5d69739b82789d3dc9698d383ce",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_03.log",
+      "bytes": 43428,
+      "sha256": "d08a4efedbcd46656afea183fa0e928fef35a61280f0a0ea4dfa0027a9c16792",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "logs/train_04.log",
+      "bytes": 6652,
+      "sha256": "19ca9db229127b3b2cb7247816530d1cd6d50b75a871deab9f5fc647b664e39f",
+      "tail_line_omitted": false
+    },
+    {
+      "file": "upload_summary.json",
+      "bytes": 1350,
+      "sha256": "c7d6f61b1a7e473b505895ffe6dd7c14f639f46fe315fa35fdaf90ac1d6e0ef8"
+    },
+    {
+      "file": "upload_report.txt",
+      "bytes": 699,
+      "sha256": "8f0d57dd8f28af5239a3f0f88bf3ce9c9ac8d2bb48e5c4d65d493a30ad116a17"
+    }
+  ],
+  "missing": [
+    "run_report.txt"
+  ],
+  "skipped": [],
+  "total_bytes": 287861,
+  "execution_evidence": [
+    {
+      "log": "logs/train_01.log",
+      "receipt_present": true,
+      "python_exit": 3,
+      "tee_exit": 0,
+      "status": "进程或日志写入退出非零；不推测是否人为中止"
+    },
+    {
+      "log": "logs/train_02.log",
+      "receipt_present": true,
+      "python_exit": 0,
+      "tee_exit": 0,
+      "status": "进程及日志写入均退出成功"
+    },
+    {
+      "log": "logs/train_03.log",
+      "receipt_present": true,
+      "python_exit": 0,
+      "tee_exit": 0,
+      "status": "进程及日志写入均退出成功"
+    },
+    {
+      "log": "logs/train_04.log",
+      "receipt_present": true,
+      "python_exit": 0,
+      "tee_exit": 0,
+      "status": "进程及日志写入均退出成功"
+    }
+  ],
+  "limits": {
+    "max_file_mib": 16,
+    "max_total_mib": 64
+  },
+  "snapshot_atomic": false,
+  "note": "运行中的多个文件不是事务快照；上传源码SHA不等于旧运行源码SHA。未上传模型权重/原始信号。",
+  "sanitization": "白名单；拒绝链接；文本常见凭证/绝对路径屏蔽；数值NPZ重新编码。自动脱敏不能保证发现任意自由文本中的自定义秘密，首次建议dry-run人工检查。"
+}

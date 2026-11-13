@@ -1,0 +1,1640 @@
+方案A已有结果摘要：只读取JSON；未加载模型、权重或原始信号，未执行训练。
+{
+  "dataset": "DEAP",
+  "label": "arousal",
+  "held_out_subject": 2,
+  "source_version": {
+    "commit": "bfe108e703b5d089fc53d59d254b61d6fcbbb885",
+    "branch": "",
+    "tracked_changes": false
+  },
+  "completed": true,
+  "passed": false,
+  "training_executed": true,
+  "actual_steps": 300,
+  "full_epoch_steps": 31,
+  "full_fold_training": false,
+  "weights_saved": true,
+  "weights_transferred_to_fold": false,
+  "fit_controls": {
+    "fit_max_steps": 300,
+    "fit_check_every": 50,
+    "fit_baseline_summary": "<已屏蔽绝对路径>",
+    "fit_save_checkpoint": true
+  },
+  "gate": {
+    "balanced_accuracy_min": 0.8,
+    "min_class_recall": 0.6,
+    "nll_below_prior_by": 0.05,
+    "monte_carlo_draws": 3,
+    "all_draws_must_pass": true
+  },
+  "true_counts": [
+    153,
+    247
+  ],
+  "constant_prior_nll": 0.6652747443075995,
+  "first_full_backward_complete": true,
+  "first_backward_peak_mib": 11959.18994140625,
+  "peak_allocated_mib": 11992.1064453125,
+  "arguments": {
+    "dataset": "DEAP",
+    "label": "arousal",
+    "seed": 42,
+    "held_out_subjects": [
+      2
+    ],
+    "classification_objective": "integrated_observational",
+    "lambda_obs": 0.0,
+    "lr": 2e-05,
+    "weight_decay": 0.0,
+    "batch_size": 400,
+    "eval_batch_size": 400,
+    "epochs": 20,
+    "mediator_dim": 64,
+    "hidden_dim": 128,
+    "lif_neurons": 256,
+    "dropout": 0.3,
+    "beta": 0.0,
+    "beta_warmup_epochs": 10,
+    "fire_weight": 0.028,
+    "S_train": 4,
+    "K_train": 16,
+    "S_eval": 16,
+    "K_eval": 64,
+    "N_ref": 2048,
+    "reference_chunk_size": 4,
+    "sampling_mode": "window",
+    "no_balance": true
+  },
+  "workflow": {
+    "stages": {
+      "tests": {
+        "status": "passed",
+        "exit_code": 0
+      },
+      "private_fit": {
+        "status": "budget_not_passed",
+        "exit_code": 3
+      }
+    }
+  },
+  "checks": [
+    {
+      "step": 1,
+      "loss_epoch": 1,
+      "optimization_nll": 0.6838082075119019,
+      "passed": false,
+      "draws": [
+        {
+          "draw": 1,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6847139000892639,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.48109293498098854,
+            0.5189070655405521
+          ],
+          "probability_std": [
+            0.00109375011319438,
+            0.0010937483708909233
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.01943915578166444
+        },
+        {
+          "draw": 2,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6850414276123047,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.48100408747792245,
+            0.518995910435915
+          ],
+          "probability_std": [
+            0.0010898687526068778,
+            0.0010898677530318424
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.019766683304705213
+        },
+        {
+          "draw": 3,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6850972771644592,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.481020385324955,
+            0.5189796128869056
+          ],
+          "probability_std": [
+            0.0011578861821997298,
+            0.0011578848402251185
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.019822532856859754
+        }
+      ]
+    },
+    {
+      "step": 50,
+      "loss_epoch": 2,
+      "optimization_nll": 0.6671256422996521,
+      "passed": false,
+      "draws": [
+        {
+          "draw": 1,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6653738617897034,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.39251375503838065,
+            0.6074862430989743
+          ],
+          "probability_std": [
+            0.00153718943318576,
+            0.001537189685105463
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -9.911748210389426e-05
+        },
+        {
+          "draw": 2,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6655049324035645,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.39242303669452666,
+            0.6075769649446011
+          ],
+          "probability_std": [
+            0.0015229177968793884,
+            0.001522915013133717
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.00023018809596497825
+        },
+        {
+          "draw": 3,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.665742039680481,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.3924604758620262,
+            0.6075395253300667
+          ],
+          "probability_std": [
+            0.0016423864644405132,
+            0.0016423868479225078
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.00046729537288148215
+        }
+      ]
+    },
+    {
+      "step": 100,
+      "loss_epoch": 4,
+      "optimization_nll": 0.6648433804512024,
+      "passed": false,
+      "draws": [
+        {
+          "draw": 1,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6655945777893066,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.3964820817857981,
+            0.6035179181396961
+          ],
+          "probability_std": [
+            0.0015672655428202588,
+            0.00156726725973441
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.00031983348170716575
+        },
+        {
+          "draw": 2,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6656936407089233,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.3964288228005171,
+            0.6035711780190468
+          ],
+          "probability_std": [
+            0.0015730660121170863,
+            0.0015730667431876522
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.00041889640132386496
+        },
+        {
+          "draw": 3,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.665940523147583,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.3964854754507542,
+            0.6035145235061645
+          ],
+          "probability_std": [
+            0.001639489689212298,
+            0.001639488747698792
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.0006657788399835329
+        }
+      ]
+    },
+    {
+      "step": 150,
+      "loss_epoch": 5,
+      "optimization_nll": 0.6656730771064758,
+      "passed": false,
+      "draws": [
+        {
+          "draw": 1,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6654199957847595,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.3925322000682354,
+            0.6074678003787994
+          ],
+          "probability_std": [
+            0.0016117139181763451,
+            0.0016117178470886357
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.0001452514771600466
+        },
+        {
+          "draw": 2,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6655123233795166,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.3924807691574097,
+            0.6075192318856716
+          ],
+          "probability_std": [
+            0.0016580364622341146,
+            0.0016580356146095453
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.00023757907191712668
+        },
+        {
+          "draw": 3,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6657348871231079,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.39255548141896723,
+            0.6074445179104805
+          ],
+          "probability_std": [
+            0.0016931110527516333,
+            0.0016931117775720614
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.0004601428155084353
+        }
+      ]
+    },
+    {
+      "step": 200,
+      "loss_epoch": 7,
+      "optimization_nll": 0.6660600900650024,
+      "passed": false,
+      "draws": [
+        {
+          "draw": 1,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6652864813804626,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.3778830236941576,
+            0.6221169745922088
+          ],
+          "probability_std": [
+            0.0016816032994645613,
+            0.001681603048046951
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -1.1737072863171605e-05
+        },
+        {
+          "draw": 2,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6653580665588379,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.37785615377128123,
+            0.6221438452601433
+          ],
+          "probability_std": [
+            0.001719788711491245,
+            0.0017197882202375208
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -8.332225123841575e-05
+        },
+        {
+          "draw": 3,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6655505895614624,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.37792616300284865,
+            0.6220738351345062
+          ],
+          "probability_std": [
+            0.0017456838969123253,
+            0.001745685156098769
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.00027584525386292746
+        }
+      ]
+    },
+    {
+      "step": 250,
+      "loss_epoch": 9,
+      "optimization_nll": 0.6652960181236267,
+      "passed": false,
+      "draws": [
+        {
+          "draw": 1,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6652132272720337,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.3830083650350571,
+            0.616991635710001
+          ],
+          "probability_std": [
+            0.001652506836498185,
+            0.0016525031336656738
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": 6.151703556578347e-05
+        },
+        {
+          "draw": 2,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6652955412864685,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.38297793343663217,
+            0.6170220662653446
+          ],
+          "probability_std": [
+            0.001705196812957089,
+            0.0017051958393793525
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -2.079697886903098e-05
+        },
+        {
+          "draw": 3,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6655004620552063,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.38304699026048183,
+            0.6169530104100704
+          ],
+          "probability_std": [
+            0.0017139004195407268,
+            0.001713899263849024
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.00022571774760682395
+        }
+      ]
+    },
+    {
+      "step": 300,
+      "loss_epoch": 10,
+      "optimization_nll": 0.6653586030006409,
+      "passed": false,
+      "draws": [
+        {
+          "draw": 1,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6652335524559021,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.382862321138382,
+            0.6171376794576645
+          ],
+          "probability_std": [
+            0.00166381634120602,
+            0.0016638177238148019
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": 4.119185169737527e-05
+        },
+        {
+          "draw": 2,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6652796864509583,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.38285096108913425,
+            0.6171490371227265
+          ],
+          "probability_std": [
+            0.0017453723704306916,
+            0.001745370895073764
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -4.9421433587770736e-06
+        },
+        {
+          "draw": 3,
+          "acc": 0.6175,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.38176197836166925,
+          "min_class_recall": 0.0,
+          "class_recalls": [
+            0.0,
+            1.0
+          ],
+          "integrated_observational_nll": 0.6654849052429199,
+          "confusion_matrix": [
+            [
+              0,
+              153
+            ],
+            [
+              0,
+              247
+            ]
+          ],
+          "probability_mean": [
+            0.38293989554047586,
+            0.6170601032674313
+          ],
+          "probability_std": [
+            0.0017072628913045818,
+            0.0017072665873652162
+          ],
+          "true_counts": [
+            153,
+            247
+          ],
+          "predicted_counts": [
+            0,
+            400
+          ],
+          "single_class_prediction": true,
+          "nll_improvement_over_constant": -0.000210160935320447
+        }
+      ]
+    }
+  ],
+  "first_gradient_report": {
+    "step": 1,
+    "epoch": 1,
+    "weights": {
+      "lambda_obs": 0.0,
+      "integrated_observational": 1.0,
+      "beta": 0.0,
+      "fire": 0.028
+    },
+    "weighted_terms": {
+      "integrated_observational_nll": 0.6838082075119019,
+      "kl_c": 0.0,
+      "kl_a": 0.0,
+      "fire": 0.0006975381402298808,
+      "training_total": 0.6845057606697083
+    },
+    "reference_term": "integrated_observational_nll",
+    "modules": {
+      "backbone.cns_enc": {
+        "integrated_observational_nll": {
+          "l2": 0.018250861914175902,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 1.0,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 12,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 12,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 4.699031427772806e-06,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.0004813419960915086,
+          "norm_over_task": 0.0002574690143331231
+        },
+        "training_total": {
+          "l2": 0.018250864779585818,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9999999668549264,
+          "norm_over_task": 1.0000001570013477
+        }
+      },
+      "backbone.ans_enc": {
+        "integrated_observational_nll": {
+          "l2": 0.005854842610871476,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 1.0,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 12,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 12,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 8.508523753421715e-06,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.418483942252196,
+          "norm_over_task": 0.001453245512974643
+        },
+        "training_total": {
+          "l2": 0.005858408386997098,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9999991300299521,
+          "norm_over_task": 1.0006090302272177
+        }
+      },
+      "cns": {
+        "integrated_observational_nll": {
+          "l2": 0.0007387509260837705,
+          "zero_tensors": 1,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9999999999999998,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 10,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 10,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 0.00028872342277759294,
+          "zero_tensors": 1,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.004202810227644484,
+          "norm_over_task": 0.39082647829378586
+        },
+        "training_total": {
+          "l2": 0.0007942965493248243,
+          "zero_tensors": 1,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9315971099556475,
+          "norm_over_task": 1.075188566646555
+        }
+      },
+      "ans": {
+        "integrated_observational_nll": {
+          "l2": 0.007977594393463822,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9999999999999998,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 10,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 10,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 0.0004684704128476048,
+          "zero_tensors": 0,
+          "missing_tensors": 2,
+          "cosine_to_classification": -0.008193166964342536,
+          "norm_over_task": 0.05872326791036538
+        },
+        "training_total": {
+          "l2": 0.007987505036912774,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9982786990258633,
+          "norm_over_task": 1.0012423097691043
+        }
+      },
+      "cns2ans": {
+        "integrated_observational_nll": {
+          "l2": 0.001363766693613649,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 1.0,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 2,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 2,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 0.0003287176312278109,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": -0.031254758412097676,
+          "norm_over_task": 0.2410365590882627
+        },
+        "training_total": {
+          "l2": 0.0013928001353603055,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9717781228237945,
+          "norm_over_task": 1.0212891558963981
+        }
+      },
+      "outcome": {
+        "integrated_observational_nll": {
+          "l2": 0.43504159327608444,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 1.0,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 4,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 4,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 4,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "training_total": {
+          "l2": 0.43504159327608444,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 1.0,
+          "norm_over_task": 1.0
+        }
+      }
+    },
+    "note": "同一前向的已加权分项梯度、裁剪前范数；比值不是Adam实际更新比，余弦非因果证据"
+  },
+  "last_gradient_report": {
+    "step": 300,
+    "epoch": 10,
+    "weights": {
+      "lambda_obs": 0.0,
+      "integrated_observational": 1.0,
+      "beta": 0.0,
+      "fire": 0.028
+    },
+    "weighted_terms": {
+      "integrated_observational_nll": 0.6653586030006409,
+      "kl_c": 0.0,
+      "kl_a": 0.0,
+      "fire": 5.685628275386989e-05,
+      "training_total": 0.6654154658317566
+    },
+    "reference_term": "integrated_observational_nll",
+    "modules": {
+      "backbone.cns_enc": {
+        "integrated_observational_nll": {
+          "l2": 0.0018561775689825198,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 1.0,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 12,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 12,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 0.0007965868859065965,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": -0.43319392028908715,
+          "norm_over_task": 0.42915446195336404
+        },
+        "training_total": {
+          "l2": 0.0016729912192695725,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9032330815158769,
+          "norm_over_task": 0.9013099001011188
+        }
+      },
+      "backbone.ans_enc": {
+        "integrated_observational_nll": {
+          "l2": 0.00321908852497633,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 1.0,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 12,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 12,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 0.00031304095726046995,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": -0.8329321378725207,
+          "norm_over_task": 0.0972452154799849
+        },
+        "training_total": {
+          "l2": 0.002963417699456565,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9982899959833589,
+          "norm_over_task": 0.9205766403949251
+        }
+      },
+      "cns": {
+        "integrated_observational_nll": {
+          "l2": 0.00036746458512364953,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 1.0,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 10,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 10,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 0.0006906382457651289,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": -0.02241532972545124,
+          "norm_over_task": 1.8794688623741345
+        },
+        "training_total": {
+          "l2": 0.0007750057492229824,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.4541691738415249,
+          "norm_over_task": 2.1090624256000012
+        }
+      },
+      "ans": {
+        "integrated_observational_nll": {
+          "l2": 0.0031829702306565644,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 1.0,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 10,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 10,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 0.00020092071142130793,
+          "zero_tensors": 0,
+          "missing_tensors": 2,
+          "cosine_to_classification": 0.04294791415711682,
+          "norm_over_task": 0.06312365396514034
+        },
+        "training_total": {
+          "l2": 0.0031979057395849853,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9980279646600408,
+          "norm_over_task": 1.0046923181324696
+        }
+      },
+      "cns2ans": {
+        "integrated_observational_nll": {
+          "l2": 0.0012608348855084055,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 1.0,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 2,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 2,
+          "missing_tensors": 0,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 5.959682076950573e-05,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.057413194640244976,
+          "norm_over_task": 0.04726774413881683
+        },
+        "training_total": {
+          "l2": 0.001265655812829097,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9988944176774779,
+          "norm_over_task": 1.0038235992484834
+        }
+      },
+      "outcome": {
+        "integrated_observational_nll": {
+          "l2": 0.048588492967629245,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9999999999999998,
+          "norm_over_task": 1.0
+        },
+        "kl_c": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 4,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "kl_a": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 4,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "fire": {
+          "l2": 0.0,
+          "zero_tensors": 0,
+          "missing_tensors": 4,
+          "cosine_to_classification": null,
+          "norm_over_task": 0.0
+        },
+        "training_total": {
+          "l2": 0.048588492967629245,
+          "zero_tensors": 0,
+          "missing_tensors": 0,
+          "cosine_to_classification": 0.9999999999999998,
+          "norm_over_task": 1.0
+        }
+      }
+    },
+    "note": "同一前向的已加权分项梯度、裁剪前范数；比值不是Adam实际更新比，余弦非因果证据"
+  },
+  "last_mediator_and_factual": [
+    {
+      "draw": 1,
+      "posterior": {
+        "cns": {
+          "mean_between_input_std": 0.0036964478718770387,
+          "sigma_between_input_std": 0.00262113813389672,
+          "mean_posterior_sigma": 0.9388870778470773,
+          "class_mean_distance": 0.006995883486593414
+        },
+        "ans": {
+          "mean_between_input_std": 0.06461975856964816,
+          "sigma_between_input_std": 0.032304721784847765,
+          "mean_posterior_sigma": 1.000891252600538,
+          "class_mean_distance": 0.05575250733735467
+        }
+      },
+      "posterior_note": "ANS先沿有限S平均，再计算窗口差异，仍含MC误差；不解释为因果效应",
+      "mediator_statistics": {
+        "mu_c": -0.01783791556954384,
+        "var_c": 0.8824381828308105,
+        "mu_a": 0.05440249294042587,
+        "var_a": 1.0217994451522827,
+        "kl_c": 0.6506490707397461,
+        "kl_a": 4.392531871795654,
+        "mu_c_spread": 0.00369644770398736,
+        "mu_a_spread": 0.23933574557304382,
+        "firing_rate_c": 0.0,
+        "firing_rate_a": 0.08314697444438934
+      },
+      "factual_confusion": [
+        [
+          0,
+          153
+        ],
+        [
+          0,
+          247
+        ]
+      ],
+      "factual_metrics": {
+        "f1_class0": 0.0,
+        "f1_class1": 0.7635239567233385,
+        "acc": 0.6175,
+        "count": 400,
+        "correct": 247,
+        "selection_f1": 0.7635239567233385,
+        "selection_positive_class": 1,
+        "precision": 0.6175,
+        "recall": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 0.0,
+        "balanced_accuracy": 0.5,
+        "macro_f1": 0.38176197836166925
+      }
+    },
+    {
+      "draw": 2,
+      "posterior": {
+        "cns": {
+          "mean_between_input_std": 0.0036964478718770387,
+          "sigma_between_input_std": 0.00262113813389672,
+          "mean_posterior_sigma": 0.9388870778470773,
+          "class_mean_distance": 0.006995883486593414
+        },
+        "ans": {
+          "mean_between_input_std": 0.06486083869084704,
+          "sigma_between_input_std": 0.03214681673031566,
+          "mean_posterior_sigma": 1.0002490155030879,
+          "class_mean_distance": 0.04570814447887126
+        }
+      },
+      "posterior_note": "ANS先沿有限S平均，再计算窗口差异，仍含MC误差；不解释为因果效应",
+      "mediator_statistics": {
+        "mu_c": -0.01783791556954384,
+        "var_c": 0.8824381828308105,
+        "mu_a": 0.054480694234371185,
+        "var_a": 1.020565152168274,
+        "kl_c": 0.6506490707397461,
+        "kl_a": 4.413354396820068,
+        "mu_c_spread": 0.00369644770398736,
+        "mu_a_spread": 0.23935338854789734,
+        "firing_rate_c": 0.0,
+        "firing_rate_a": 0.08330428600311279
+      },
+      "factual_confusion": [
+        [
+          0,
+          153
+        ],
+        [
+          0,
+          247
+        ]
+      ],
+      "factual_metrics": {
+        "f1_class0": 0.0,
+        "f1_class1": 0.7635239567233385,
+        "acc": 0.6175,
+        "count": 400,
+        "correct": 247,
+        "selection_f1": 0.7635239567233385,
+        "selection_positive_class": 1,
+        "precision": 0.6175,
+        "recall": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 0.0,
+        "balanced_accuracy": 0.5,
+        "macro_f1": 0.38176197836166925
+      }
+    },
+    {
+      "draw": 3,
+      "posterior": {
+        "cns": {
+          "mean_between_input_std": 0.0036964478718770387,
+          "sigma_between_input_std": 0.00262113813389672,
+          "mean_posterior_sigma": 0.9388870778470773,
+          "class_mean_distance": 0.006995883486593414
+        },
+        "ans": {
+          "mean_between_input_std": 0.06432334803508288,
+          "sigma_between_input_std": 0.03191457533928826,
+          "mean_posterior_sigma": 1.0006488935729072,
+          "class_mean_distance": 0.05197637927107612
+        }
+      },
+      "posterior_note": "ANS先沿有限S平均，再计算窗口差异，仍含MC误差；不解释为因果效应",
+      "mediator_statistics": {
+        "mu_c": -0.01783791556954384,
+        "var_c": 0.8824381828308105,
+        "mu_a": 0.05357455089688301,
+        "var_a": 1.0213935375213623,
+        "kl_c": 0.6506490707397461,
+        "kl_a": 4.402684211730957,
+        "mu_c_spread": 0.00369644770398736,
+        "mu_a_spread": 0.2392684519290924,
+        "firing_rate_c": 0.0,
+        "firing_rate_a": 0.08324645459651947
+      },
+      "factual_confusion": [
+        [
+          0,
+          153
+        ],
+        [
+          0,
+          247
+        ]
+      ],
+      "factual_metrics": {
+        "f1_class0": 0.0,
+        "f1_class1": 0.7635239567233385,
+        "acc": 0.6175,
+        "count": 400,
+        "correct": 247,
+        "selection_f1": 0.7635239567233385,
+        "selection_positive_class": 1,
+        "precision": 0.6175,
+        "recall": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 0.0,
+        "balanced_accuracy": 0.5,
+        "macro_f1": 0.38176197836166925
+      }
+    }
+  ],
+  "interpretation_limits": [
+    "只报告现有固定训练子集的拟合，不是held-out或LOSO成绩。",
+    "BA=0.5不单独证明单类别预测；以各次完整混淆矩阵和预测计数判断。",
+    "均值变化、sigma变化和posterior sigma的绝对大小是不同统计量；不凭一项断言因果中介塌缩。",
+    "分项梯度来自本步更新前train模式，MC矩阵与posterior来自更新后eval模式；不是同一模式的对齐比较。",
+    "300步未过当前预算门槛，不证明所有优化配置或结构在理论上都不可能拟合。"
+  ]
+}

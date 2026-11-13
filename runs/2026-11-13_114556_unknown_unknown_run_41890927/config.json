@@ -1,0 +1,37 @@
+{
+  "operation": "方案A KL单因素固定训练子集拟合对照",
+  "source_version": {
+    "commit": "bfe108e703b5d089fc53d59d254b61d6fcbbb885",
+    "branch": "",
+    "tracked_changes": false
+  },
+  "changed_training_factor": {
+    "beta": [
+      0.001,
+      0.0
+    ]
+  },
+  "baseline_summary_sha256": "0dafd563f9b1d38b3099a8ad1b59996fa9251f30588443bcc2d279287b96cba3",
+  "baseline_modified": false,
+  "full_fold_training": false,
+  "automatic_fold_training": false,
+  "planned_max_private_steps": 300,
+  "stages": {
+    "tests": {
+      "status": "passed",
+      "exit_code": 0
+    },
+    "private_fit": {
+      "status": "budget_not_passed",
+      "exit_code": 3
+    },
+    "summary": {
+      "status": "completed",
+      "exit_code": 0
+    },
+    "comparison": {
+      "status": "completed",
+      "exit_code": 0
+    }
+  }
+}

@@ -1,0 +1,234 @@
+{
+  "format_version": "scheme_a_kl_control_v1",
+  "role": "training_subset_comparison_only",
+  "protocol_checks_passed": true,
+  "changed_training_factor": {
+    "beta": [
+      0.001,
+      0.0
+    ]
+  },
+  "true_counts": [
+    153,
+    247
+  ],
+  "constant_prior_nll": 0.6652747443075995,
+  "baseline": {
+    "step": 300,
+    "actual_steps": 300,
+    "passed": false,
+    "completed": true,
+    "draws": [
+      {
+        "balanced_accuracy": 0.5,
+        "macro_f1": 0.38176197836166925,
+        "integrated_observational_nll": 0.6652688384056091,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "probability_std": [
+          0.0016367967785157886,
+          0.0016367972049710561
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.0011596239836498684,
+            "sigma_between_input_std": 0.000910234796447269,
+            "mean_posterior_sigma": 0.974309904649486,
+            "class_mean_distance": 0.0018455670240262788
+          },
+          "ans": {
+            "mean_between_input_std": 0.04564861270759229,
+            "sigma_between_input_std": 0.023290416180805913,
+            "mean_posterior_sigma": 0.9934434437360516,
+            "class_mean_distance": 0.03981329269843325
+          }
+        }
+      },
+      {
+        "balanced_accuracy": 0.5,
+        "macro_f1": 0.38176197836166925,
+        "integrated_observational_nll": 0.6652835011482239,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "probability_std": [
+          0.0017375386598119456,
+          0.0017375397495004539
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.0011596239836498684,
+            "sigma_between_input_std": 0.000910234796447269,
+            "mean_posterior_sigma": 0.974309904649486,
+            "class_mean_distance": 0.0018455670240262788
+          },
+          "ans": {
+            "mean_between_input_std": 0.04575802222603051,
+            "sigma_between_input_std": 0.02322241265322708,
+            "mean_posterior_sigma": 0.9929473135950596,
+            "class_mean_distance": 0.03432452467512815
+          }
+        }
+      },
+      {
+        "balanced_accuracy": 0.5,
+        "macro_f1": 0.38176197836166925,
+        "integrated_observational_nll": 0.6654773950576782,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "probability_std": [
+          0.0016912933987671029,
+          0.0016912919671979924
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.0011596239836498684,
+            "sigma_between_input_std": 0.000910234796447269,
+            "mean_posterior_sigma": 0.974309904649486,
+            "class_mean_distance": 0.0018455670240262788
+          },
+          "ans": {
+            "mean_between_input_std": 0.04537278370257328,
+            "sigma_between_input_std": 0.02308201902406124,
+            "mean_posterior_sigma": 0.9932279200612584,
+            "class_mean_distance": 0.038849597164306325
+          }
+        }
+      }
+    ]
+  },
+  "kl_off": {
+    "step": 300,
+    "actual_steps": 300,
+    "passed": false,
+    "completed": true,
+    "draws": [
+      {
+        "balanced_accuracy": 0.5,
+        "macro_f1": 0.38176197836166925,
+        "integrated_observational_nll": 0.6652335524559021,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "probability_std": [
+          0.00166381634120602,
+          0.0016638177238148019
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.0036964478718770387,
+            "sigma_between_input_std": 0.00262113813389672,
+            "mean_posterior_sigma": 0.9388870778470773,
+            "class_mean_distance": 0.006995883486593414
+          },
+          "ans": {
+            "mean_between_input_std": 0.06461975856964816,
+            "sigma_between_input_std": 0.032304721784847765,
+            "mean_posterior_sigma": 1.000891252600538,
+            "class_mean_distance": 0.05575250733735467
+          }
+        }
+      },
+      {
+        "balanced_accuracy": 0.5,
+        "macro_f1": 0.38176197836166925,
+        "integrated_observational_nll": 0.6652796864509583,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "probability_std": [
+          0.0017453723704306916,
+          0.001745370895073764
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.0036964478718770387,
+            "sigma_between_input_std": 0.00262113813389672,
+            "mean_posterior_sigma": 0.9388870778470773,
+            "class_mean_distance": 0.006995883486593414
+          },
+          "ans": {
+            "mean_between_input_std": 0.06486083869084704,
+            "sigma_between_input_std": 0.03214681673031566,
+            "mean_posterior_sigma": 1.0002490155030879,
+            "class_mean_distance": 0.04570814447887126
+          }
+        }
+      },
+      {
+        "balanced_accuracy": 0.5,
+        "macro_f1": 0.38176197836166925,
+        "integrated_observational_nll": 0.6654849052429199,
+        "confusion_matrix": [
+          [
+            0,
+            153
+          ],
+          [
+            0,
+            247
+          ]
+        ],
+        "probability_std": [
+          0.0017072628913045818,
+          0.0017072665873652162
+        ],
+        "posterior": {
+          "cns": {
+            "mean_between_input_std": 0.0036964478718770387,
+            "sigma_between_input_std": 0.00262113813389672,
+            "mean_posterior_sigma": 0.9388870778470773,
+            "class_mean_distance": 0.006995883486593414
+          },
+          "ans": {
+            "mean_between_input_std": 0.06432334803508288,
+            "sigma_between_input_std": 0.03191457533928826,
+            "mean_posterior_sigma": 1.0006488935729072,
+            "class_mean_distance": 0.05197637927107612
+          }
+        }
+      }
+    ]
+  },
+  "note": "只比较固定自然训练子集拟合；KL关闭是诊断消融，不是最终方法或因果识别证据。",
+  "classification_gate_unchanged": true,
+  "automatic_fold_training": false,
+  "baseline_summary_sha256": "0dafd563f9b1d38b3099a8ad1b59996fa9251f30588443bcc2d279287b96cba3"
+}
