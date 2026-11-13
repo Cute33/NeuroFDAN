@@ -8,7 +8,7 @@ from upload_run_diagnostics import read_snapshot, reject_constant, sanitize
 
 ARGUMENTS = ('dataset', 'label', 'seed', 'held_out_subjects', 'classification_objective',
              'lambda_obs', 'lr', 'weight_decay', 'batch_size', 'eval_batch_size', 'epochs',
-             'mediator_dim', 'hidden_dim', 'lif_neurons', 'dropout', 'beta',
+             'mediator_dim', 'hidden_dim', 'lif_neurons', 'cns_input_norm', 'dropout', 'beta',
              'beta_warmup_epochs', 'fire_weight', 'S_train', 'K_train', 'S_eval', 'K_eval',
              'N_ref', 'reference_chunk_size', 'sampling_mode', 'no_balance')
 MODULES = ('backbone.cns_enc', 'backbone.ans_enc', 'cns', 'ans', 'cns2ans', 'outcome',

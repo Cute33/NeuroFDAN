@@ -23,7 +23,9 @@ def check_arguments(baseline, arguments, controls):
     if (baseline.get('source_version', {}).get('commit') != BASELINE_COMMIT or
             not baseline.get('completed') or baseline.get('passed') or baseline.get('actual_steps') != 300):
         raise ValueError('需要已核验的30152089方案A、完成300步且未通过的原始摘要')
-    old = baseline['arguments']
+    old, arguments = dict(baseline['arguments']), dict(arguments)
+    old.setdefault('cns_input_norm', 'none')
+    arguments.setdefault('cns_input_norm', 'none')
     if (old['dataset'], old['label'], old['held_out_subjects'], old['seed'],
             old['classification_objective'], old['beta'], old['fire_weight']) != (
             'DEAP', 'arousal', [2], 42, 'integrated_observational', .001, .028):
@@ -40,7 +42,9 @@ def check_sources(baseline, result):
     for key in ('selected_source_ids', 'reference_source_ids', 'true_counts', 'full_epoch_steps', 'gate'):
         if baseline[key] != result[key]:
             raise ValueError('对照来源/评价门槛与基线不一致：' + key)
-    a, b = baseline['model'], result['model']
+    a, b = dict(baseline['model']), dict(result['model'])
+    a.setdefault('cns_input_norm', 'none')
+    b.setdefault('cns_input_norm', 'none')
     changed = {key for key in set(a) | set(b) if a.get(key) != b.get(key)}
     if changed != {'beta'} or b['beta'] != 0.:
         raise ValueError('模型配置只允许改变beta，不允许改结构、采样或参考维度')
