@@ -472,10 +472,13 @@ from frontdoor_scm import (
 
 class PhysiologicalBackbone(nn.Module):
     """复用原实际执行的分组时序卷积及 CNS 通道图，两个模态不交叉读取。"""
-    def __init__(self, eeg_channels=32, ans_channels=4, input_len=768):
+    def __init__(self, eeg_channels=32, ans_channels=4, input_len=768, bn_mode='frozen'):
         super().__init__()
         if eeg_channels != 32 or ans_channels not in (3, 4) or input_len != 768:
             raise ValueError('真实数据骨干要求32个EEG通道、3/4个ANS通道和768个时间点')
+        if bn_mode not in ('frozen', 'train'):
+            raise ValueError('bn_mode仅支持frozen或train')
+        self.bn_mode = bn_mode          # 必须在self.train(True)之前赋值
         self.ans_channels = ans_channels
         def encoder(channels):
             return nn.Sequential(
@@ -493,11 +496,12 @@ class PhysiologicalBackbone(nn.Module):
         self.train(True)
 
     def train(self, mode=True):
-        """冻结既有 BN 运行统计，保留仿射参数，避免 batch 内样本相互泄漏。"""
+        """frozen：沿用旧行为，BN运行统计固定；train：BN随模式正常切换（与旧版一致）。"""
         super().train(mode)
-        for module in self.modules():
-            if isinstance(module, nn.BatchNorm1d):
-                module.eval()
+        if getattr(self, 'bn_mode', 'frozen') == 'frozen':
+            for module in self.modules():
+                if isinstance(module, nn.BatchNorm1d):
+                    module.eval()
         return self
 
     def forward(self, x_c, x_a):
@@ -534,17 +538,19 @@ class _LiveReferenceView:
 class NeuroFDAN(nn.Module):
     """真实骨干 + 唯一 Phase 1 前门估计器；不接受真实数据 oracle 标签。"""
     def __init__(self, eeg_channels=32, ecg_channels=3, gsr_channels=1, input_len=768,
-                 hidden_dim=32, num_classes=2, frontdoor_config=None):
+                 hidden_dim=32, num_classes=2, frontdoor_config=None, bn_mode='frozen'):
         super().__init__()
         if num_classes != 2:
             raise ValueError('第二阶段使用两个logits；不能对单个logit执行类别softmax')
-        self.backbone = PhysiologicalBackbone(eeg_channels, ecg_channels + gsr_channels, input_len)
+        self.backbone = PhysiologicalBackbone(eeg_channels, ecg_channels + gsr_channels,
+                                              input_len, bn_mode)
         self.frontdoor_config = frontdoor_config or FrontDoorConfig(lif_neurons=256)
         if self.frontdoor_config.num_classes != 2 or self.frontdoor_config.mediator_family != 'normal':
             raise ValueError('真实数据模式使用双类别高斯潜在中介，不使用合成真值分布接口')
         # hidden_dim 保留旧构造参数兼容；旧实际骨干同样未使用它决定通道数。
         self.frontdoor = FrontDoorEstimator(self.backbone.cns_dim, self.backbone.ans_dim, self.frontdoor_config)
         self.feature_version = 0
+
 
     def forward(self, x_c=None, x_a=None, gsr=None, *, reference_bank=None,
                 source_ids=None, fd_mode='full', S=None, K=None, factual_ce_mode='single'):

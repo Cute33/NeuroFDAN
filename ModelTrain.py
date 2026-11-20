@@ -400,6 +400,9 @@ def normalized_model_config(values):
     """旧checkpoint无lif_neurons时表示当时的hidden_dim，不改变实际权重维度。"""
     values = dict(values)
     values.setdefault('cns_input_norm', 'none')
+    values.setdefault('temporal_mediator', False)   # 新增
+    values.setdefault('ref_pool', 'flat')           # 新增
+    values.setdefault('seq_len', 96)                # 新增
     if values.get('lif_neurons') is None:
         values['lif_neurons'] = values['hidden_dim']
     return values
@@ -448,7 +451,9 @@ def frontdoor_config(args):
                           reference_chunk_size=args.reference_chunk_size, time_steps=args.time_steps,
                           logvar_min=args.logvar_min, logvar_max=args.logvar_max,
                           lif_neurons=getattr(args, 'lif_neurons', None),
-                          cns_input_norm=getattr(args, 'cns_input_norm', 'none'))
+                          cns_input_norm=getattr(args, 'cns_input_norm', 'none'),
+                          temporal_mediator=getattr(args, 'temporal_mediator', False),
+                          ref_pool=getattr(args, 'ref_pool', 'flat'))
 
 
 def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, optimizer=None):
@@ -468,7 +473,9 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     _assert_reference_sources(population.source_ids, train_subjects, held_out)
     if set(test_dataset.source_ids[:, 0].tolist()) != {held_out}:
         raise ValueError('测试数据来源并非当前held-out被试')
-    selected = torch.arange(len(population))
+    # 〔修改①〕--balance：优化窗口按旧版trial级二类下采样；参考库仍取未平衡总体
+    selected = (population.balanced_indices(args.seed) if getattr(args, 'balance', False)
+                else torch.arange(len(population)))
     train_dataset = WindowSelection(population, selected)
     sampling_mode = getattr(args, 'sampling_mode', 'grouped')
     eval_batch_size = getattr(args, 'eval_batch_size', None)
@@ -479,8 +486,10 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     diagnostic_level = getattr(args, 'diagnostic_level', 'basic')
     raw_bank = build_reference_bank(population, train_subjects, held_out, args.N_ref, args.seed)
     device = resolve_device(args.device)
+    # 〔修改②〕传入bn_mode
     model = model if model is not None else NeuroFDAN(ecg_channels=2 if dataset == 'DEAP' else 3,
-                                                       frontdoor_config=frontdoor_config(args))
+                                                       frontdoor_config=frontdoor_config(args),
+                                                       bn_mode=getattr(args, 'bn_mode', 'frozen'))
     model.to(device)
     optimizer = optimizer if optimizer is not None else build_optimizer(model, args)
     run_name = args.run_name or f'{args.fd_mode}_cns_{"off" if args.no_cns2ans else "on"}_ref{args.ref_dim}'
@@ -503,6 +512,11 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
                        classification_loss_weight=(1. if getattr(args, 'classification_objective', 'factual') == 'integrated_observational' else args.lambda_obs),
                        supervision='观察情绪标签；不存在真实干预概率或中介标签监督',
                        sampling_mode=sampling_mode,
+                       # 〔修改③〕记录新开关，便于事后核对实验配置
+                       balance=bool(getattr(args, 'balance', False)),
+                       bn_mode=getattr(args, 'bn_mode', 'frozen'),
+                       temporal_mediator=bool(getattr(args, 'temporal_mediator', False)),
+                       ref_pool=getattr(args, 'ref_pool', 'flat'),
                        optimization_group_size=train_loader.sampler.group_size,
                        optimization_batch_size=args.batch_size, evaluation_batch_size=eval_batch_size,
                        full_epoch_optimizer_steps=len(train_loader),
@@ -514,6 +528,11 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
         validate_resume_weight_decay(state, args)
         validate_resume_sampling_mode(state, sampling_mode)
         validate_resume_batch_settings(state, args.batch_size, eval_batch_size)
+        # 〔修改④〕新开关不得在续训时静默切换
+        for key, default in (('balance', False), ('bn_mode', 'frozen'),
+                             ('temporal_mediator', False), ('ref_pool', 'flat')):
+            if state['arguments'].get(key, default) != getattr(args, key, default):
+                raise ValueError(f'续训参数{key}与checkpoint不同；对照必须新run从头训练')
         old = state['reference_report']
         if old['held_out_subject'] != held_out or old['dataset'] != dataset or state['arguments']['label'] != label:
             raise ValueError('checkpoint数据集、任务或held-out不匹配')
@@ -534,8 +553,10 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
     logger.info('优化器=%s；各组weight_decay=%s；主分类目标=%s；标签为观察标签，不是干预真值',
                 type(optimizer).__name__, [group.get('weight_decay') for group in optimizer.param_groups],
                 getattr(args, 'classification_objective', 'factual'))
-    logger.info('优化窗口排列=%s；打乱组大小=%s；样本选择与未平衡参考总体不变',
-                sampling_mode, train_loader.sampler.group_size)
+    logger.info('优化窗口排列=%s；打乱组大小=%s；训练集平衡=%s；骨干BN=%s；时间轴中介=%s；参考表示=%s',
+                sampling_mode, train_loader.sampler.group_size, getattr(args, 'balance', False),
+                getattr(args, 'bn_mode', 'frozen'), getattr(args, 'temporal_mediator', False),
+                getattr(args, 'ref_pool', 'flat'))
     logger.info('训练batch=%s；评估batch=%s；完整epoch更新次数=%s；丢弃尾窗=%s（smoke上限另计）',
                 args.batch_size, eval_batch_size, len(train_loader), len(train_dataset) % args.batch_size)
     (fold_dir / 'fold.json').write_text(json.dumps(fold_config, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -628,7 +649,7 @@ def run_fold(args, held_out, *, population=None, test_dataset=None, model=None, 
         logger.info('该fold没有满足原ACC>0.5规则的最佳checkpoint；仅保留last.pt，不伪造best')
     try:
         write_run_reports(run_dir)
-    except (OSError,ValueError,TypeError) as error:
+    except (OSError, ValueError, TypeError) as error:
         logger.warning('训练已结束但摘要未完成：%s；原summary/checkpoint保持原样', type(error).__name__)
     return summary
 

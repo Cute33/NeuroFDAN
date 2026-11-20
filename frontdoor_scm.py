@@ -30,6 +30,9 @@ class FrontDoorConfig:
     reference_chunk_size: int = 0
     lif_neurons: Optional[int] = None
     cns_input_norm: str = 'none'
+    temporal_mediator: bool = False   # 新增：中介直接读取96步时间序列
+    ref_pool: str = 'flat'            # 新增：flat完整展平；meanstd为时间维均值+标准差
+    seq_len: int = 96                 # 新增：骨干输出的时间步数
 
     @property
     def lif_width(self) -> int:
@@ -39,8 +42,10 @@ class FrontDoorConfig:
     def __post_init__(self):
         if self.cns_input_norm not in ('none', 'layernorm'):
             raise ValueError('CNS入口归一化仅支持none或layernorm')
+        if self.ref_pool not in ('flat', 'meanstd'):          # 新增
+            raise ValueError('ref_pool仅支持flat或meanstd')
         for key in ('mediator_dim', 'hidden_dim', 'S_train', 'K_train', 'S_eval',
-                    'K_eval', 'N_ref', 'beta_warmup_epochs', 'time_steps'):
+                    'K_eval', 'N_ref', 'beta_warmup_epochs', 'time_steps', 'seq_len'):   # 新增seq_len
             if getattr(self, key) < 1:
                 raise ValueError(f'{key} 必须为正整数')
         if self.ref_dim < 0 or self.num_classes < 2 or self.reference_chunk_size < 0:
@@ -61,20 +66,35 @@ def flatten_input(x: Tensor, dim: int) -> Tensor:
 
 
 class ReferenceEncoder(nn.Module):
-    """输入配对 h_c、h_a；默认完整拼接，并不声称对原始 X 充分。"""
-    def __init__(self, cns_dim: int, ans_dim: int, ref_dim: int = 0):
+    """输入配对 h_c、h_a；flat完整拼接；meanstd取时间维均值+标准差（HCI约288维）。"""
+    def __init__(self, cns_dim: int, ans_dim: int, ref_dim: int = 0,
+                 pool: str = 'flat', seq_len: int = 96):
         super().__init__()
         if min(cns_dim, ans_dim) < 1 or ref_dim < 0:
             raise ValueError('输入维度必须为正，参考维度不得为负')
-        self.cns_dim, self.ans_dim = cns_dim, ans_dim
-        self.output_dim = ref_dim or cns_dim + ans_dim
-        self.projection = nn.Linear(cns_dim + ans_dim, ref_dim) if ref_dim else nn.Identity()
+        if pool not in ('flat', 'meanstd'):
+            raise ValueError('pool仅支持flat或meanstd')
+        if pool == 'meanstd' and (cns_dim % seq_len or ans_dim % seq_len):
+            raise ValueError('meanstd要求输入维度能被seq_len整除')
+        self.cns_dim, self.ans_dim, self.pool, self.seq_len = cns_dim, ans_dim, pool, seq_len
+        self.joint_dim = (2 * (cns_dim // seq_len) + 2 * (ans_dim // seq_len)
+                          if pool == 'meanstd' else cns_dim + ans_dim)
+        self.output_dim = ref_dim or self.joint_dim
+        self.projection = nn.Linear(self.joint_dim, ref_dim) if ref_dim else nn.Identity()
+
+    def _encode(self, x: Tensor, dim: int) -> Tensor:
+        if self.pool == 'meanstd':
+            if x[0:1].numel() != dim:
+                raise ValueError(f'每个输入应有 {dim} 个特征，实际形状为 {tuple(x.shape)}')
+            x = x.reshape(x.shape[0], self.seq_len, dim // self.seq_len)
+            return torch.cat((x.mean(1), (x.var(1, unbiased=False) + 1e-6).sqrt()), -1)
+        return flatten_input(x, dim)
 
     def joint(self, x_c: Tensor, x_a: Tensor) -> Tensor:
-        """输出 [R,d_c+d_a]，投影前完整联合表示始终可用。"""
+        """输出 [R,joint_dim]，投影前的联合表示始终可用。"""
         if x_c.shape[0] != x_a.shape[0]:
             raise ValueError('CNS 和 ANS 的参考样本数必须相同')
-        return torch.cat((flatten_input(x_c, self.cns_dim), flatten_input(x_a, self.ans_dim)), -1)
+        return torch.cat((self._encode(x_c, self.cns_dim), self._encode(x_a, self.ans_dim)), -1)
 
     def forward(self, x_c: Tensor, x_a: Tensor) -> Tensor:
         return self.projection(self.joint(x_c, x_a))
@@ -111,19 +131,30 @@ class CurrentLIF(nn.Module):
 
 
 class GaussianMediator(nn.Module):
-    """局部分支生成高斯参数；合成对照可显式选择 tanh 推前分布。"""
+    """局部分支生成高斯参数；temporal_mediator=True时逐时间步驱动LIF。"""
     def __init__(self, input_dim: int, config: FrontDoorConfig):
         super().__init__()
         self.input_dim, self.config = input_dim, config
         h, neurons = config.hidden_dim, config.lif_width
-        self.encoder = nn.Sequential(nn.Linear(input_dim, h), nn.SiLU(),
-                                     nn.Linear(h, config.time_steps * neurons))
+        self.temporal = config.temporal_mediator
+        if self.temporal:
+            if input_dim % config.seq_len:
+                raise ValueError('temporal_mediator要求输入维度能被seq_len整除')
+            # 每个时间步共享一个线性投影到神经元电流；不做逐步LayerNorm，保留幅度信息
+            self.step_proj = nn.Linear(input_dim // config.seq_len, neurons)
+        else:
+            self.encoder = nn.Sequential(nn.Linear(input_dim, h), nn.SiLU(),
+                                         nn.Linear(h, config.time_steps * neurons))
         self.snn = CurrentLIF(neurons)
         self.parameters_head = nn.Linear(2 * neurons, 2 * config.mediator_dim)
 
     def distribution(self, x: Tensor, extra: Optional[Tensor] = None) -> tuple[Tensor, Tensor]:
-        drive = self.encoder(flatten_input(x, self.input_dim))
-        drive = drive.reshape(x.shape[0], self.config.time_steps, self.config.lif_width)
+        flat = flatten_input(x, self.input_dim)
+        if self.temporal:
+            drive = self.step_proj(flat.reshape(flat.shape[0], self.config.seq_len, -1))   # [Q,96,neurons]
+        else:
+            drive = self.encoder(flat)
+            drive = drive.reshape(x.shape[0], self.config.time_steps, self.config.lif_width)
         rates, current = self.snn(drive, extra)
         mu, logvar = self.parameters_head(torch.cat((rates, current), -1)).chunk(2, -1)
         return mu, logvar.clamp(self.config.logvar_min, self.config.logvar_max)
@@ -256,7 +287,7 @@ class FrontDoorEstimator(nn.Module):
         cfg = self.config
         self.cns = CNSMediator(cns_dim, cfg)
         self.ans = ANSMediator(ans_dim, cfg)
-        self.reference_encoder = ReferenceEncoder(cns_dim, ans_dim, cfg.ref_dim)
+        self.reference_encoder = ReferenceEncoder(cns_dim, ans_dim, cfg.ref_dim, cfg.ref_pool, cfg.seq_len)
         self.outcome = OutcomeHead(cfg.mediator_dim, self.reference_encoder.output_dim,
                                    cfg.hidden_dim, cfg.dropout, cfg.num_classes)
 
